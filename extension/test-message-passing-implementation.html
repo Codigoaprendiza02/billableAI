@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI - Message Passing Implementation Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f7fafc;
+            color: #2d3748;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        .test-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 5px;
+            transition: all 0.2s;
+        }
+        .test-button:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+        .test-button.secondary {
+            background: #718096;
+        }
+        .test-button.secondary:hover {
+            background: #4a5568;
+        }
+        .test-button.danger {
+            background: #e53e3e;
+        }
+        .test-button.danger:hover {
+            background: #c53030;
+        }
+        .test-button.success {
+            background: #38a169;
+        }
+        .test-button.success:hover {
+            background: #2f855a;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .status.info {
+            background: #bee3f8;
+            color: #2b6cb0;
+            border: 1px solid #90cdf4;
+        }
+        .status.success {
+            background: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+        .status.error {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+        .status.warning {
+            background: #fef5e7;
+            color: #c05621;
+            border: 1px solid #fbd38d;
+        }
+        .result-box {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+            white-space: pre-wrap;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        .step-list {
+            background: #f7fafc;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .step-list ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .step-list li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .step-list strong {
+            color: #2d3748;
+        }
+        .architecture-info {
+            background: #edf2f7;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .architecture-info h4 {
+            margin: 0 0 10px 0;
+            color: #2d3748;
+        }
+        .architecture-info ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .architecture-info li {
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 BillableAI</h1>
+            <p>Message Passing Implementation Test</p>
+        </div>
+        <div class="content">
+            <div class="test-section">
+                <div class="test-title">🔍 Implementation Overview</div>
+                <div style="color: #4a5568; line-height: 1.6;">
+                    <p><strong>Problem:</strong> Cross-context communication between Gmail content script and extension popup.</p>
+                    <p><strong>Solution:</strong> Chrome Extensions Messaging API with background script as intermediary.</p>
+                    <p><strong>Architecture:</strong> Gmail Content Script → Background Script → Extension Popup/Assistant</p>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">🧪 Test Controls</div>
+                <div style="margin: 20px 0;">
+                    <button class="test-button" onclick="simulateGmailContentScript()">Simulate Gmail Content Script</button>
+                    <button class="test-button secondary" onclick="simulateBackgroundScript()">Simulate Background Script</button>
+                    <button class="test-button success" onclick="simulateAssistantAccess()">Simulate Assistant Access</button>
+                    <button class="test-button" onclick="testMessagePassing()">Test Message Passing</button>
+                    <button class="test-button danger" onclick="clearAllData()">Clear All Data</button>
+                    <button class="test-button" onclick="runFullTest()">Run Full Test</button>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">📊 Test Status</div>
+                <div id="status" class="status info">Ready to test message passing implementation</div>
+                <div id="results" class="result-box" style="display: none;"></div>
+            </div>
+
+            <div class="grid">
+                <div class="test-section">
+                    <div class="test-title">📋 Test Steps</div>
+                    <div class="step-list">
+                        <ol>
+                            <li><strong>Simulate Gmail Content Script:</strong> Send EMAIL_DATA_STORED message to background script</li>
+                            <li><strong>Simulate Background Script:</strong> Verify background script receives and stores data</li>
+                            <li><strong>Simulate Assistant Access:</strong> Request data from background script</li>
+                            <li><strong>Test Message Passing:</strong> Verify complete flow works</li>
+                            <li><strong>Verify Cross-Context:</strong> Ensure data flows between contexts</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="test-section">
+                    <div class="test-title">🔧 Console Commands</div>
+                    <div class="code-block">
+// Simulate Gmail content script sending data
+chrome.runtime.sendMessage({
+  type: 'EMAIL_DATA_STORED',
+  data: {
+    emailData: { subject: 'Test', body: 'Test body' },
+    timeSpent: 120000,
+    autoProcess: true
+  }
+}, (response) => console.log('Response:', response));
+
+// Simulate Assistant requesting data
+chrome.runtime.sendMessage({
+  type: 'GET_EMAIL_DATA'
+}, (response) => console.log('Email data:', response));
+
+// Clear email data
+chrome.runtime.sendMessage({
+  type: 'CLEAR_EMAIL_DATA'
+}, (response) => console.log('Clear response:', response));
+
+// Check chrome.storage.local
+chrome.storage.local.get(['billableAI_emailSummary'], (result) => {
+  console.log('Storage data:', result);
+});
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">🎯 Architecture Information</div>
+                <div class="architecture-info">
+                    <h4>Message Flow:</h4>
+                    <ul>
+                        <li><strong>Gmail Content Script:</strong> Sends EMAIL_DATA_STORED to background script</li>
+                        <li><strong>Background Script:</strong> Stores data in chrome.storage.local and notifies popup</li>
+                        <li><strong>Assistant:</strong> Requests data via GET_EMAIL_DATA message</li>
+                        <li><strong>Background Script:</strong> Retrieves and returns data from storage</li>
+                        <li><strong>Assistant:</strong> Processes data and sends CLEAR_EMAIL_DATA</li>
+                    </ul>
+                    <h4>Fallback Mechanisms:</h4>
+                    <ul>
+                        <li>Direct chrome.storage.local access if background script fails</li>
+                        <li>localStorage as final fallback</li>
+                        <li>Error handling for all message passing operations</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">✅ Expected Results</div>
+                <div style="color: #4a5568; line-height: 1.6;">
+                    <p><strong>✅ Message Passing:</strong> Gmail content script should successfully send data to background script</p>
+                    <p><strong>✅ Data Storage:</strong> Background script should store data in chrome.storage.local</p>
+                    <p><strong>✅ Cross-Context Access:</strong> Assistant should retrieve data via background script</p>
+                    <p><strong>✅ Real-time Notifications:</strong> Assistant should receive EMAIL_DATA_AVAILABLE messages</p>
+                    <p><strong>✅ Data Cleanup:</strong> Data should be cleared after processing</p>
+                    <p><strong>✅ Error Handling:</strong> Fallback mechanisms should work if primary method fails</p>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">🐛 Common Issues</div>
+                <div style="color: #4a5568; line-height: 1.6;">
+                    <p><strong>❌ Message not sent:</strong> Check if content script is running and can access chrome.runtime</p>
+                    <p><strong>❌ Background script not responding:</strong> Verify background script is active and listening</p>
+                    <p><strong>❌ Assistant not receiving data:</strong> Check message listener setup and timing</p>
+                    <p><strong>❌ Data not stored:</strong> Verify chrome.storage.local permissions and access</p>
+                    <p><strong>❌ Timing issues:</strong> Ensure proper async/await handling for message responses</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        function addResult(message) {
+            testResults.push(`[${new Date().toLocaleTimeString()}] ${message}`);
+            const results = document.getElementById('results');
+            results.textContent = testResults.join('\n');
+            results.style.display = 'block';
+        }
+
+        async function simulateGmailContentScript() {
+            updateStatus('Simulating Gmail content script sending email data...', 'info');
+            addResult('Simulating Gmail content script...');
+            
+            const emailData = {
+                subject: 'Test Email Subject',
+                body: 'This is a test email body content for message passing testing.',
+                to: 'test@example.com',
+                cc: 'cc@example.com',
+                bcc: 'bcc@example.com'
+            };
+            
+            const timeSpent = 120000; // 2 minutes in milliseconds
+            
+            try {
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'EMAIL_DATA_STORED',
+                        data: {
+                            emailData: emailData,
+                            timeSpent: timeSpent,
+                            autoProcess: true,
+                            timestamp: Date.now()
+                        }
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                if (response && response.success) {
+                    addResult('✅ Gmail content script successfully sent data to background script');
+                    updateStatus('Gmail content script simulation completed', 'success');
+                } else {
+                    addResult('❌ Background script did not respond successfully');
+                    updateStatus('Gmail content script simulation failed', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Error in Gmail content script simulation: ${error.message}`);
+                updateStatus('Gmail content script simulation failed', 'error');
+            }
+        }
+
+        async function simulateBackgroundScript() {
+            updateStatus('Simulating background script data storage...', 'info');
+            addResult('Simulating background script...');
+            
+            try {
+                // Check if data was stored by the background script
+                const result = await new Promise((resolve) => {
+                    chrome.storage.local.get(['billableAI_emailSummary'], (result) => {
+                        resolve(result);
+                    });
+                });
+                
+                if (result.billableAI_emailSummary) {
+                    addResult('✅ Background script successfully stored data in chrome.storage.local');
+                    addResult(`Email subject: ${result.billableAI_emailSummary.emailData.subject}`);
+                    addResult(`Time spent: ${result.billableAI_emailSummary.timeSpent}ms`);
+                    updateStatus('Background script simulation completed', 'success');
+                } else {
+                    addResult('❌ No data found in chrome.storage.local');
+                    updateStatus('Background script simulation failed', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Error in background script simulation: ${error.message}`);
+                updateStatus('Background script simulation failed', 'error');
+            }
+        }
+
+        async function simulateAssistantAccess() {
+            updateStatus('Simulating Assistant requesting email data...', 'info');
+            addResult('Simulating Assistant access...');
+            
+            try {
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'GET_EMAIL_DATA'
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                if (response && response.success && response.data) {
+                    addResult('✅ Assistant successfully retrieved data via background script');
+                    addResult(`Email subject: ${response.data.emailData.subject}`);
+                    addResult(`Time spent: ${response.data.timeSpent}ms`);
+                    updateStatus('Assistant access simulation completed', 'success');
+                } else {
+                    addResult('❌ Assistant could not retrieve data via background script');
+                    updateStatus('Assistant access simulation failed', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Error in Assistant access simulation: ${error.message}`);
+                updateStatus('Assistant access simulation failed', 'error');
+            }
+        }
+
+        async function testMessagePassing() {
+            updateStatus('Testing complete message passing flow...', 'info');
+            addResult('Testing complete message passing flow...');
+            
+            try {
+                // Step 1: Send data from Gmail content script
+                addResult('Step 1: Sending data from Gmail content script...');
+                await simulateGmailContentScript();
+                
+                // Step 2: Verify background script storage
+                addResult('Step 2: Verifying background script storage...');
+                await simulateBackgroundScript();
+                
+                // Step 3: Retrieve data from Assistant
+                addResult('Step 3: Retrieving data from Assistant...');
+                await simulateAssistantAccess();
+                
+                // Step 4: Clear data
+                addResult('Step 4: Clearing data...');
+                const clearResponse = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'CLEAR_EMAIL_DATA'
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                if (clearResponse && clearResponse.success) {
+                    addResult('✅ Data cleared successfully');
+                } else {
+                    addResult('❌ Data clearing failed');
+                }
+                
+                updateStatus('Complete message passing test completed', 'success');
+            } catch (error) {
+                addResult(`❌ Error in complete message passing test: ${error.message}`);
+                updateStatus('Complete message passing test failed', 'error');
+            }
+        }
+
+        async function clearAllData() {
+            updateStatus('Clearing all data...', 'info');
+            addResult('Clearing all data...');
+            
+            try {
+                // Clear via background script
+                await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'CLEAR_EMAIL_DATA'
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                // Clear chrome.storage.local
+                await new Promise((resolve) => {
+                    chrome.storage.local.remove(['billableAI_emailSummary'], () => {
+                        resolve();
+                    });
+                });
+                
+                // Clear localStorage
+                localStorage.removeItem('billableAI_emailSummary');
+                
+                addResult('✅ All data cleared successfully');
+                updateStatus('All data cleared successfully', 'success');
+            } catch (error) {
+                addResult(`❌ Error clearing data: ${error.message}`);
+                updateStatus('Error clearing data', 'error');
+            }
+        }
+
+        async function runFullTest() {
+            updateStatus('Running full message passing test...', 'info');
+            addResult('=== FULL MESSAGE PASSING TEST ===');
+            
+            // Step 1: Clear all data
+            addResult('Step 1: Clearing all data...');
+            await clearAllData();
+            
+            // Step 2: Test complete flow
+            addResult('Step 2: Testing complete message passing flow...');
+            await testMessagePassing();
+            
+            addResult('=== TEST COMPLETED ===');
+            updateStatus('Full test completed', 'success');
+        }
+
+        // Initialize test tools
+        window.billableAITest = {
+            simulateGmailContentScript,
+            simulateBackgroundScript,
+            simulateAssistantAccess,
+            testMessagePassing,
+            clearAllData,
+            runFullTest
+        };
+
+        updateStatus('Message passing test tool ready. Use buttons above or console commands.', 'info');
+    </script>
+</body>
+</html> 

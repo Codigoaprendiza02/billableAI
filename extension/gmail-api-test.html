@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI Gmail API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+        }
+        .email-compose {
+            border: 2px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        .email-compose input, .email-compose textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .console-log {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .api-status {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .api-metric {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .api-metric-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        .api-metric-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .summary-display {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 BillableAI Gmail API Test</h1>
+    
+    <div class="test-section">
+        <h2>API Status</h2>
+        <div class="api-status">
+            <div class="api-metric">
+                <div class="api-metric-value" id="gmail-status">Checking...</div>
+                <div class="api-metric-label">Gmail API Status</div>
+            </div>
+            <div class="api-metric">
+                <div class="api-metric-value" id="gemini-status">Checking...</div>
+                <div class="api-metric-label">Gemini API Status</div>
+            </div>
+            <div class="api-metric">
+                <div class="api-metric-value" id="drafts-count">0</div>
+                <div class="api-metric-label">Drafts Found</div>
+            </div>
+            <div class="api-metric">
+                <div class="api-metric-value" id="tracking-time">00:00</div>
+                <div class="api-metric-label">Tracking Time</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Gmail API Scopes</h2>
+        <div class="status">
+            <strong>✅ Required Scopes:</strong> readonly, compose, modify
+        </div>
+        <div class="status">
+            <strong>✅ Gmail API Endpoints:</strong> /drafts, /drafts/{id}, /users/me/profile
+        </div>
+        <div class="status">
+            <strong>✅ Gemini API:</strong> /v1beta/models/gemini-pro:generateContent
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Email Composition Test</h2>
+        <p>Type in the fields below to test Gmail API integration and Gemini summary generation:</p>
+        
+        <div class="email-compose">
+            <input type="text" placeholder="To: Recipients" role="textbox" aria-label="To" id="to-field">
+            <input type="text" placeholder="Subject" role="textbox" aria-label="Subject" id="subject-field">
+            <textarea placeholder="Message body..." role="textbox" contenteditable="true" aria-label="Message body" id="content-field"></textarea>
+        </div>
+        
+        <button class="test-button" onclick="testGmailApiConnection()">Test Gmail API</button>
+        <button class="test-button" onclick="testGeminiApiConnection()">Test Gemini API</button>
+        <button class="test-button" onclick="testStartTracking()">Start Tracking</button>
+        <button class="test-button" onclick="testStopTracking()">Stop Tracking</button>
+        <button class="test-button" onclick="testGenerateSummary()">Generate Summary</button>
+        <button class="test-button" onclick="testFullWorkflow()">Test Full Workflow</button>
+        <button class="test-button" onclick="clearConsole()">Clear Console</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Generated Summary</h2>
+        <div id="summary-display" class="summary-display">
+            No summary generated yet...
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <div id="console-output" class="console-log">
+            Waiting for console output...
+        </div>
+    </div>
+
+    <script>
+        let consoleOutput = [];
+        let trackingStartTime = null;
+        let isTracking = false;
+
+        // Override console.log to capture output
+        const originalConsoleLog = console.log;
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.join(' ');
+            
+            if (message.includes('🎯 BillableAI')) {
+                consoleOutput.push(`${timestamp}: ${message}`);
+                
+                if (consoleOutput.length > 100) {
+                    consoleOutput.shift();
+                }
+                
+                updateConsoleDisplay();
+            }
+        };
+
+        function updateConsoleDisplay() {
+            const output = document.getElementById('console-output');
+            output.textContent = consoleOutput.join('\n');
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function updateTrackingTime() {
+            if (isTracking && trackingStartTime) {
+                const elapsed = Date.now() - trackingStartTime;
+                const minutes = Math.floor(elapsed / 1000 / 60);
+                const seconds = Math.floor((elapsed / 1000) % 60);
+                document.getElementById('tracking-time').textContent = 
+                    `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function testGmailApiConnection() {
+            logEvent('Testing Gmail API connection...');
+            document.getElementById('gmail-status').textContent = 'Testing...';
+            
+            if (window.billableAI && window.billableAI.testGmailApi) {
+                window.billableAI.testGmailApi().then(success => {
+                    if (success) {
+                        logEvent('Gmail API connection successful');
+                        document.getElementById('gmail-status').textContent = 'Connected';
+                    } else {
+                        logEvent('Gmail API connection failed');
+                        document.getElementById('gmail-status').textContent = 'Failed';
+                    }
+                }).catch(error => {
+                    logEvent('Gmail API connection failed: ' + error.message);
+                    document.getElementById('gmail-status').textContent = 'Failed';
+                });
+            } else {
+                logEvent('BillableAI extension not available');
+                document.getElementById('gmail-status').textContent = 'Not Available';
+            }
+        }
+
+        function testGeminiApiConnection() {
+            logEvent('Testing Gemini API connection...');
+            document.getElementById('gemini-status').textContent = 'Testing...';
+            
+            const geminiApiKey = localStorage.getItem('billableai_gemini_api_key');
+            if (!geminiApiKey) {
+                logEvent('No Gemini API key found');
+                document.getElementById('gemini-status').textContent = 'No API Key';
+                return;
+            }
+
+            // Test Gemini API with a simple prompt
+            fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-goog-api-key': geminiApiKey
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: 'Hello, this is a test message. Please respond with "API test successful" if you receive this.'
+                        }]
+                    }]
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Gemini API error: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                logEvent('Gemini API connection successful');
+                document.getElementById('gemini-status').textContent = 'Connected';
+            })
+            .catch(error => {
+                logEvent('Gemini API connection failed: ' + error.message);
+                document.getElementById('gemini-status').textContent = 'Failed';
+            });
+        }
+
+        function testStartTracking() {
+            if (window.billableAI) {
+                window.billableAI.startTracking();
+                trackingStartTime = Date.now();
+                isTracking = true;
+                logEvent('Started tracking');
+                
+                // Update tracking time every second
+                setInterval(updateTrackingTime, 1000);
+            } else {
+                logEvent('BillableAI extension not available');
+            }
+        }
+
+        function testStopTracking() {
+            if (window.billableAI) {
+                window.billableAI.stopTracking();
+                isTracking = false;
+                trackingStartTime = null;
+                logEvent('Stopped tracking');
+            } else {
+                logEvent('BillableAI extension not available');
+            }
+        }
+
+        function testGenerateSummary() {
+            logEvent('Testing summary generation...');
+            
+            // Simulate email data
+            const emailData = {
+                to: document.getElementById('to-field').value || 'test@example.com',
+                subject: document.getElementById('subject-field').value || 'Test Subject',
+                content: document.getElementById('content-field').value || 'Test email content for summary generation.',
+                draftId: 'test-draft-id'
+            };
+
+            const timeSpent = isTracking && trackingStartTime ? Date.now() - trackingStartTime : 60000; // 1 minute default
+
+            if (window.billableAI && window.billableAI.generateTestSummary) {
+                window.billableAI.generateTestSummary(emailData, timeSpent);
+            } else {
+                logEvent('Summary generation function not available');
+            }
+        }
+
+        function testFullWorkflow() {
+            logEvent('Testing full workflow: Gmail API + Tracking + Gemini Summary');
+            
+            // Step 1: Test Gmail API
+            testGmailApiConnection();
+            
+            // Step 2: Start tracking
+            setTimeout(() => {
+                testStartTracking();
+                
+                // Step 3: Simulate typing
+                setTimeout(() => {
+                    document.getElementById('content-field').value = 'This is a test email for the full workflow. Testing Gmail API integration with Gemini summary generation.';
+                    document.getElementById('content-field').dispatchEvent(new Event('input', { bubbles: true }));
+                    
+                    // Step 4: Generate summary
+                    setTimeout(() => {
+                        testGenerateSummary();
+                    }, 2000);
+                }, 3000);
+            }, 1000);
+        }
+
+        function clearConsole() {
+            consoleOutput = [];
+            updateConsoleDisplay();
+        }
+
+        function logEvent(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            consoleOutput.push(`${timestamp}: ${message}`);
+            
+            if (consoleOutput.length > 100) {
+                consoleOutput.shift();
+            }
+            
+            updateConsoleDisplay();
+        }
+
+        // Use extension's test functions if available
+        if (window.billableAI) {
+            // Override the extension's generateTestSummary to display results in the test page
+            const originalGenerateTestSummary = window.billableAI.generateTestSummary;
+            window.billableAI.generateTestSummary = async (emailData, timeSpent) => {
+                try {
+                    logEvent('Calling extension\'s generateTestSummary...');
+                    const summary = await originalGenerateTestSummary(emailData, timeSpent);
+                    
+                    logEvent('Test summary generated successfully');
+                    
+                    // Display summary
+                    document.getElementById('summary-display').textContent = summary;
+                    
+                    return summary;
+                } catch (error) {
+                    logEvent('Error generating test summary: ' + error.message);
+                    document.getElementById('summary-display').textContent = 'Error: ' + error.message;
+                    throw error;
+                }
+            };
+        }
+
+        // Initialize
+        logEvent('Gmail API test initialized');
+
+        // Check if BillableAI is available
+        setInterval(() => {
+            if (window.billableAI) {
+                logEvent('BillableAI extension loaded and ready');
+            } else {
+                logEvent('BillableAI extension not detected');
+            }
+        }, 10000);
+
+        // Update tracking time and drafts count
+        setInterval(updateTrackingTime, 1000);
+        setInterval(async () => {
+            if (window.billableAI && window.billableAI.getDraftsCount) {
+                try {
+                    const count = await window.billableAI.getDraftsCount();
+                    document.getElementById('drafts-count').textContent = count;
+                } catch (error) {
+                    console.error('Error updating drafts count:', error);
+                }
+            }
+        }, 5000);
+    </script>
+</body>
+</html> 

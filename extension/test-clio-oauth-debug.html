@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clio OAuth Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; }
+        .status { margin: 10px 0; padding: 15px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button { padding: 12px 24px; margin: 5px; cursor: pointer; border: none; border-radius: 5px; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        .log { background: #000; color: #0f0; padding: 10px; border-radius: 5px; font-family: monospace; max-height: 400px; overflow-y: auto; }
+        .step { margin: 10px 0; padding: 10px; border-left: 4px solid #007bff; background: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Clio OAuth Debug Test</h1>
+    
+    <div id="results"></div>
+    
+    <div style="margin: 20px 0;">
+        <button class="btn-primary" onclick="step1_checkAuth()">1️⃣ Check Auth</button>
+        <button class="btn-success" onclick="step2_generateOAuth()">2️⃣ Generate OAuth URL</button>
+        <button class="btn-warning" onclick="step3_testCallback()">3️⃣ Test Callback</button>
+        <button class="btn-warning" onclick="step4_checkConnection()">4️⃣ Check Connection</button>
+        <button class="btn-danger" onclick="clearAll()">🗑️ Clear All</button>
+        <button class="btn-warning" onclick="clearLog()">📝 Clear Log</button>
+    </div>
+    
+    <div class="log" id="log"></div>
+    
+    <script>
+        // Simple logging function
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logEntry.style.color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : type === 'warning' ? '#ffd43b' : '#74c0fc';
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        // Step 1: Check Authentication
+        async function step1_checkAuth() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="step"><h3>1️⃣ Checking Authentication...</h3></div>';
+            log('1️⃣ Checking Authentication...');
+            
+            try {
+                const authToken = localStorage.getItem('billableai_auth_token');
+                const userData = localStorage.getItem('billableai_user_data');
+                
+                let html = '<div class="step">';
+                html += '<h3>1️⃣ Authentication Status</h3>';
+                html += `<div class="${authToken ? 'success' : 'error'}">`;
+                html += `<strong>Status:</strong> ${authToken ? '✅ Authenticated' : '❌ Not Authenticated'}<br>`;
+                html += `- Token exists: ${!!authToken}<br>`;
+                html += `- User data exists: ${!!userData}<br>`;
+                
+                if (authToken) {
+                    html += `- Token length: ${authToken.length}<br>`;
+                    html += `- Token preview: ${authToken.substring(0, 20)}...<br>`;
+                }
+                
+                if (userData) {
+                    try {
+                        const user = JSON.parse(userData);
+                        html += `- User: ${user.name} (${user.email})<br>`;
+                    } catch (e) {
+                        html += `- Error parsing user data: ${e.message}<br>`;
+                    }
+                }
+                html += '</div></div>';
+                
+                results.innerHTML = html;
+                
+                if (authToken) {
+                    log('✅ Authentication check passed', 'success');
+                    return true;
+                } else {
+                    log('❌ Authentication check failed', 'error');
+                    return false;
+                }
+                
+            } catch (error) {
+                results.innerHTML = `<div class="error">❌ Auth check error: ${error.message}</div>`;
+                log(`❌ Auth check error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        // Step 2: Generate OAuth URL
+        async function step2_generateOAuth() {
+            const results = document.getElementById('results');
+            results.innerHTML += '<div class="step"><h3>2️⃣ Generating OAuth URL...</h3></div>';
+            log('2️⃣ Generating OAuth URL...');
+            
+            try {
+                const authToken = localStorage.getItem('billableai_auth_token');
+                
+                if (!authToken) {
+                    throw new Error('No authentication token found');
+                }
+                
+                const response = await fetch('http://localhost:3001/api/auth/debug-clio-oauth', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`OAuth URL generation failed: ${response.status} - ${errorText}`);
+                }
+                
+                const result = await response.json();
+                
+                let html = '<div class="step">';
+                html += '<h3>2️⃣ OAuth URL Generated</h3>';
+                html += '<div class="success">✅ OAuth URL generated successfully!</div>';
+                html += '<div class="info">';
+                html += '<strong>Details:</strong><br>';
+                html += `- Client ID: ${result.clientId}<br>`;
+                html += `- Redirect URI: ${result.redirectUri}<br>`;
+                html += `- Scope: ${result.scope}<br>`;
+                html += '</div>';
+                html += '<div class="warning">';
+                html += '<strong>Next Steps:</strong><br>';
+                html += '1. Copy the URL below<br>';
+                html += '2. Open it in a new tab<br>';
+                html += '3. Complete the authorization<br>';
+                html += '4. Come back and test the callback<br>';
+                html += '</div>';
+                html += `<pre>${result.fullAuthUrl}</pre>`;
+                html += '</div>';
+                
+                results.innerHTML += html;
+                
+                log('✅ OAuth URL generated successfully!', 'success');
+                log(`URL: ${result.fullAuthUrl}`);
+                
+                return result.fullAuthUrl;
+                
+            } catch (error) {
+                results.innerHTML += `<div class="error">❌ OAuth URL generation failed: ${error.message}</div>`;
+                log(`❌ OAuth URL generation failed: ${error.message}`, 'error');
+                return null;
+            }
+        }
+        
+        // Step 3: Test Callback (simulate the OAuth callback)
+        async function step3_testCallback() {
+            const results = document.getElementById('results');
+            results.innerHTML += '<div class="step"><h3>3️⃣ Testing OAuth Callback...</h3></div>';
+            log('3️⃣ Testing OAuth Callback...');
+            
+            try {
+                // Simulate a mock authorization code
+                const mockCode = 'mock_auth_code_' + Date.now();
+                
+                log(`Using mock authorization code: ${mockCode}`);
+                
+                // Call the callback endpoint
+                const response = await fetch('http://localhost:3001/api/auth/clio/callback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ code: mockCode })
+                });
+                
+                log(`Callback response status: ${response.status}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log(`❌ Callback failed: ${errorText}`, 'error');
+                    throw new Error(`Callback failed: ${response.status} - ${errorText}`);
+                }
+                
+                const result = await response.json();
+                log('✅ Callback response received', 'success');
+                log(`Callback result: ${JSON.stringify(result, null, 2)}`);
+                
+                let html = '<div class="step">';
+                html += '<h3>3️⃣ OAuth Callback Test</h3>';
+                html += '<div class="success">✅ OAuth callback processed successfully!</div>';
+                html += '<div class="info">';
+                html += '<strong>Callback Result:</strong><br>';
+                html += `- Success: ${result.success}<br>`;
+                html += `- Message: ${result.message}<br>`;
+                if (result.user) {
+                    html += `- User ID: ${result.user.id}<br>`;
+                    html += `- User Email: ${result.user.email}<br>`;
+                    html += `- Has Clio Access: ${result.user.hasClioAccess}<br>`;
+                }
+                html += '</div>';
+                html += '</div>';
+                
+                results.innerHTML += html;
+                
+                return result;
+                
+            } catch (error) {
+                results.innerHTML += `<div class="error">❌ Callback test failed: ${error.message}</div>`;
+                log(`❌ Callback test failed: ${error.message}`, 'error');
+                return null;
+            }
+        }
+        
+        // Step 4: Check Connection Status
+        async function step4_checkConnection() {
+            const results = document.getElementById('results');
+            results.innerHTML += '<div class="step"><h3>4️⃣ Checking Connection Status...</h3></div>';
+            log('4️⃣ Checking Connection Status...');
+            
+            try {
+                const authToken = localStorage.getItem('billableai_auth_token');
+                
+                if (!authToken) {
+                    throw new Error('No authentication token found');
+                }
+                
+                const response = await fetch('http://localhost:3001/api/auth/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Profile check failed: ${response.status} - ${errorText}`);
+                }
+                
+                const result = await response.json();
+                
+                let html = '<div class="step">';
+                html += '<h3>4️⃣ Connection Status</h3>';
+                
+                const isConnected = result.user?.hasClioAccess || result.user?.isConnectedToClio;
+                
+                html += `<div class="${isConnected ? 'success' : 'error'}">`;
+                html += `<strong>Connection Status:</strong> ${isConnected ? '✅ Connected' : '❌ Not Connected'}<br>`;
+                html += '</div>';
+                
+                if (result.user) {
+                    html += '<div class="info">';
+                    html += '<strong>User Details:</strong><br>';
+                    html += `- Name: ${result.user.name || 'N/A'}<br>`;
+                    html += `- Email: ${result.user.email || 'N/A'}<br>`;
+                    html += `- Has Clio Access: ${result.user.hasClioAccess || 'N/A'}<br>`;
+                    html += `- Is Connected to Clio: ${result.user.isConnectedToClio || 'N/A'}<br>`;
+                    html += `- Has Clio Tokens: ${!!result.user.clioTokens?.hasAccessToken}<br>`;
+                    html += '</div>';
+                }
+                html += '</div>';
+                
+                results.innerHTML += html;
+                
+                log(`Connection status: ${isConnected ? 'Connected' : 'Not Connected'}`, isConnected ? 'success' : 'error');
+                
+                return isConnected;
+                
+            } catch (error) {
+                results.innerHTML += `<div class="error">❌ Connection check failed: ${error.message}</div>`;
+                log(`❌ Connection check failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        function clearAll() {
+            localStorage.removeItem('billableai_auth_token');
+            localStorage.removeItem('billableai_user_data');
+            localStorage.removeItem('billableai_clio_connected');
+            
+            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                chrome.storage.local.remove(['billableai_auth_token', 'billableai_user_data', 'billableai_clio_connected']);
+            }
+            
+            document.getElementById('results').innerHTML = '<div class="success">✅ All data cleared</div>';
+            log('✅ All data cleared', 'success');
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            log('Log cleared');
+        }
+        
+        // Auto-start with step 1
+        log('🚀 Clio OAuth Debug Test loaded');
+        step1_checkAuth();
+    </script>
+</body>
+</html> 

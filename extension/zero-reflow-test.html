@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI Zero-Reflow Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+        }
+        .email-compose {
+            border: 2px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        .email-compose input, .email-compose textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .console-log {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .metric {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 BillableAI Zero-Reflow Test</h1>
+    
+    <div class="test-section">
+        <h2>Performance Status</h2>
+        <div class="status">
+            <strong>✅ Zero Visual Elements:</strong> All visual indicators and highlights completely disabled
+        </div>
+        <div class="status">
+            <strong>✅ Minimal DOM Queries:</strong> Reduced selectors and optimized queries
+        </div>
+        <div class="status">
+            <strong>✅ RequestIdleCallback:</strong> All non-critical operations deferred
+        </div>
+        <div class="status">
+            <strong>✅ Passive Event Listeners:</strong> All event listeners use passive option
+        </div>
+        <div class="status">
+            <strong>✅ Reduced Frequencies:</strong> All timers and updates minimized
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Performance Metrics</h2>
+        <div class="performance-metrics">
+            <div class="metric">
+                <div class="metric-value" id="reflow-count">0</div>
+                <div class="metric-label">Reflows Detected</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="performance-score">Excellent</div>
+                <div class="metric-label">Performance Score</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="console-logs">0</div>
+                <div class="metric-label">Console Logs</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="test-status">Ready</div>
+                <div class="metric-label">Test Status</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Timer Test</h2>
+        <p>Type in the field below to test timer responsiveness with zero reflows:</p>
+        
+        <div class="email-compose">
+            <input type="text" placeholder="To: Recipients" role="textbox" aria-label="To">
+            <input type="text" placeholder="Subject" role="textbox" aria-label="Subject">
+            <textarea placeholder="Message body..." role="textbox" contenteditable="true" aria-label="Message body"></textarea>
+        </div>
+        
+        <button class="test-button" onclick="testStartTracking()">Start Tracking</button>
+        <button class="test-button" onclick="testStopTracking()">Stop Tracking</button>
+        <button class="test-button" onclick="testHeavyTyping()">Test Heavy Typing</button>
+        <button class="test-button" onclick="testExtremeTyping()">Test Extreme Typing</button>
+        <button class="test-button" onclick="clearConsole()">Clear Console</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <div id="console-output" class="console-log">
+            Waiting for console output...
+        </div>
+    </div>
+
+    <script>
+        let consoleOutput = [];
+        let reflowCount = 0;
+        let consoleLogCount = 0;
+        let performanceScore = 'Excellent';
+
+        // Monitor forced reflows
+        function setupReflowDetection() {
+            // Override getComputedStyle to detect reflows
+            const originalGetComputedStyle = window.getComputedStyle;
+            window.getComputedStyle = function(element) {
+                reflowCount++;
+                document.getElementById('reflow-count').textContent = reflowCount;
+                updatePerformanceScore();
+                return originalGetComputedStyle.apply(this, arguments);
+            };
+
+            // Override offsetHeight, offsetWidth, etc. to detect reflows
+            const originalOffsetHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetHeight');
+            Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
+                get: function() {
+                    reflowCount++;
+                    document.getElementById('reflow-count').textContent = reflowCount;
+                    updatePerformanceScore();
+                    return originalOffsetHeight.get.call(this);
+                }
+            });
+
+            const originalOffsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth');
+            Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
+                get: function() {
+                    reflowCount++;
+                    document.getElementById('reflow-count').textContent = reflowCount;
+                    updatePerformanceScore();
+                    return originalOffsetWidth.get.call(this);
+                }
+            });
+        }
+
+        function updatePerformanceScore() {
+            if (reflowCount === 0) {
+                performanceScore = 'Perfect';
+            } else if (reflowCount < 5) {
+                performanceScore = 'Excellent';
+            } else if (reflowCount < 20) {
+                performanceScore = 'Good';
+            } else if (reflowCount < 50) {
+                performanceScore = 'Fair';
+            } else {
+                performanceScore = 'Poor';
+            }
+            
+            document.getElementById('performance-score').textContent = performanceScore;
+        }
+
+        // Override console.log to capture output
+        const originalConsoleLog = console.log;
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.join(' ');
+            
+            if (message.includes('🎯 BillableAI')) {
+                consoleLogCount++;
+                document.getElementById('console-logs').textContent = consoleLogCount;
+                
+                consoleOutput.push(`${timestamp}: ${message}`);
+                
+                if (consoleOutput.length > 50) {
+                    consoleOutput.shift();
+                }
+                
+                updateConsoleDisplay();
+            }
+        };
+
+        function updateConsoleDisplay() {
+            const output = document.getElementById('console-output');
+            output.textContent = consoleOutput.join('\n');
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function testStartTracking() {
+            document.getElementById('test-status').textContent = 'Testing...';
+            if (window.billableAI) {
+                window.billableAI.startTracking();
+                logEvent('Started tracking');
+            } else {
+                logEvent('BillableAI not available');
+            }
+        }
+
+        function testStopTracking() {
+            if (window.billableAI) {
+                window.billableAI.stopTracking();
+                logEvent('Stopped tracking');
+            } else {
+                logEvent('BillableAI not available');
+            }
+        }
+
+        function testHeavyTyping() {
+            logEvent('Starting heavy typing test...');
+            document.getElementById('test-status').textContent = 'Heavy Test...';
+            
+            const textarea = document.querySelector('textarea');
+            if (textarea) {
+                let i = 0;
+                const interval = setInterval(() => {
+                    textarea.value += 'Test typing performance. ';
+                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                    i++;
+                    
+                    if (i >= 100) {
+                        clearInterval(interval);
+                        logEvent('Heavy typing test completed');
+                        document.getElementById('test-status').textContent = 'Completed';
+                    }
+                }, 10);
+            }
+        }
+
+        function testExtremeTyping() {
+            logEvent('Starting extreme typing test...');
+            document.getElementById('test-status').textContent = 'Extreme Test...';
+            
+            const textarea = document.querySelector('textarea');
+            if (textarea) {
+                let i = 0;
+                const interval = setInterval(() => {
+                    textarea.value += 'Extreme performance test. ';
+                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                    i++;
+                    
+                    if (i >= 500) {
+                        clearInterval(interval);
+                        logEvent('Extreme typing test completed');
+                        document.getElementById('test-status').textContent = 'Completed';
+                    }
+                }, 5);
+            }
+        }
+
+        function clearConsole() {
+            consoleOutput = [];
+            consoleLogCount = 0;
+            document.getElementById('console-logs').textContent = '0';
+            updateConsoleDisplay();
+        }
+
+        function logEvent(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            consoleOutput.push(`${timestamp}: ${message}`);
+            
+            if (consoleOutput.length > 50) {
+                consoleOutput.shift();
+            }
+            
+            updateConsoleDisplay();
+        }
+
+        // Initialize
+        setupReflowDetection();
+        logEvent('Zero-reflow test initialized');
+
+        // Check if BillableAI is available
+        setInterval(() => {
+            if (window.billableAI) {
+                logEvent('BillableAI extension loaded and ready');
+            } else {
+                logEvent('BillableAI extension not detected');
+            }
+        }, 15000);
+
+        // Monitor performance
+        setInterval(() => {
+            updatePerformanceScore();
+        }, 5000);
+    </script>
+</body>
+</html> 

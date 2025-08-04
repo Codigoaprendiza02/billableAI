@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .test-button.warning {
+            background: #f44336;
+        }
+        .test-button.warning:hover {
+            background: #d32f2f;
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+    </style>
+</head>
+<body>
+    <h1>🔔 Notification Integration Test</h1>
+    
+    <div class="test-section">
+        <h2>Email Tracking Simulation</h2>
+        <button class="test-button" onclick="simulateEmailTracking()">Simulate Email Tracking Start</button>
+        <button class="test-button warning" onclick="simulateEmailSend()">Simulate Email Send</button>
+        <button class="test-button" onclick="simulateTyping()">Simulate Typing Activity</button>
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        function logResult(message, type = 'info') {
+            const container = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+        }
+
+        // Mock BillableAI state
+        window.billableAIState = {
+            isTracking: false,
+            startTime: null,
+            isPaused: false,
+            sessionId: null,
+            draftId: null,
+            currentEmail: null,
+            accumulatedTime: 0,
+            lastActivityTime: null,
+            userId: 'test_user_123',
+            backendUrl: 'http://localhost:3001/api',
+            authToken: 'mock_token',
+            backendTracking: false,
+            gmailApiReady: false,
+            trackingNotification: null,
+            trackingTimerInterval: null
+        };
+
+        // Mock notification functions
+        function createNotificationElement() {
+            const existingNotification = document.getElementById('billableai-notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+
+            const notification = document.createElement('div');
+            notification.id = 'billableai-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                z-index: 10000;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-size: 14px;
+                max-width: 300px;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                transition: all 0.3s ease;
+                opacity: 0;
+                transform: translateX(100%);
+            `;
+
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            return notification;
+        }
+
+        function showNotificationWithTimer(message, type = 'info', duration = 5000) {
+            const notification = createNotificationElement();
+            
+            let timerDisplay = '';
+            let timerInterval = null;
+            
+            if (type === 'tracking') {
+                const startTime = Date.now();
+                timerInterval = setInterval(() => {
+                    const elapsed = Date.now() - startTime;
+                    const minutes = Math.floor(elapsed / 60000);
+                    const seconds = Math.floor((elapsed % 60000) / 1000);
+                    timerDisplay = ` (${minutes}:${seconds.toString().padStart(2, '0')})`;
+                    
+                    notification.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; margin-bottom: 5px;">${message}</div>
+                                <div style="font-size: 12px; opacity: 0.8;">${timerDisplay}</div>
+                            </div>
+                            <div style="width: 8px; height: 8px; background: #4CAF50; border-radius: 50%; animation: pulse 1s infinite;"></div>
+                        </div>
+                    `;
+                }, 1000);
+                
+                window.billableAIState.trackingNotification = notification;
+                window.billableAIState.trackingTimerInterval = timerInterval;
+            } else {
+                notification.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="flex: 1;">${message}</div>
+                        <div style="width: 8px; height: 8px; background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'}; border-radius: 50%;"></div>
+                    </div>
+                `;
+            }
+
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes pulse {
+                    0% { opacity: 1; }
+                    50% { opacity: 0.5; }
+                    100% { opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+
+            if (type !== 'tracking' && duration > 0) {
+                setTimeout(() => {
+                    if (timerInterval) {
+                        clearInterval(timerInterval);
+                    }
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }, duration);
+            }
+
+            return notification;
+        }
+
+        function showNotification(message, type = 'info', duration = 5000) {
+            return showNotificationWithTimer(message, type, duration);
+        }
+
+        function simulateEmailTracking() {
+            logResult('Starting email tracking simulation...', 'info');
+            
+            const emailData = {
+                to: 'client@example.com',
+                subject: 'Contract Review',
+                content: 'Dear Client, I am reviewing the contract...',
+                from: 'attorney@lawfirm.com'
+            };
+            
+            // Simulate tracking start
+            window.billableAIState.isTracking = true;
+            window.billableAIState.startTime = Date.now();
+            window.billableAIState.currentEmail = emailData;
+            window.billableAIState.sessionId = `test_${Date.now()}`;
+            
+            // Show tracking notification
+            showNotificationWithTimer('📧 Email tracking started', 'tracking', 0);
+            
+            logResult('Email tracking started with timer notification', 'success');
+        }
+
+        function simulateEmailSend() {
+            logResult('Simulating email send...', 'info');
+            
+            if (!window.billableAIState.isTracking) {
+                logResult('No active tracking to stop', 'error');
+                return;
+            }
+            
+            // Calculate time spent
+            const totalTime = Date.now() - window.billableAIState.startTime;
+            const timeSpentHours = (totalTime / 3600000).toFixed(2);
+            
+            // Stop tracking
+            window.billableAIState.isTracking = false;
+            
+            // Remove tracking notification
+            if (window.billableAIState.trackingNotification) {
+                if (window.billableAIState.trackingTimerInterval) {
+                    clearInterval(window.billableAIState.trackingTimerInterval);
+                    window.billableAIState.trackingTimerInterval = null;
+                }
+                window.billableAIState.trackingNotification.style.opacity = '0';
+                window.billableAIState.trackingNotification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (window.billableAIState.trackingNotification.parentNode) {
+                        window.billableAIState.trackingNotification.remove();
+                    }
+                    window.billableAIState.trackingNotification = null;
+                }, 300);
+            }
+            
+            // Show stop notification
+            showNotification(`⏹️ Email tracking stopped (${timeSpentHours} hours)`, 'success');
+            
+            // Show summary notification
+            setTimeout(() => {
+                showNotification('📝 Billable summary generated successfully', 'success');
+            }, 1000);
+            
+            logResult('Email send simulation completed', 'success');
+        }
+
+        function simulateTyping() {
+            logResult('Simulating typing activity...', 'info');
+            
+            if (window.billableAIState.isTracking) {
+                window.billableAIState.lastActivityTime = Date.now();
+                logResult('Typing activity recorded', 'success');
+            } else {
+                logResult('No active tracking for typing simulation', 'error');
+            }
+        }
+
+        // Auto-run basic test on page load
+        window.addEventListener('load', () => {
+            logResult('🚀 Notification integration test page loaded', 'info');
+            logResult('Click "Simulate Email Tracking Start" to begin testing', 'info');
+        });
+    </script>
+</body>
+</html> 

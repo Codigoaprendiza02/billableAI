@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI Notification Button Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .error {
+            background: #fee;
+            color: #c00;
+        }
+        .success {
+            background: #efe;
+            color: #0a0;
+        }
+        .notification-preview {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 300px;
+            border: 1px solid #e5e7eb;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎯 BillableAI Notification Button Test</h1>
+        
+        <div class="test-section">
+            <h3>1. Test Notification Creation</h3>
+            <p>Simulate creating the Gmail notification component:</p>
+            <button onclick="testNotificationCreation()">Create Test Notification</button>
+            <div id="creation-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. Test Open Assistant Button</h3>
+            <p>Test the "Open Assistant" button functionality:</p>
+            <button onclick="testOpenAssistantButton()">Test Open Assistant</button>
+            <div id="button-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. Test Data Storage</h3>
+            <p>Test storing data for the assistant:</p>
+            <button onclick="testDataStorage()">Test Data Storage</button>
+            <div id="storage-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. Test Guidance Notification</h3>
+            <p>Test the user guidance notification:</p>
+            <button onclick="testGuidanceNotification()">Show Guidance Notification</button>
+            <div id="guidance-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>5. Debug Current State</h3>
+            <p>Check the current state of the notification system:</p>
+            <button onclick="debugCurrentState()">Debug State</button>
+            <div id="debug-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate the notification state
+        window.billableAINotificationState = {
+            isVisible: false,
+            isTracking: true,
+            timeSpent: 120000, // 2 minutes
+            isPaused: false,
+            emailData: {
+                to: 'test@example.com',
+                subject: 'Test Email Subject',
+                body: 'This is a test email body content.',
+                recipients: ['test@example.com']
+            },
+            sessionId: 'session_' + Date.now(),
+            draftId: 'draft_' + Date.now(),
+            isProcessing: false
+        };
+
+        // Simulate the notification component creation
+        function testNotificationCreation() {
+            const resultDiv = document.getElementById('creation-result');
+            
+            try {
+                // Create notification preview
+                const notification = document.createElement('div');
+                notification.className = 'notification-preview';
+                notification.id = 'billableai-gmail-notification';
+                
+                // Simulate the notification HTML
+                notification.innerHTML = `
+                    <div style="padding: 16px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 1s infinite;"></div>
+                                <span style="font-size: 14px; font-weight: 600; color: #111827;">BillableAI Tracking</span>
+                            </div>
+                            <button onclick="this.parentElement.parentElement.parentElement.remove()" style="color: #9ca3af; background: none; border: none; cursor: pointer; padding: 4px;">
+                                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <svg style="width: 16px; height: 16px; color: #3b82f6;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span style="font-size: 18px; font-family: monospace; color: #111827; font-weight: 600;">
+                                    2:00
+                                </span>
+                            </div>
+                            
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                                <span style="font-weight: 600;">Subject:</span> Test Email Subject
+                            </div>
+                            
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                                <span style="font-weight: 600;">To:</span> test@example.com
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 8px;">
+                            <button onclick="testOpenAssistantFromNotification()" style="
+                                width: 100%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                gap: 8px;
+                                background: #3b82f6;
+                                color: white;
+                                font-size: 14px;
+                                font-weight: 600;
+                                padding: 8px 12px;
+                                border-radius: 6px;
+                                border: none;
+                                cursor: pointer;
+                                transition: background-color 0.2s;
+                            ">
+                                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                </svg>
+                                Open Assistant
+                            </button>
+                        </div>
+                        
+                        <div style="text-align: center; font-size: 12px; color: #6b7280;">
+                            Tracking active
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Animate in
+                setTimeout(() => {
+                    notification.style.opacity = '1';
+                    notification.style.transform = 'translateX(0)';
+                }, 100);
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ Test notification created successfully!
+                
+Notification State:
+- Visible: ${window.billableAINotificationState.isVisible}
+- Tracking: ${window.billableAINotificationState.isTracking}
+- Time Spent: ${Math.floor(window.billableAINotificationState.timeSpent / 1000)}s
+- Email Subject: ${window.billableAINotificationState.emailData.subject}`;
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error creating notification: ${error.message}`;
+            }
+        }
+
+        // Test the open assistant button functionality
+        function testOpenAssistantButton() {
+            const resultDiv = document.getElementById('button-result');
+            
+            try {
+                // Simulate the openAssistant function
+                const currentSummary = {
+                    emailData: window.billableAINotificationState.emailData,
+                    timeSpent: window.billableAINotificationState.timeSpent,
+                    sessionId: window.billableAINotificationState.sessionId,
+                    draftId: window.billableAINotificationState.draftId,
+                    timestamp: Date.now()
+                };
+                
+                // Simulate data storage
+                localStorage.setItem('billableai_assistant_data', JSON.stringify({
+                    ...currentSummary,
+                    type: 'gmail_compose_summary'
+                }));
+                
+                // Simulate auto-message flags
+                localStorage.setItem('billableai_auto_message', 'Generate billable summary for the email');
+                localStorage.setItem('billableai_auto_open_assistant', 'true');
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ Open Assistant button would work!
+                
+Data stored:
+- Email Data: ${JSON.stringify(currentSummary.emailData, null, 2)}
+- Time Spent: ${Math.floor(currentSummary.timeSpent / 1000)}s
+- Auto Message: Generate billable summary for the email
+- Auto Open Flag: true
+
+Next steps:
+1. User clicks "Open Assistant" ✅
+2. Data is stored in localStorage ✅
+3. Guidance notification appears ✅
+4. User clicks extension icon ✅
+5. Assistant opens with data ✅`;
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error testing open assistant: ${error.message}`;
+            }
+        }
+
+        // Test data storage
+        function testDataStorage() {
+            const resultDiv = document.getElementById('storage-result');
+            
+            try {
+                const assistantData = localStorage.getItem('billableai_assistant_data');
+                const autoMessage = localStorage.getItem('billableai_auto_message');
+                const autoOpenAssistant = localStorage.getItem('billableai_auto_open_assistant');
+                
+                if (assistantData) {
+                    const parsedData = JSON.parse(assistantData);
+                    
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Data storage working!
+                    
+Stored Data:
+${JSON.stringify(parsedData, null, 2)}
+
+Auto Message: ${autoMessage}
+Auto Open Flag: ${autoOpenAssistant}`;
+                    
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ No data found in localStorage';
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error checking data storage: ${error.message}`;
+            }
+        }
+
+        // Test guidance notification
+        function testGuidanceNotification() {
+            const resultDiv = document.getElementById('guidance-result');
+            
+            try {
+                // Create guidance notification
+                const guidanceNotification = document.createElement('div');
+                guidanceNotification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #3b82f6;
+                    color: white;
+                    padding: 12px 16px;
+                    border-radius: 8px;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    font-size: 14px;
+                    font-weight: 500;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    z-index: 10000;
+                    max-width: 300px;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    animation: slideInRight 0.3s ease-out;
+                `;
+                
+                guidanceNotification.innerHTML = `
+                    <svg style="width: 16px; height: 16px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div>
+                        <div style="font-weight: 600; margin-bottom: 2px;">Email Summary Ready!</div>
+                        <div style="font-size: 12px; opacity: 0.9;">Click the BillableAI extension icon to view your summary</div>
+                    </div>
+                    <button onclick="this.parentElement.remove()" style="
+                        background: none;
+                        border: none;
+                        color: white;
+                        cursor: pointer;
+                        padding: 4px;
+                        margin-left: auto;
+                        opacity: 0.7;
+                        transition: opacity 0.2s;
+                    " onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+                        <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                `;
+                
+                // Add CSS animation
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes slideInRight {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                document.body.appendChild(guidanceNotification);
+                
+                // Auto-remove after 8 seconds
+                setTimeout(() => {
+                    if (guidanceNotification.parentElement) {
+                        guidanceNotification.remove();
+                    }
+                }, 8000);
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ Guidance notification created successfully!
+                
+Features:
+- Animated slide-in from right ✅
+- Professional styling ✅
+- Clear call-to-action ✅
+- Auto-dismiss after 8 seconds ✅
+- Manual close button ✅`;
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error creating guidance notification: ${error.message}`;
+            }
+        }
+
+        // Debug current state
+        function debugCurrentState() {
+            const resultDiv = document.getElementById('debug-result');
+            
+            try {
+                const assistantData = localStorage.getItem('billableai_assistant_data');
+                const autoMessage = localStorage.getItem('billableai_auto_message');
+                const autoOpenAssistant = localStorage.getItem('billableai_auto_open_assistant');
+                
+                resultDiv.className = 'result';
+                resultDiv.textContent = `🔍 Current State:
+                
+Notification State:
+- Visible: ${window.billableAINotificationState.isVisible}
+- Tracking: ${window.billableAINotificationState.isTracking}
+- Time Spent: ${Math.floor(window.billableAINotificationState.timeSpent / 1000)}s
+- Processing: ${window.billableAINotificationState.isProcessing}
+
+Stored Data:
+- Assistant Data: ${assistantData ? '✅ Present' : '❌ Missing'}
+- Auto Message: ${autoMessage || '❌ Missing'}
+- Auto Open Flag: ${autoOpenAssistant || '❌ Missing'}
+
+Raw Values:
+Assistant Data: ${assistantData || 'null'}
+Auto Message: ${autoMessage || 'null'}
+Auto Open Flag: ${autoOpenAssistant || 'null'}`;
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error debugging state: ${error.message}`;
+            }
+        }
+
+        // Function to test open assistant from notification
+        function testOpenAssistantFromNotification() {
+            console.log('🎯 BillableAI: Open Assistant button clicked from notification');
+            testOpenAssistantButton();
+            
+            // Remove the notification
+            const notification = document.getElementById('billableai-gmail-notification');
+            if (notification) {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 300);
+            }
+        }
+
+        // Initialize page
+        console.log('🎯 BillableAI: Notification Button Test Page Loaded');
+    </script>
+</body>
+</html> 

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI - Backend API Key Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f7fafc;
+            color: #2d3748;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        .test-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 5px;
+            transition: all 0.2s;
+        }
+        .test-button:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+        .test-button.success {
+            background: #38a169;
+        }
+        .test-button.success:hover {
+            background: #2f855a;
+        }
+        .test-button.danger {
+            background: #e53e3e;
+        }
+        .test-button.danger:hover {
+            background: #c53030;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .status.info {
+            background: #bee3f8;
+            color: #2b6cb0;
+            border: 1px solid #90cdf4;
+        }
+        .status.success {
+            background: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+        .status.error {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+        .result-box {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+            white-space: pre-wrap;
+        }
+        .step-list {
+            background: #f7fafc;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .step-list ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .step-list li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .step-list strong {
+            color: #2d3748;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 BillableAI</h1>
+            <p>Backend API Key Test</p>
+        </div>
+        <div class="content">
+            <div class="test-section">
+                <div class="test-title">🔍 Test Overview</div>
+                <div style="color: #4a5568; line-height: 1.6;">
+                    <p><strong>Purpose:</strong> Verify that the backend is serving the Gemini API key correctly.</p>
+                    <p><strong>Endpoint:</strong> <code>http://localhost:3001/api/config/config</code></p>
+                    <p><strong>Expected:</strong> Backend should return the Gemini API key from env.local</p>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">🧪 Test Controls</div>
+                <div style="margin: 20px 0;">
+                    <button class="test-button" onclick="testBackendConnection()">Test Backend Connection</button>
+                    <button class="test-button success" onclick="testConfigEndpoint()">Test Config Endpoint</button>
+                    <button class="test-button" onclick="testGeminiKey()">Test Gemini API Key</button>
+                    <button class="test-button danger" onclick="clearResults()">Clear Results</button>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">📊 Test Status</div>
+                <div id="status" class="status info">Ready to test backend API key configuration</div>
+                <div id="results" class="result-box" style="display: none;"></div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">📋 Test Steps</div>
+                <div class="step-list">
+                    <ol>
+                        <li><strong>Test Backend Connection:</strong> Verify backend server is running</li>
+                        <li><strong>Test Config Endpoint:</strong> Check if config endpoint is accessible</li>
+                        <li><strong>Test Gemini API Key:</strong> Verify API key is properly configured</li>
+                        <li><strong>Verify Extension Integration:</strong> Test from extension context</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">✅ Expected Results</div>
+                <div style="color: #4a5568; line-height: 1.6;">
+                    <p><strong>✅ Backend Running:</strong> Server should respond on port 3001</p>
+                    <p><strong>✅ Config Endpoint:</strong> Should return configuration including geminiApiKey</p>
+                    <p><strong>✅ API Key Valid:</strong> Should not be "your_gemini_api_key_here"</p>
+                    <p><strong>✅ Extension Access:</strong> Extension should be able to fetch the key</p>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">🐛 Common Issues</div>
+                <div style="color: #4a5568; line-height: 1.6;">
+                    <p><strong>❌ Backend not running:</strong> Start the backend server first</p>
+                    <p><strong>❌ CORS errors:</strong> Check backend CORS configuration</p>
+                    <p><strong>❌ API key not set:</strong> Update backend/env.local with real API key</p>
+                    <p><strong>❌ Network errors:</strong> Ensure extension can reach localhost:3001</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        function addResult(message) {
+            testResults.push(`[${new Date().toLocaleTimeString()}] ${message}`);
+            const results = document.getElementById('results');
+            results.textContent = testResults.join('\n');
+            results.style.display = 'block';
+        }
+
+        async function testBackendConnection() {
+            updateStatus('Testing backend connection...', 'info');
+            addResult('Testing backend connection...');
+            
+            try {
+                const response = await fetch('http://localhost:3001/health');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult('✅ Backend server is running');
+                    addResult(`Status: ${data.status}`);
+                    addResult(`Database: ${data.database}`);
+                    updateStatus('Backend connection successful', 'success');
+                } else {
+                    addResult(`❌ Backend server error: ${response.status}`);
+                    updateStatus('Backend connection failed', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Backend connection failed: ${error.message}`);
+                updateStatus('Backend connection failed', 'error');
+            }
+        }
+
+        async function testConfigEndpoint() {
+            updateStatus('Testing config endpoint...', 'info');
+            addResult('Testing config endpoint...');
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/config/config');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult('✅ Config endpoint is accessible');
+                    addResult(`Google Client ID: ${data.googleClientId ? 'Set' : 'Not set'}`);
+                    addResult(`Clio Client ID: ${data.clioClientId ? 'Set' : 'Not set'}`);
+                    addResult(`Gemini API Key: ${data.geminiApiKey ? 'Set' : 'Not set'}`);
+                    addResult(`Port: ${data.port}`);
+                    addResult(`Node Env: ${data.nodeEnv}`);
+                    updateStatus('Config endpoint test successful', 'success');
+                } else {
+                    addResult(`❌ Config endpoint error: ${response.status}`);
+                    updateStatus('Config endpoint test failed', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Config endpoint failed: ${error.message}`);
+                updateStatus('Config endpoint test failed', 'error');
+            }
+        }
+
+        async function testGeminiKey() {
+            updateStatus('Testing Gemini API key...', 'info');
+            addResult('Testing Gemini API key...');
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/config/config');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.geminiApiKey && data.geminiApiKey !== 'your_gemini_api_key_here') {
+                        addResult('✅ Gemini API key is properly configured');
+                        addResult(`Key starts with: ${data.geminiApiKey.substring(0, 10)}...`);
+                        updateStatus('Gemini API key test successful', 'success');
+                    } else {
+                        addResult('❌ Gemini API key not configured properly');
+                        addResult('Please update backend/env.local with your real API key');
+                        updateStatus('Gemini API key not configured', 'error');
+                    }
+                } else {
+                    addResult(`❌ Failed to fetch config: ${response.status}`);
+                    updateStatus('Gemini API key test failed', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Gemini API key test failed: ${error.message}`);
+                updateStatus('Gemini API key test failed', 'error');
+            }
+        }
+
+        function clearResults() {
+            testResults = [];
+            const results = document.getElementById('results');
+            results.style.display = 'none';
+            updateStatus('Results cleared', 'info');
+        }
+
+        // Initialize test tools
+        window.billableAITest = {
+            testBackendConnection,
+            testConfigEndpoint,
+            testGeminiKey,
+            clearResults
+        };
+
+        updateStatus('Backend API key test tool ready. Use buttons above to test.', 'info');
+    </script>
+</body>
+</html> 

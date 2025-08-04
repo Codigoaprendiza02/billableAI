@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Gemini All Responses</title>
+</head>
+<body>
+    <h1>Test Gemini All Responses</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        import GeminiService from './src/services/geminiService.js';
+
+        async function testGeminiAllResponses() {
+            const resultsDiv = document.getElementById('results');
+            let debugLog = [];
+            
+            function log(message) {
+                console.log(message);
+                debugLog.push(message);
+            }
+            
+            try {
+                log('🔧 Testing Gemini for all responses...');
+                
+                // Test 1: Initialize GeminiService
+                log('📋 Step 1: Initializing GeminiService...');
+                const gemini = new GeminiService();
+                await gemini.initialize();
+                log('✅ GeminiService initialized');
+                
+                // Test 2: Test different types of responses
+                log('📋 Step 2: Testing different response types...');
+                
+                const testEmailData = {
+                    subject: 'Test Email Subject',
+                    to: 'test@example.com',
+                    body: 'This is a test email for comprehensive testing of Gemini responses.'
+                };
+                const testTimeSpent = 300000; // 5 minutes
+                
+                // Test general response
+                log('📋 Testing general response...');
+                const generalResponse = await gemini.generateGeneralResponse(
+                    'Can you help me analyze this email?', 
+                    testEmailData, 
+                    testTimeSpent
+                );
+                log(`✅ General response generated: ${generalResponse?.length || 0} characters`);
+                
+                // Test billable summary
+                log('📋 Testing billable summary...');
+                const summaryResponse = await gemini.generateBillableSummary(testEmailData, testTimeSpent);
+                log(`✅ Billable summary generated: ${summaryResponse?.length || 0} characters`);
+                
+                // Test email analysis
+                log('📋 Testing email analysis...');
+                const analysisResponse = await gemini.generateEmailAnalysis(testEmailData);
+                log(`✅ Email analysis generated: ${analysisResponse?.length || 0} characters`);
+                
+                // Test client billing
+                log('📋 Testing client billing...');
+                const billingResponse = await gemini.generateClientBillingSummary(testEmailData, testTimeSpent);
+                log(`✅ Client billing generated: ${billingResponse?.length || 0} characters`);
+                
+                // Test 3: Verify time data is included
+                log('📋 Step 3: Verifying time data inclusion...');
+                
+                const timeCheckResponse = await gemini.generateGeneralResponse(
+                    'How much time was spent on this email?', 
+                    testEmailData, 
+                    testTimeSpent
+                );
+                
+                const hasTimeInfo = timeCheckResponse.includes('5') || 
+                                  timeCheckResponse.includes('minutes') || 
+                                  timeCheckResponse.includes('time');
+                
+                log(`✅ Time data included: ${hasTimeInfo ? 'Yes' : 'No'}`);
+                
+                // Display results
+                resultsDiv.innerHTML = `
+                    <h2>Test Results:</h2>
+                    <pre>${debugLog.join('\n')}</pre>
+                    
+                    <h3>Sample Responses:</h3>
+                    <h4>General Response:</h4>
+                    <pre>${generalResponse?.substring(0, 200)}...</pre>
+                    
+                    <h4>Billable Summary:</h4>
+                    <pre>${summaryResponse?.substring(0, 200)}...</pre>
+                    
+                    <h4>Email Analysis:</h4>
+                    <pre>${analysisResponse?.substring(0, 200)}...</pre>
+                    
+                    <h4>Client Billing:</h4>
+                    <pre>${billingResponse?.substring(0, 200)}...</pre>
+                    
+                    <h4>Time Check Response:</h4>
+                    <pre>${timeCheckResponse?.substring(0, 200)}...</pre>
+                `;
+                
+            } catch (error) {
+                log(`❌ Test failed: ${error.message}`);
+                resultsDiv.innerHTML = `
+                    <h2>Test Failed:</h2>
+                    <pre>${debugLog.join('\n')}</pre>
+                    <h3>Error:</h3>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+
+        testGeminiAllResponses();
+    </script>
+</body>
+</html> 

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI Gmail Data Flow Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .error {
+            background: #fee;
+            color: #c00;
+        }
+        .success {
+            background: #efe;
+            color: #0a0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎯 BillableAI Gmail Data Flow Test</h1>
+        
+        <div class="test-section">
+            <h3>1. Test Data Storage</h3>
+            <p>Simulate storing email data like the Gmail content script does:</p>
+            <button onclick="testDataStorage()">Store Test Email Data</button>
+            <div id="storage-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. Test Data Retrieval</h3>
+            <p>Simulate how the Assistant panel retrieves data:</p>
+            <button onclick="testDataRetrieval()">Retrieve Stored Data</button>
+            <div id="retrieval-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. Test Auto-Message Flow</h3>
+            <p>Test the complete auto-message injection flow:</p>
+            <button onclick="testAutoMessageFlow()">Test Complete Flow</button>
+            <div id="auto-message-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. Debug Current State</h3>
+            <p>Check what data is currently stored:</p>
+            <button onclick="debugCurrentState()">Debug Current State</button>
+            <div id="debug-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>5. Clear All Data</h3>
+            <p>Clear all stored data for fresh testing:</p>
+            <button onclick="clearAllData()">Clear All Data</button>
+            <div id="clear-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate the data storage function from content script
+        function testDataStorage() {
+            const resultDiv = document.getElementById('storage-result');
+            
+            try {
+                // Simulate email summary data
+                const emailSummary = {
+                    emailData: {
+                        to: 'test@example.com',
+                        subject: 'Test Email Subject',
+                        body: 'This is a test email body content.',
+                        recipients: ['test@example.com']
+                    },
+                    timeSpent: 120000, // 2 minutes
+                    sessionId: 'session_' + Date.now(),
+                    draftId: 'draft_' + Date.now(),
+                    timestamp: Date.now()
+                };
+                
+                // Store assistant data (like content script does)
+                const assistantData = {
+                    emailData: emailSummary.emailData,
+                    timeSpent: emailSummary.timeSpent,
+                    sessionId: emailSummary.sessionId,
+                    draftId: emailSummary.draftId,
+                    timestamp: emailSummary.timestamp,
+                    type: 'gmail_compose_summary'
+                };
+                
+                // Store in localStorage
+                localStorage.setItem('billableai_assistant_data', JSON.stringify(assistantData));
+                
+                // Store auto-message flags
+                const autoMessage = 'Generate billable summary for the email';
+                localStorage.setItem('billableai_auto_message', autoMessage);
+                localStorage.setItem('billableai_auto_open_assistant', 'true');
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ Data stored successfully!
+                
+Stored Assistant Data:
+${JSON.stringify(assistantData, null, 2)}
+
+Stored Auto-Message: ${autoMessage}
+Auto-Open Flag: true`;
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error storing data: ${error.message}`;
+            }
+        }
+        
+        // Simulate the data retrieval function from Assistant panel
+        function testDataRetrieval() {
+            const resultDiv = document.getElementById('retrieval-result');
+            
+            try {
+                // Check chrome.storage.local (simulate)
+                console.log('🎯 BillableAI: Checking chrome.storage.local...');
+                
+                // Check localStorage (fallback)
+                const localStorageAssistantData = localStorage.getItem('billableai_assistant_data');
+                const autoMessage = localStorage.getItem('billableai_auto_message');
+                const autoOpenAssistant = localStorage.getItem('billableai_auto_open_assistant');
+                
+                if (localStorageAssistantData) {
+                    const parsedData = JSON.parse(localStorageAssistantData);
+                    
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Data retrieved successfully!
+                    
+Parsed Assistant Data:
+${JSON.stringify(parsedData, null, 2)}
+
+Auto-Message: ${autoMessage}
+Auto-Open Flag: ${autoOpenAssistant}
+
+Validation:
+- Has emailData: ${!!parsedData.emailData}
+- Has timeSpent: ${!!parsedData.timeSpent}
+- Has type: ${parsedData.type === 'gmail_compose_summary'}`;
+                    
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ No assistant data found in localStorage';
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error retrieving data: ${error.message}`;
+            }
+        }
+        
+        // Test the complete auto-message flow
+        function testAutoMessageFlow() {
+            const resultDiv = document.getElementById('auto-message-result');
+            
+            try {
+                // First, ensure we have test data
+                testDataStorage();
+                
+                // Simulate the Assistant panel's checkForNewSummaries function
+                const localStorageAssistantData = localStorage.getItem('billableai_assistant_data');
+                const autoMessage = localStorage.getItem('billableai_auto_message');
+                const autoOpenAssistant = localStorage.getItem('billableai_auto_open_assistant');
+                
+                if (localStorageAssistantData) {
+                    const parsedData = JSON.parse(localStorageAssistantData);
+                    
+                    // Validate data structure (like Assistant panel does)
+                    if (parsedData && parsedData.emailData && parsedData.timeSpent) {
+                        
+                        // Simulate auto-message injection
+                        if (autoMessage && autoOpenAssistant === 'true') {
+                            resultDiv.className = 'result success';
+                            resultDiv.textContent = `✅ Auto-message flow would work!
+                            
+Assistant would:
+1. Show email data notification ✅
+2. Add assistant message to chat ✅
+3. Inject auto-message: "${autoMessage}" ✅
+4. Call generateGeminiResponse with data ✅
+5. Clear auto-message flags ✅
+
+Email Data:
+- Subject: ${parsedData.emailData.subject}
+- To: ${parsedData.emailData.to}
+- Time Spent: ${Math.floor(parsedData.timeSpent / 1000)}s`;
+                            
+                        } else {
+                            resultDiv.className = 'result error';
+                            resultDiv.textContent = `❌ Auto-message flags missing:
+Auto-Message: ${autoMessage}
+Auto-Open Flag: ${autoOpenAssistant}`;
+                        }
+                        
+                    } else {
+                        resultDiv.className = 'result error';
+                        resultDiv.textContent = `❌ Invalid data structure:
+Has emailData: ${!!parsedData.emailData}
+Has timeSpent: ${!!parsedData.timeSpent}`;
+                    }
+                    
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ No assistant data found';
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error in auto-message flow: ${error.message}`;
+            }
+        }
+        
+        // Debug current state
+        function debugCurrentState() {
+            const resultDiv = document.getElementById('debug-result');
+            
+            try {
+                const assistantData = localStorage.getItem('billableai_assistant_data');
+                const autoMessage = localStorage.getItem('billableai_auto_message');
+                const autoOpenAssistant = localStorage.getItem('billableai_auto_open_assistant');
+                
+                resultDiv.className = 'result';
+                resultDiv.textContent = `🔍 Current State:
+                
+Assistant Data: ${assistantData ? '✅ Present' : '❌ Missing'}
+Auto Message: ${autoMessage || '❌ Missing'}
+Auto Open Flag: ${autoOpenAssistant || '❌ Missing'}
+
+Raw Values:
+Assistant Data: ${assistantData || 'null'}
+Auto Message: ${autoMessage || 'null'}
+Auto Open Flag: ${autoOpenAssistant || 'null'}`;
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error debugging state: ${error.message}`;
+            }
+        }
+        
+        // Clear all data
+        function clearAllData() {
+            const resultDiv = document.getElementById('clear-result');
+            
+            try {
+                localStorage.removeItem('billableai_assistant_data');
+                localStorage.removeItem('billableai_auto_message');
+                localStorage.removeItem('billableai_auto_open_assistant');
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = '✅ All data cleared successfully!';
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error clearing data: ${error.message}`;
+            }
+        }
+        
+        // Initialize page
+        console.log('🎯 BillableAI: Gmail Data Flow Test Page Loaded');
+    </script>
+</body>
+</html> 

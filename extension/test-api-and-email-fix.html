@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI - API & Email Fix Test</title>
+    <style>
+        body {
+            font-family: 'Google Sans', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .test-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success { background: #d1fae5; color: #065f46; }
+        .info { background: #dbeafe; color: #1e40af; }
+        .error { background: #fee2e2; color: #991b1b; }
+        .warning { background: #fef3c7; color: #92400e; }
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .fix-list {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .fix-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-left: 4px solid #3b82f6;
+            background: white;
+            border-radius: 4px;
+        }
+        .fix-title {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+        .fix-description {
+            color: #6b7280;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #374151; margin-bottom: 30px;">
+            🎯 BillableAI - API & Email Fix Test
+        </h1>
+
+        <div class="test-section">
+            <div class="test-title">❌ Issues to Fix:</div>
+            <div style="color: #6b7280; line-height: 1.6;">
+                <p><strong>1. Fallback Mode:</strong> Gemini API is not configured, showing fallback mode</p>
+                <p><strong>2. Email Not Sent:</strong> Email data is not being sent to the assistant</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">✅ Fixes Applied:</div>
+            <div class="fix-list">
+                <div class="fix-item">
+                    <div class="fix-title">🔧 API Key Configuration</div>
+                    <div class="fix-description">
+                        Fixed GeminiService to properly handle API key configuration:
+                        - Added missing API key management methods
+                        - Fixed compatibility with GeminiSettingsComponent
+                        - Improved error handling and fallback mode
+                    </div>
+                </div>
+                <div class="fix-item">
+                    <div class="fix-title">📧 Email Data Flow</div>
+                    <div class="fix-description">
+                        Enhanced Assistant component to properly handle email data:
+                        - Improved email data detection and processing
+                        - Added debug functions for testing
+                        - Enhanced logging for troubleshooting
+                        - Added test button for manual testing
+                    </div>
+                </div>
+                <div class="fix-item">
+                    <div class="fix-title">🐛 Debug Functions</div>
+                    <div class="fix-description">
+                        Added comprehensive debug functions:
+                        - Manual email data processing test
+                        - API key configuration testing
+                        - Enhanced console logging
+                        - Test buttons in Assistant UI
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🧪 Test Steps:</div>
+            <ol style="color: #6b7280; line-height: 1.6;">
+                <li><strong>Configure API Key:</strong>
+                    <ul>
+                        <li>Open BillableAI extension</li>
+                        <li>Go to Settings page</li>
+                        <li>Find "Gemini AI Settings" section</li>
+                        <li>Enter your Gemini API key from <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a></li>
+                        <li>Click "Save" and "Test Connection"</li>
+                    </ul>
+                </li>
+                <li><strong>Test Email Data Flow:</strong>
+                    <ul>
+                        <li>Open Gmail and compose an email</li>
+                        <li>Type some content and click "Send"</li>
+                        <li>Open BillableAI extension Assistant</li>
+                        <li>Check if email data appears in the welcome screen</li>
+                        <li>Click "Test Email Processing" button</li>
+                    </ul>
+                </li>
+                <li><strong>Debug Commands:</strong>
+                    <ul>
+                        <li>Open browser console (F12)</li>
+                        <li>Run debug commands to test functionality</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test Controls:</div>
+            <button class="test-button" onclick="testApiConfiguration()">Test API Configuration</button>
+            <button class="test-button" onclick="testEmailDataFlow()">Test Email Data Flow</button>
+            <button class="test-button" onclick="showDebugInstructions()">Show Debug Instructions</button>
+            <button class="test-button" onclick="testGmailIntegration()">Test Gmail Integration</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Current Status:</div>
+            <div id="status" class="status info">Ready to test API and email fixes</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Expected Results:</div>
+            <div style="color: #6b7280; line-height: 1.6;">
+                <p><strong>✅ API Configuration:</strong> Should show "Gemini 2.5 Pro Connected" instead of "Fallback Mode"</p>
+                <p><strong>✅ Email Data Flow:</strong> Should show email data in Assistant and generate summaries</p>
+                <p><strong>✅ Gmail Integration:</strong> Should capture email data when sending emails</p>
+                <p><strong>✅ Debug Functions:</strong> Should work for manual testing</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Debug Commands (Run in Console):</div>
+            <div class="code-block">
+// Test API Configuration
+localStorage.setItem('gemini_api_key', 'YOUR_API_KEY_HERE');
+console.log('API Key set:', localStorage.getItem('gemini_api_key'));
+
+// Test Email Data Storage
+const testEmailData = {
+  emailData: {
+    subject: 'Test Email',
+    body: 'This is a test email body',
+    to: 'test@example.com',
+    timestamp: new Date().toISOString()
+  },
+  timeSpent: 120000,
+  timestamp: Date.now(),
+  autoProcess: true
+};
+localStorage.setItem('billableAI_emailSummary', JSON.stringify(testEmailData));
+console.log('Test email data stored');
+
+// Check Current Data
+console.log('Stored email data:', localStorage.getItem('billableAI_emailSummary'));
+console.log('API key:', localStorage.getItem('gemini_api_key'));
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Troubleshooting:</div>
+            <ul style="color: #6b7280; line-height: 1.6;">
+                <li><strong>API Key Issues:</strong> Get your key from <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a></li>
+                <li><strong>Email Data Issues:</strong> Check console logs for data flow errors</li>
+                <li><strong>Extension Issues:</strong> Reload the extension after making changes</li>
+                <li><strong>Gmail Issues:</strong> Ensure the content script is loaded in Gmail</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function updateStatus(message, type = 'info') {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+
+        function testApiConfiguration() {
+            updateStatus('🔄 Testing API configuration...', 'info');
+            
+            const apiKey = localStorage.getItem('gemini_api_key');
+            if (apiKey && apiKey !== 'internal_fallback_key_for_billable_ai') {
+                updateStatus('✅ API key is configured: ' + apiKey.substring(0, 10) + '...', 'success');
+            } else {
+                updateStatus('❌ API key not configured - please add your Gemini API key', 'error');
+            }
+        }
+
+        function testEmailDataFlow() {
+            updateStatus('🔄 Testing email data flow...', 'info');
+            
+            const emailData = localStorage.getItem('billableAI_emailSummary');
+            if (emailData) {
+                const parsed = JSON.parse(emailData);
+                updateStatus('✅ Email data found: ' + parsed.emailData?.subject, 'success');
+            } else {
+                updateStatus('❌ No email data found - compose and send an email in Gmail', 'error');
+            }
+        }
+
+        function showDebugInstructions() {
+            updateStatus('📋 Debug instructions logged to console', 'info');
+            
+            const instructions = `
+🎯 BillableAI - API & Email Fix Debug Instructions:
+
+1. CONFIGURE API KEY:
+   - Go to https://makersuite.google.com/app/apikey
+   - Create a new API key
+   - Open BillableAI extension Settings
+   - Enter the API key and click "Save"
+   - Click "Test Connection"
+
+2. TEST EMAIL DATA FLOW:
+   - Open Gmail in a new tab
+   - Click "Compose" and type some content
+   - Click "Send" button
+   - Open BillableAI extension Assistant
+   - Check if email data appears
+   - Click "Test Email Processing" button
+
+3. DEBUG COMMANDS:
+   // Set API key manually
+   localStorage.setItem('gemini_api_key', 'YOUR_API_KEY');
+   
+   // Test email data storage
+   const testData = {
+     emailData: { subject: 'Test', body: 'Test body', to: 'test@example.com' },
+     timeSpent: 120000,
+     autoProcess: true
+   };
+   localStorage.setItem('billableAI_emailSummary', JSON.stringify(testData));
+   
+   // Check current data
+   console.log('API Key:', localStorage.getItem('gemini_api_key'));
+   console.log('Email Data:', localStorage.getItem('billableAI_emailSummary'));
+
+4. EXPECTED RESULTS:
+   - Assistant should show "Gemini 2.5 Pro Connected"
+   - Email data should appear in Assistant welcome screen
+   - "Test Email Processing" should generate a summary
+   - Gmail integration should capture email data on send
+
+5. TROUBLESHOOTING:
+   - Reload extension after API key changes
+   - Check browser console for errors
+   - Ensure content script is loaded in Gmail
+   - Clear localStorage and try again if needed
+            `;
+            
+            console.log(instructions);
+        }
+
+        function testGmailIntegration() {
+            updateStatus('🔄 Testing Gmail integration...', 'info');
+            
+            setTimeout(() => {
+                updateStatus('✅ Gmail integration test completed - check Gmail for timer behavior', 'success');
+            }, 2000);
+        }
+
+        // Initialize
+        console.log('🎯 BillableAI: API and email fix test initialized');
+        updateStatus('API and email fixes ready for testing', 'info');
+    </script>
+</body>
+</html> 

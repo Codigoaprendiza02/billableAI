@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Auth Debug</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 10px; 
+            background: #f5f5f5;
+            color: #333;
+        }
+        .debug-section { 
+            margin: 10px 0; 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            background: white;
+        }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        button { 
+            margin: 5px; 
+            padding: 8px 12px; 
+            cursor: pointer; 
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+        button:hover { background: #0056b3; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 8px; 
+            border-radius: 3px; 
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .status { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>🔍 Extension Authentication Debug</h2>
+    
+    <div class="debug-section">
+        <h3>1. Current Auth State</h3>
+        <button onclick="checkCurrentAuth()">Check Current Auth</button>
+        <div id="current-auth-results"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>2. Storage Test</h3>
+        <button onclick="testStorage()">Test Storage</button>
+        <div id="storage-results"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>3. Extension Context</h3>
+        <button onclick="testExtensionContext()">Test Extension Context</button>
+        <div id="extension-results"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>4. Auth Flow Test</h3>
+        <button onclick="testAuthFlow()">Test Auth Flow</button>
+        <div id="auth-flow-results"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            console.log(`[${timestamp}] ${message}`);
+            return `[${timestamp}] ${message}`;
+        }
+
+        function displayResults(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            element.innerHTML = `<div class="${className}">${content}</div>`;
+        }
+
+        function checkCurrentAuth() {
+            let results = [];
+            
+            try {
+                // Check localStorage
+                const authToken = localStorage.getItem('authToken');
+                const user = localStorage.getItem('user');
+                
+                results.push(`<span class="status">localStorage Status:</span>`);
+                results.push(`- authToken: ${authToken ? 'EXISTS' : 'NOT FOUND'}`);
+                results.push(`- user: ${user ? 'EXISTS' : 'NOT FOUND'}`);
+                
+                if (user) {
+                    try {
+                        const userData = JSON.parse(user);
+                        results.push(`- user data: ${JSON.stringify(userData, null, 2)}`);
+                    } catch (e) {
+                        results.push(`- user parse error: ${e.message}`);
+                    }
+                }
+
+                // Check if we're in extension context
+                if (typeof chrome !== 'undefined') {
+                    results.push(`<span class="status">Extension Context:</span>`);
+                    results.push(`- Chrome object: AVAILABLE`);
+                    
+                    if (chrome.runtime) {
+                        results.push(`- Chrome runtime: AVAILABLE`);
+                        if (chrome.runtime.id) {
+                            results.push(`- Extension ID: ${chrome.runtime.id}`);
+                        }
+                    } else {
+                        results.push(`- Chrome runtime: NOT AVAILABLE`);
+                    }
+                    
+                    if (chrome.storage) {
+                        results.push(`- Chrome storage: AVAILABLE`);
+                    } else {
+                        results.push(`- Chrome storage: NOT AVAILABLE`);
+                    }
+                } else {
+                    results.push(`<span class="status">Extension Context:</span>`);
+                    results.push(`- Chrome object: NOT AVAILABLE`);
+                }
+
+            } catch (error) {
+                results.push(`Error: ${error.message}`);
+            }
+
+            displayResults('current-auth-results', results.join('<br>'));
+        }
+
+        async function testStorage() {
+            let results = [];
+            
+            try {
+                // Test localStorage
+                const testKey = 'test_storage_' + Date.now();
+                localStorage.setItem(testKey, 'test_value');
+                const retrieved = localStorage.getItem(testKey);
+                localStorage.removeItem(testKey);
+                
+                if (retrieved === 'test_value') {
+                    results.push('✅ localStorage: WORKING');
+                } else {
+                    results.push('❌ localStorage: NOT WORKING');
+                }
+
+                // Test Chrome storage if available
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    try {
+                        const testChromeKey = 'test_chrome_' + Date.now();
+                        await chrome.storage.local.set({ [testChromeKey]: 'test_value' });
+                        const result = await chrome.storage.local.get([testChromeKey]);
+                        await chrome.storage.local.remove([testChromeKey]);
+                        
+                        if (result[testChromeKey] === 'test_value') {
+                            results.push('✅ Chrome storage: WORKING');
+                        } else {
+                            results.push('❌ Chrome storage: NOT WORKING');
+                        }
+                    } catch (e) {
+                        results.push(`❌ Chrome storage error: ${e.message}`);
+                    }
+                } else {
+                    results.push('❌ Chrome storage: NOT AVAILABLE');
+                }
+
+            } catch (error) {
+                results.push(`Error: ${error.message}`);
+            }
+
+            displayResults('storage-results', results.join('<br>'));
+        }
+
+        async function testExtensionContext() {
+            let results = [];
+            
+            try {
+                // Check extension context
+                if (typeof chrome !== 'undefined') {
+                    results.push('✅ Chrome object exists');
+                    
+                    if (chrome.runtime) {
+                        results.push('✅ Chrome runtime exists');
+                        
+                        if (chrome.runtime.id) {
+                            results.push(`✅ Extension ID: ${chrome.runtime.id}`);
+                        } else {
+                            results.push('❌ Extension ID not available');
+                        }
+                    } else {
+                        results.push('❌ Chrome runtime not available');
+                    }
+                    
+                    if (chrome.storage) {
+                        results.push('✅ Chrome storage exists');
+                        
+                        if (chrome.storage.local) {
+                            results.push('✅ Chrome storage.local exists');
+                        } else {
+                            results.push('❌ Chrome storage.local not available');
+                        }
+                    } else {
+                        results.push('❌ Chrome storage not available');
+                    }
+                } else {
+                    results.push('❌ Chrome object not available');
+                }
+
+                // Check if we're in popup context
+                if (window.location.protocol === 'chrome-extension:') {
+                    results.push('✅ Running in extension context');
+                } else {
+                    results.push('❌ Not running in extension context');
+                }
+
+            } catch (error) {
+                results.push(`Error: ${error.message}`);
+            }
+
+            displayResults('extension-results', results.join('<br>'));
+        }
+
+        async function testAuthFlow() {
+            let results = [];
+            
+            try {
+                // Simulate login
+                const testToken = 'test_token_' + Date.now();
+                const testUser = {
+                    id: 'test_user_123',
+                    username: 'testuser',
+                    email: 'test@example.com',
+                    name: 'Test User',
+                    profession: 'Lawyer'
+                };
+
+                // Store auth data
+                localStorage.setItem('authToken', testToken);
+                localStorage.setItem('user', JSON.stringify(testUser));
+                results.push('✅ Stored auth data in localStorage');
+
+                // Verify storage
+                const storedToken = localStorage.getItem('authToken');
+                const storedUser = localStorage.getItem('user');
+                
+                if (storedToken === testToken && storedUser) {
+                    results.push('✅ Auth data verified in localStorage');
+                } else {
+                    results.push('❌ Auth data verification failed');
+                }
+
+                // Test Chrome storage if available
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    try {
+                        await chrome.storage.local.set({
+                            'billableai_auth_token': testToken,
+                            'billableai_user_data': JSON.stringify(testUser)
+                        });
+                        results.push('✅ Stored auth data in Chrome storage');
+
+                        const result = await chrome.storage.local.get(['billableai_auth_token', 'billableai_user_data']);
+                        if (result.billableai_auth_token === testToken) {
+                            results.push('✅ Auth data verified in Chrome storage');
+                        } else {
+                            results.push('❌ Auth data verification failed in Chrome storage');
+                        }
+                    } catch (e) {
+                        results.push(`❌ Chrome storage error: ${e.message}`);
+                    }
+                }
+
+                // Clean up
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    await chrome.storage.local.remove(['billableai_auth_token', 'billableai_user_data']);
+                }
+                results.push('✅ Cleanup completed');
+
+            } catch (error) {
+                results.push(`Error: ${error.message}`);
+            }
+
+            displayResults('auth-flow-results', results.join('<br>'));
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            log('Debug page loaded, running initial tests...');
+            setTimeout(() => {
+                checkCurrentAuth();
+                testStorage();
+                testExtensionContext();
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

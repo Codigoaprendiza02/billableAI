@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Extension Diagnostic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .test-section {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .test-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Comprehensive Extension Diagnostic</h1>
+    
+    <div class="container">
+        <h2>📋 Test Summary</h2>
+        <div id="summary" class="status info">Running diagnostics...</div>
+        <button onclick="runAllTests()">Run All Tests</button>
+    </div>
+
+    <div class="container">
+        <h2>🔍 Extension Loading Tests</h2>
+        
+        <div class="test-section">
+            <div class="test-title">1. Chrome Runtime Availability</div>
+            <div id="chrome-runtime-test" class="status info">Not tested</div>
+            <button onclick="testChromeRuntime()">Test Chrome Runtime</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">2. Extension Manifest</div>
+            <div id="manifest-test" class="status info">Not tested</div>
+            <button onclick="testManifest()">Test Manifest</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">3. Content Script Injection</div>
+            <div id="content-script-test" class="status info">Not tested</div>
+            <button onclick="testContentScript()">Test Content Script</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">4. Background Script Communication</div>
+            <div id="background-test" class="status info">Not tested</div>
+            <button onclick="testBackgroundScript()">Test Background Script</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">5. Service Worker Status</div>
+            <div id="service-worker-test" class="status info">Not tested</div>
+            <button onclick="testServiceWorker()">Test Service Worker</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🛠️ Manual Tests</h2>
+        
+        <div class="test-section">
+            <div class="test-title">Manual Extension Check</div>
+            <p>1. Go to <code>chrome://extensions/</code></p>
+            <p>2. Look for "BillableAI" in the list</p>
+            <p>3. Check if it shows "Enabled" (not "Inactive")</p>
+            <p>4. Click "service worker" link to open console</p>
+            <p>5. Look for these messages in the console:</p>
+            <div class="log">
+🎯 BillableAI: Background script loaded
+🎯 BillableAI: Extension installed/updated
+🎯 BillableAI: Service worker activated
+🎯 BillableAI: Service worker installed
+🎯 BillableAI: Message received: {type: "CONTENT_SCRIPT_LOADED"}
+🎯 BillableAI: Content script loaded on Gmail page
+🎯 BillableAI: Keep-alive ping received
+🎯 BillableAI: Service worker keep-alive ping
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📝 Diagnostic Log</h2>
+        <div class="log" id="log"></div>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <script>
+        let logMessages = [];
+        let testResults = {
+            chromeRuntime: false,
+            manifest: false,
+            contentScript: false,
+            backgroundScript: false,
+            serviceWorker: false
+        };
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logMessages.push(logEntry);
+            
+            const logElement = document.getElementById('log');
+            logElement.textContent = logMessages.join('\n');
+            logElement.scrollTop = logElement.scrollHeight;
+            
+            console.log(`🎯 Diagnostic: ${message}`);
+        }
+
+        function clearLog() {
+            logMessages = [];
+            document.getElementById('log').textContent = '';
+        }
+
+        function updateStatus(elementId, message, className) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${className}`;
+        }
+
+        function updateSummary() {
+            const passed = Object.values(testResults).filter(Boolean).length;
+            const total = Object.keys(testResults).length;
+            const percentage = Math.round((passed / total) * 100);
+            
+            let summary = `Tests passed: ${passed}/${total} (${percentage}%)`;
+            let className = 'info';
+            
+            if (percentage === 100) {
+                summary += ' - ✅ All tests passed!';
+                className = 'success';
+            } else if (percentage >= 50) {
+                summary += ' - ⚠️ Some tests failed';
+                className = 'warning';
+            } else {
+                summary += ' - ❌ Most tests failed';
+                className = 'error';
+            }
+            
+            updateStatus('summary', summary, className);
+        }
+
+        function testChromeRuntime() {
+            log('🔍 Testing Chrome Runtime availability...');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                log('✅ chrome.runtime is available');
+                testResults.chromeRuntime = true;
+                updateStatus('chrome-runtime-test', '✅ Chrome Runtime Available', 'success');
+            } else {
+                log('❌ chrome.runtime is NOT available');
+                testResults.chromeRuntime = false;
+                updateStatus('chrome-runtime-test', '❌ Chrome Runtime Not Available', 'error');
+            }
+            
+            updateSummary();
+        }
+
+        function testManifest() {
+            log('📋 Testing Extension Manifest...');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                try {
+                    chrome.runtime.getManifest((manifest) => {
+                        log(`✅ Manifest loaded: ${manifest.name} v${manifest.version}`);
+                        log(`📋 Extension ID: ${chrome.runtime.id}`);
+                        testResults.manifest = true;
+                        updateStatus('manifest-test', `✅ Manifest: ${manifest.name} v${manifest.version}`, 'success');
+                        updateSummary();
+                    });
+                } catch (error) {
+                    log(`❌ Manifest error: ${error.message}`);
+                    testResults.manifest = false;
+                    updateStatus('manifest-test', '❌ Manifest Error', 'error');
+                    updateSummary();
+                }
+            } else {
+                log('❌ Cannot test manifest - chrome.runtime not available');
+                testResults.manifest = false;
+                updateStatus('manifest-test', '❌ Cannot Test - No Chrome Runtime', 'error');
+                updateSummary();
+            }
+        }
+
+        function testContentScript() {
+            log('📜 Testing Content Script injection...');
+            
+            if (window.billableAI) {
+                log('✅ window.billableAI object found');
+                log(`📋 Available functions: ${Object.keys(window.billableAI).join(', ')}`);
+                testResults.contentScript = true;
+                updateStatus('content-script-test', '✅ Content Script Injected', 'success');
+            } else {
+                log('❌ window.billableAI object not found');
+                testResults.contentScript = false;
+                updateStatus('content-script-test', '❌ Content Script Not Injected', 'error');
+            }
+            
+            updateSummary();
+        }
+
+        function testBackgroundScript() {
+            log('🔄 Testing Background Script communication...');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                try {
+                    chrome.runtime.sendMessage({ type: 'TEST_COMMUNICATION', data: 'Diagnostic test' }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            log(`❌ Background script error: ${chrome.runtime.lastError.message}`);
+                            testResults.backgroundScript = false;
+                            updateStatus('background-test', '❌ Background Script Not Responding', 'error');
+                        } else if (response && response.success) {
+                            log('✅ Background script responding');
+                            log(`📨 Response: ${JSON.stringify(response)}`);
+                            testResults.backgroundScript = true;
+                            updateStatus('background-test', '✅ Background Script Working', 'success');
+                        } else {
+                            log('⚠️ Background script responded but no success flag');
+                            testResults.backgroundScript = false;
+                            updateStatus('background-test', '⚠️ Background Script Unclear', 'warning');
+                        }
+                        updateSummary();
+                    });
+                } catch (error) {
+                    log(`❌ Background script test error: ${error.message}`);
+                    testResults.backgroundScript = false;
+                    updateStatus('background-test', '❌ Background Script Error', 'error');
+                    updateSummary();
+                }
+            } else {
+                log('❌ Cannot test background script - chrome.runtime not available');
+                testResults.backgroundScript = false;
+                updateStatus('background-test', '❌ Cannot Test - No Chrome Runtime', 'error');
+                updateSummary();
+            }
+        }
+
+        function testServiceWorker() {
+            log('⚙️ Testing Service Worker status...');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                try {
+                    chrome.runtime.sendMessage({ type: 'PING' }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            log(`❌ Service worker error: ${chrome.runtime.lastError.message}`);
+                            testResults.serviceWorker = false;
+                            updateStatus('service-worker-test', '❌ Service Worker Not Responding', 'error');
+                        } else if (response && response.success) {
+                            log('✅ Service worker responding');
+                            testResults.serviceWorker = true;
+                            updateStatus('service-worker-test', '✅ Service Worker Active', 'success');
+                        } else {
+                            log('⚠️ Service worker responded but no success flag');
+                            testResults.serviceWorker = false;
+                            updateStatus('service-worker-test', '⚠️ Service Worker Unclear', 'warning');
+                        }
+                        updateSummary();
+                    });
+                } catch (error) {
+                    log(`❌ Service worker test error: ${error.message}`);
+                    testResults.serviceWorker = false;
+                    updateStatus('service-worker-test', '❌ Service Worker Error', 'error');
+                    updateSummary();
+                }
+            } else {
+                log('❌ Cannot test service worker - chrome.runtime not available');
+                testResults.serviceWorker = false;
+                updateStatus('service-worker-test', '❌ Cannot Test - No Chrome Runtime', 'error');
+                updateSummary();
+            }
+        }
+
+        function runAllTests() {
+            log('🚀 Running all diagnostic tests...');
+            clearLog();
+            
+            // Reset test results
+            testResults = {
+                chromeRuntime: false,
+                manifest: false,
+                contentScript: false,
+                backgroundScript: false,
+                serviceWorker: false
+            };
+            
+            // Run tests with delays to ensure proper execution
+            setTimeout(testChromeRuntime, 100);
+            setTimeout(testManifest, 200);
+            setTimeout(testContentScript, 300);
+            setTimeout(testBackgroundScript, 400);
+            setTimeout(testServiceWorker, 500);
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            log('🚀 Comprehensive diagnostic page loaded');
+            log('📍 URL: ' + window.location.href);
+            log('🌐 User Agent: ' + navigator.userAgent);
+            
+            // Auto-run tests after a short delay
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html> 

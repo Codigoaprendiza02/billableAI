@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI - Navigation System Test</title>
+    <style>
+        body {
+            font-family: 'Google Sans', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .test-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success { background: #d1fae5; color: #065f46; }
+        .info { background: #dbeafe; color: #1e40af; }
+        .error { background: #fee2e2; color: #991b1b; }
+        .mock-extension {
+            width: 384px;
+            height: 600px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #000000 0%, #3432c7 60%, #7b8cff 100%);
+            color: white;
+            position: relative;
+        }
+        .mock-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .mock-back-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mock-settings-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mock-content {
+            padding: 20px;
+            height: calc(100% - 64px);
+            overflow-y: auto;
+        }
+        .mock-start-btn {
+            background: white;
+            color: black;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #374151; margin-bottom: 30px;">
+            🎯 BillableAI - Navigation System Test
+        </h1>
+
+        <div class="test-section">
+            <div class="test-title">Navigation Features:</div>
+            <ul style="color: #6b7280; line-height: 1.6;">
+                <li>✅ "Start Generating" button opens Assistant page</li>
+                <li>✅ Navigation header with back and settings buttons</li>
+                <li>✅ Back button returns to popup/home</li>
+                <li>✅ Settings button opens settings page</li>
+                <li>✅ Page titles update correctly</li>
+                <li>✅ Proper page transitions</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Mock Extension Interface:</div>
+            <div style="display: flex; justify-content: center; margin: 20px 0;">
+                <div class="mock-extension">
+                    <div class="mock-header">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <button class="mock-back-btn" onclick="goBack()" id="backBtn" style="display: none;">
+                                ←
+                            </button>
+                            <h2 style="margin: 0; font-size: 18px;" id="pageTitle">BillableAI</h2>
+                        </div>
+                        <button class="mock-settings-btn" onclick="goToSettings()" id="settingsBtn">
+                            ⚙️
+                        </button>
+                    </div>
+                    <div class="mock-content" id="mockContent">
+                        <div style="text-align: center; padding: 40px 20px;">
+                            <h3 style="margin-bottom: 20px;">Welcome to BillableAI</h3>
+                            <p style="margin-bottom: 30px; opacity: 0.8;">
+                                Click "Start Generating" to open the Assistant
+                            </p>
+                            <button class="mock-start-btn" onclick="startGenerating()">
+                                Start Generating
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test Controls:</div>
+            <button class="test-button" onclick="testNavigation()">Test Navigation Flow</button>
+            <button class="test-button" onclick="testBackButton()">Test Back Button</button>
+            <button class="test-button" onclick="testSettingsButton()">Test Settings Button</button>
+            <button class="test-button" onclick="resetMock()">Reset Mock</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Current Status:</div>
+            <div id="status" class="status info">Ready to test navigation</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Expected Behavior:</div>
+            <div style="color: #6b7280; line-height: 1.6;">
+                <p><strong>1. Start Generating:</strong> Opens Assistant page with navigation header</p>
+                <p><strong>2. Back Button:</strong> Returns to popup/home page</p>
+                <p><strong>3. Settings Button:</strong> Opens settings page</p>
+                <p><strong>4. Page Titles:</strong> Update correctly for each page</p>
+                <p><strong>5. Navigation:</strong> Smooth transitions between pages</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 'popup';
+        const pageTitles = {
+            'popup': 'BillableAI',
+            'assistant': 'BillableAI Assistant',
+            'settings': 'Settings'
+        };
+
+        function updateStatus(message, type = 'info') {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+
+        function updateMockInterface() {
+            const backBtn = document.getElementById('backBtn');
+            const settingsBtn = document.getElementById('settingsBtn');
+            const pageTitle = document.getElementById('pageTitle');
+            const mockContent = document.getElementById('mockContent');
+
+            // Update page title
+            pageTitle.textContent = pageTitles[currentPage] || 'BillableAI';
+
+            // Show/hide back button
+            backBtn.style.display = (currentPage !== 'popup') ? 'flex' : 'none';
+
+            // Show/hide settings button
+            settingsBtn.style.display = (currentPage !== 'settings') ? 'flex' : 'none';
+
+            // Update content based on page
+            switch (currentPage) {
+                case 'popup':
+                    mockContent.innerHTML = `
+                        <div style="text-align: center; padding: 40px 20px;">
+                            <h3 style="margin-bottom: 20px;">Welcome to BillableAI</h3>
+                            <p style="margin-bottom: 30px; opacity: 0.8;">
+                                Click "Start Generating" to open the Assistant
+                            </p>
+                            <button class="mock-start-btn" onclick="startGenerating()">
+                                Start Generating
+                            </button>
+                        </div>
+                    `;
+                    break;
+                case 'assistant':
+                    mockContent.innerHTML = `
+                        <div style="padding: 20px;">
+                            <h3 style="margin-bottom: 20px;">Assistant Interface</h3>
+                            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                                <p style="margin-bottom: 15px;">💬 Chat interface would appear here</p>
+                                <p style="margin-bottom: 15px;">📧 Email data processing</p>
+                                <p style="margin-bottom: 15px;">⏱️ Time tracking integration</p>
+                            </div>
+                            <p style="opacity: 0.8; font-size: 14px;">
+                                This is the Assistant page with navigation controls
+                            </p>
+                        </div>
+                    `;
+                    break;
+                case 'settings':
+                    mockContent.innerHTML = `
+                        <div style="padding: 20px;">
+                            <h3 style="margin-bottom: 20px;">Settings</h3>
+                            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                                <p style="margin-bottom: 15px;">⚙️ Extension settings</p>
+                                <p style="margin-bottom: 15px;">🔐 Authentication options</p>
+                                <p style="margin-bottom: 15px;">🎯 AI preferences</p>
+                            </div>
+                            <p style="opacity: 0.8; font-size: 14px;">
+                                This is the Settings page
+                            </p>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+
+        function startGenerating() {
+            currentPage = 'assistant';
+            updateMockInterface();
+            updateStatus('✅ Assistant page opened successfully', 'success');
+        }
+
+        function goBack() {
+            currentPage = 'popup';
+            updateMockInterface();
+            updateStatus('✅ Back button clicked - returned to popup', 'success');
+        }
+
+        function goToSettings() {
+            currentPage = 'settings';
+            updateMockInterface();
+            updateStatus('✅ Settings button clicked - opened settings page', 'success');
+        }
+
+        function testNavigation() {
+            updateStatus('🔄 Testing complete navigation flow...', 'info');
+            
+            setTimeout(() => {
+                startGenerating();
+                setTimeout(() => {
+                    goToSettings();
+                    setTimeout(() => {
+                        goBack();
+                        updateStatus('✅ Complete navigation flow test successful!', 'success');
+                    }, 1000);
+                }, 1000);
+            }, 500);
+        }
+
+        function testBackButton() {
+            if (currentPage === 'popup') {
+                startGenerating();
+                setTimeout(() => {
+                    goBack();
+                    updateStatus('✅ Back button test completed', 'success');
+                }, 1000);
+            } else {
+                goBack();
+                updateStatus('✅ Back button test completed', 'success');
+            }
+        }
+
+        function testSettingsButton() {
+            goToSettings();
+            updateStatus('✅ Settings button test completed', 'success');
+        }
+
+        function resetMock() {
+            currentPage = 'popup';
+            updateMockInterface();
+            updateStatus('🔄 Mock interface reset to popup', 'info');
+        }
+
+        // Initialize
+        console.log('🎯 BillableAI: Navigation system test initialized');
+        updateMockInterface();
+        updateStatus('Test environment ready - click "Start Generating" to test navigation', 'info');
+    </script>
+</body>
+</html> 

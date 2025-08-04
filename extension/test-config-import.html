@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Config Import Test</title>
+</head>
+<body>
+    <h1>Config Import Test</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        import configService from './src/services/configService.js';
+        import geminiService from './src/services/geminiService.js';
+
+        async function testConfigImport() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                console.log('🔧 Testing extension config import...');
+                
+                // Test configService
+                const testResult = await configService.testConfigImport();
+                console.log('📋 ConfigService test result:', testResult);
+                
+                // Test geminiService
+                const gemini = new geminiService();
+                await gemini.initialize();
+                
+                const geminiReady = gemini.isReady();
+                const geminiApiKey = gemini.getApiKey();
+                
+                console.log('🎯 GeminiService test result:', {
+                    isReady: geminiReady,
+                    hasApiKey: !!geminiApiKey,
+                    apiKey: geminiApiKey ? `${geminiApiKey.substring(0, 10)}...` : 'none'
+                });
+                
+                // Display results
+                resultsDiv.innerHTML = `
+                    <h2>Test Results:</h2>
+                    <h3>ConfigService:</h3>
+                    <pre>${JSON.stringify(testResult, null, 2)}</pre>
+                    
+                    <h3>GeminiService:</h3>
+                    <pre>${JSON.stringify({
+                        isReady: geminiReady,
+                        hasApiKey: !!geminiApiKey,
+                        apiKey: geminiApiKey ? `${geminiApiKey.substring(0, 10)}...` : 'none'
+                    }, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                console.error('❌ Test failed:', error);
+                resultsDiv.innerHTML = `
+                    <h2>Test Failed:</h2>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+
+        testConfigImport();
+    </script>
+</body>
+</html> 

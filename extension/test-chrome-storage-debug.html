@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrome Storage Debug Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5;
+            color: #333;
+        }
+        .test-section { 
+            margin: 15px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            background: white;
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .info { color: #007bff; font-weight: bold; }
+        button { 
+            margin: 5px; 
+            padding: 10px 15px; 
+            cursor: pointer; 
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button:hover { background: #0056b3; }
+        .result { 
+            margin-top: 10px; 
+            padding: 10px; 
+            background: #f8f9fa; 
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .console { 
+            background: #000; 
+            color: #0f0; 
+            padding: 10px; 
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 11px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .storage-info {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Chrome Storage Debug Test</h1>
+    
+    <div class="test-section">
+        <h3>1. Chrome API Availability</h3>
+        <button onclick="testChromeAPI()">Test Chrome API</button>
+        <div id="chrome-api-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Chrome Storage API Test</h3>
+        <button onclick="testChromeStorageAPI()">Test Chrome Storage API</button>
+        <div id="chrome-storage-api-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Storage Operations Test</h3>
+        <button onclick="testStorageOperations()">Test Storage Operations</button>
+        <div id="storage-operations-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Cross-Context Test</h3>
+        <button onclick="testCrossContext()">Test Cross-Context</button>
+        <div id="cross-context-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>5. Current Storage Status</h3>
+        <button onclick="checkCurrentStorage()">Check Current Storage</button>
+        <div id="current-storage-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>6. Extension Context Test</h3>
+        <button onclick="testExtensionContext()">Test Extension Context</button>
+        <div id="extension-context-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>7. Console Logs</h3>
+        <div id="console-logs" class="console"></div>
+    </div>
+
+    <script>
+        // Constants
+        const AUTH_TOKEN_KEY = 'billableai_auth_token';
+        const USER_DATA_KEY = 'billableai_user_data';
+
+        // Console logging
+        function logToConsole(message) {
+            const consoleDiv = document.getElementById('console-logs');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        // Override console.log to capture logs
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            logToConsole(args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            logToConsole('ERROR: ' + args.join(' '));
+        };
+
+        function displayResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            element.innerHTML = `<div class="${className}">${content}</div>`;
+        }
+
+        async function testChromeAPI() {
+            const result = [];
+            
+            try {
+                console.log('=== TESTING CHROME API AVAILABILITY ===');
+                
+                // Test chrome object
+                if (typeof chrome !== 'undefined') {
+                    result.push('✅ Chrome API available');
+                    console.log('Chrome API details:', {
+                        storage: !!chrome.storage,
+                        runtime: !!chrome.runtime,
+                        tabs: !!chrome.tabs
+                    });
+                } else {
+                    result.push('❌ Chrome API not available');
+                    console.log('Not in extension context');
+                }
+
+                // Test chrome.storage
+                if (typeof chrome !== 'undefined' && chrome.storage) {
+                    result.push('✅ Chrome storage API available');
+                    
+                    // Test storage areas
+                    if (chrome.storage.local) {
+                        result.push('✅ Chrome storage.local available');
+                    } else {
+                        result.push('❌ Chrome storage.local not available');
+                    }
+                    
+                    if (chrome.storage.sync) {
+                        result.push('✅ Chrome storage.sync available');
+                    } else {
+                        result.push('❌ Chrome storage.sync not available');
+                    }
+                    
+                    if (chrome.storage.session) {
+                        result.push('✅ Chrome storage.session available');
+                    } else {
+                        result.push('❌ Chrome storage.session not available');
+                    }
+                } else {
+                    result.push('❌ Chrome storage API not available');
+                }
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+                console.error('Chrome API test error:', error);
+            }
+
+            displayResult('chrome-api-result', result.join('<br>'), 'success');
+        }
+
+        async function testChromeStorageAPI() {
+            const result = [];
+            
+            try {
+                console.log('=== TESTING CHROME STORAGE API ===');
+                
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    result.push('✅ Chrome storage.local available');
+                    
+                    // Test basic operations
+                    try {
+                        // Test set operation
+                        await chrome.storage.local.set({ test_key: 'test_value' });
+                        result.push('✅ Set operation successful');
+                        
+                        // Test get operation
+                        const getResult = await chrome.storage.local.get(['test_key']);
+                        if (getResult.test_key === 'test_value') {
+                            result.push('✅ Get operation successful');
+                        } else {
+                            result.push('❌ Get operation failed');
+                        }
+                        
+                        // Test remove operation
+                        await chrome.storage.local.remove(['test_key']);
+                        result.push('✅ Remove operation successful');
+                        
+                        // Verify removal
+                        const verifyResult = await chrome.storage.local.get(['test_key']);
+                        if (!verifyResult.test_key) {
+                            result.push('✅ Verification successful - data removed');
+                        } else {
+                            result.push('❌ Verification failed - data still exists');
+                        }
+                        
+                    } catch (storageError) {
+                        result.push(`❌ Storage operation error: ${storageError.message}`);
+                        console.error('Storage operation error:', storageError);
+                    }
+                } else {
+                    result.push('❌ Chrome storage.local not available');
+                }
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+                console.error('Chrome storage API test error:', error);
+            }
+
+            displayResult('chrome-storage-api-result', result.join('<br>'), 'success');
+        }
+
+        async function testStorageOperations() {
+            const result = [];
+            
+            try {
+                console.log('=== TESTING STORAGE OPERATIONS ===');
+                
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    // Test storing authentication data
+                    const testToken = 'test_token_' + Date.now();
+                    const testUser = {
+                        id: 'test_user_123',
+                        username: 'testuser',
+                        email: 'test@example.com',
+                        name: 'Test User',
+                        profession: 'Lawyer'
+                    };
+                    
+                    // Store data
+                    await chrome.storage.local.set({
+                        [AUTH_TOKEN_KEY]: testToken,
+                        [USER_DATA_KEY]: JSON.stringify(testUser)
+                    });
+                    result.push('✅ Authentication data stored');
+                    
+                    // Retrieve data
+                    const storedData = await chrome.storage.local.get([AUTH_TOKEN_KEY, USER_DATA_KEY]);
+                    
+                    if (storedData[AUTH_TOKEN_KEY] === testToken) {
+                        result.push('✅ Token retrieved correctly');
+                    } else {
+                        result.push('❌ Token retrieval failed');
+                    }
+                    
+                    if (storedData[USER_DATA_KEY]) {
+                        const userData = JSON.parse(storedData[USER_DATA_KEY]);
+                        if (userData.name === testUser.name) {
+                            result.push('✅ User data retrieved correctly');
+                        } else {
+                            result.push('❌ User data retrieval failed');
+                        }
+                    } else {
+                        result.push('❌ User data not found');
+                    }
+                    
+                    // Clean up
+                    await chrome.storage.local.remove([AUTH_TOKEN_KEY, USER_DATA_KEY]);
+                    result.push('✅ Data cleaned up');
+                    
+                } else {
+                    result.push('❌ Chrome storage.local not available');
+                }
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+                console.error('Storage operations test error:', error);
+            }
+
+            displayResult('storage-operations-result', result.join('<br>'), 'success');
+        }
+
+        async function testCrossContext() {
+            const result = [];
+            
+            try {
+                console.log('=== TESTING CROSS-CONTEXT PERSISTENCE ===');
+                
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    // Step 1: Store data in current context
+                    const testToken = 'cross_context_token_' + Date.now();
+                    const testUser = {
+                        id: 'cross_context_user_123',
+                        username: 'crosscontextuser',
+                        email: 'crosscontext@example.com',
+                        name: 'Cross Context User',
+                        profession: 'Lawyer'
+                    };
+                    
+                    await chrome.storage.local.set({
+                        [AUTH_TOKEN_KEY]: testToken,
+                        [USER_DATA_KEY]: JSON.stringify(testUser)
+                    });
+                    result.push('✅ Step 1: Data stored in current context');
+                    
+                    // Step 2: Verify data is accessible
+                    const verifyData = await chrome.storage.local.get([AUTH_TOKEN_KEY, USER_DATA_KEY]);
+                    if (verifyData[AUTH_TOKEN_KEY] && verifyData[USER_DATA_KEY]) {
+                        result.push('✅ Step 2: Data verified in current context');
+                    } else {
+                        result.push('❌ Step 2: Data verification failed');
+                    }
+                    
+                    // Step 3: Simulate context change (clear localStorage but keep chrome.storage)
+                    localStorage.removeItem(AUTH_TOKEN_KEY);
+                    localStorage.removeItem(USER_DATA_KEY);
+                    result.push('✅ Step 3: localStorage cleared (simulating context change)');
+                    
+                    // Step 4: Verify chrome.storage.local still has data
+                    const contextChangeData = await chrome.storage.local.get([AUTH_TOKEN_KEY, USER_DATA_KEY]);
+                    if (contextChangeData[AUTH_TOKEN_KEY] && contextChangeData[USER_DATA_KEY]) {
+                        result.push('✅ Step 4: Data persists in chrome.storage.local after context change');
+                        
+                        // Step 5: Restore to localStorage
+                        localStorage.setItem(AUTH_TOKEN_KEY, contextChangeData[AUTH_TOKEN_KEY]);
+                        localStorage.setItem(USER_DATA_KEY, contextChangeData[USER_DATA_KEY]);
+                        result.push('✅ Step 5: Data restored to localStorage from chrome.storage.local');
+                    } else {
+                        result.push('❌ Step 4: Data lost in chrome.storage.local after context change');
+                    }
+                    
+                    // Clean up
+                    await chrome.storage.local.remove([AUTH_TOKEN_KEY, USER_DATA_KEY]);
+                    localStorage.removeItem(AUTH_TOKEN_KEY);
+                    localStorage.removeItem(USER_DATA_KEY);
+                    result.push('✅ Cleanup completed');
+                    
+                } else {
+                    result.push('❌ Chrome storage.local not available');
+                }
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+                console.error('Cross-context test error:', error);
+            }
+
+            displayResult('cross-context-result', result.join('<br>'), 'success');
+        }
+
+        async function checkCurrentStorage() {
+            const result = [];
+            
+            try {
+                console.log('=== CHECKING CURRENT STORAGE STATUS ===');
+                
+                // Check localStorage
+                const localToken = localStorage.getItem(AUTH_TOKEN_KEY);
+                const localUser = localStorage.getItem(USER_DATA_KEY);
+                
+                result.push(`localStorage Token: ${localToken ? 'EXISTS' : 'NOT FOUND'}`);
+                result.push(`localStorage User: ${localUser ? 'EXISTS' : 'NOT FOUND'}`);
+                
+                if (localToken) {
+                    result.push(`localStorage Token Preview: ${localToken.substring(0, 20)}...`);
+                }
+                
+                if (localUser) {
+                    try {
+                        const userData = JSON.parse(localUser);
+                        result.push(`localStorage User: ${userData.name} (${userData.profession})`);
+                    } catch (parseError) {
+                        result.push('localStorage User: Invalid JSON');
+                    }
+                }
+                
+                // Check chrome.storage.local
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    try {
+                        const chromeResult = await chrome.storage.local.get([AUTH_TOKEN_KEY, USER_DATA_KEY]);
+                        
+                        result.push(`Chrome Storage Token: ${chromeResult[AUTH_TOKEN_KEY] ? 'EXISTS' : 'NOT FOUND'}`);
+                        result.push(`Chrome Storage User: ${chromeResult[USER_DATA_KEY] ? 'EXISTS' : 'NOT FOUND'}`);
+                        
+                        if (chromeResult[AUTH_TOKEN_KEY]) {
+                            result.push(`Chrome Storage Token Preview: ${chromeResult[AUTH_TOKEN_KEY].substring(0, 20)}...`);
+                        }
+                        
+                        if (chromeResult[USER_DATA_KEY]) {
+                            try {
+                                const userData = JSON.parse(chromeResult[USER_DATA_KEY]);
+                                result.push(`Chrome Storage User: ${userData.name} (${userData.profession})`);
+                            } catch (parseError) {
+                                result.push('Chrome Storage User: Invalid JSON');
+                            }
+                        }
+                        
+                        // Check if data is in sync
+                        const localTokenExists = !!localToken;
+                        const chromeTokenExists = !!chromeResult[AUTH_TOKEN_KEY];
+                        const localUserExists = !!localUser;
+                        const chromeUserExists = !!chromeResult[USER_DATA_KEY];
+                        
+                        if (localTokenExists === chromeTokenExists && localUserExists === chromeUserExists) {
+                            result.push('✅ Storage is in sync');
+                        } else {
+                            result.push('❌ Storage is out of sync');
+                        }
+                        
+                    } catch (chromeError) {
+                        result.push(`❌ Chrome storage error: ${chromeError.message}`);
+                    }
+                } else {
+                    result.push('❌ Chrome storage not available');
+                }
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+                console.error('Current storage check error:', error);
+            }
+
+            displayResult('current-storage-result', result.join('<br>'), 'info');
+        }
+
+        async function testExtensionContext() {
+            const result = [];
+            
+            try {
+                console.log('=== TESTING EXTENSION CONTEXT ===');
+                
+                // Check if we're in an extension context
+                if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) {
+                    result.push('✅ Running in extension context');
+                    result.push(`Extension ID: ${chrome.runtime.id}`);
+                    
+                    // Check if we have storage permission
+                    if (chrome.storage && chrome.storage.local) {
+                        result.push('✅ Storage permission available');
+                        
+                        // Test extension-specific storage
+                        const extensionTestData = {
+                            extension_test: 'extension_value_' + Date.now(),
+                            timestamp: new Date().toISOString()
+                        };
+                        
+                        await chrome.storage.local.set(extensionTestData);
+                        result.push('✅ Extension storage write successful');
+                        
+                        const retrievedData = await chrome.storage.local.get(['extension_test', 'timestamp']);
+                        if (retrievedData.extension_test && retrievedData.timestamp) {
+                            result.push('✅ Extension storage read successful');
+                        } else {
+                            result.push('❌ Extension storage read failed');
+                        }
+                        
+                        // Clean up
+                        await chrome.storage.local.remove(['extension_test', 'timestamp']);
+                        result.push('✅ Extension test data cleaned up');
+                        
+                    } else {
+                        result.push('❌ Storage permission not available');
+                    }
+                } else {
+                    result.push('❌ Not running in extension context');
+                    result.push('This test should be run from within the extension');
+                }
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+                console.error('Extension context test error:', error);
+            }
+
+            displayResult('extension-context-result', result.join('<br>'), 'success');
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('=== PAGE LOADED ===');
+                console.log('URL:', window.location.href);
+                console.log('Protocol:', window.location.protocol);
+                console.log('Host:', window.location.host);
+                testChromeAPI();
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

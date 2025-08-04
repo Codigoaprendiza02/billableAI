@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI - Problematic Websites Test</title>
+    <style>
+        /* Simulate problematic website layouts */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+            color: white;
+            overflow-x: hidden; /* Some websites do this */
+        }
+        
+        /* Full-width layout that might interfere */
+        .full-width-container {
+            width: 100vw;
+            min-height: 100vh;
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            position: relative;
+        }
+        
+        /* Fixed elements that might overlap */
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .fixed-sidebar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 250px;
+            height: calc(100vh - 60px);
+            background: rgba(52, 73, 94, 0.9);
+            z-index: 999;
+            overflow-y: auto;
+        }
+        
+        .fixed-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Main content area */
+        .main-content {
+            margin-left: 250px;
+            margin-top: 60px;
+            margin-bottom: 40px;
+            padding: 20px;
+            min-height: calc(100vh - 100px);
+        }
+        
+        /* Content sections */
+        .content-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .test-highlight {
+            background: rgba(46, 204, 113, 0.2);
+            padding: 15px;
+            border-radius: 5px;
+            border: 2px solid #2ecc71;
+            margin: 15px 0;
+        }
+        
+        .warning-box {
+            background: rgba(231, 76, 60, 0.2);
+            padding: 15px;
+            border-radius: 5px;
+            border: 2px solid #e74c3c;
+            margin: 15px 0;
+        }
+        
+        .info-box {
+            background: rgba(52, 152, 219, 0.2);
+            padding: 15px;
+            border-radius: 5px;
+            border: 2px solid #3498db;
+            margin: 15px 0;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .fixed-sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        /* Some websites use these styles */
+        * {
+            box-sizing: border-box;
+        }
+        
+        /* Simulate websites that hide overflow */
+        .overflow-hidden {
+            overflow: hidden;
+        }
+        
+        /* Simulate websites with high z-index elements */
+        .high-z-index {
+            z-index: 999999;
+        }
+    </style>
+</head>
+<body>
+    <div class="full-width-container">
+        <!-- Fixed Header -->
+        <div class="fixed-header">
+            <h1>🌐 Problematic Website Test</h1>
+            <div style="margin-left: auto;">
+                <button onclick="alert('Header button clicked')" style="background: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Menu</button>
+            </div>
+        </div>
+        
+        <!-- Fixed Sidebar -->
+        <div class="fixed-sidebar">
+            <h3>📋 Navigation</h3>
+            <ul style="list-style: none; padding: 0;">
+                <li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <a href="#" style="color: white; text-decoration: none;">Home</a>
+                </li>
+                <li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <a href="#" style="color: white; text-decoration: none;">About</a>
+                </li>
+                <li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <a href="#" style="color: white; text-decoration: none;">Services</a>
+                </li>
+                <li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <a href="#" style="color: white; text-decoration: none;">Contact</a>
+                </li>
+            </ul>
+            
+            <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                <h4>📊 Stats</h4>
+                <p>This sidebar should remain visible when the BillableAI panel opens.</p>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <h2>🧪 Testing BillableAI on Problematic Layouts</h2>
+            <p>This page simulates websites with complex layouts that might cause issues with the BillableAI extension.</p>
+            
+            <div class="content-section">
+                <h3>⚠️ Potential Issues This Page Tests</h3>
+                <ul>
+                    <li><strong>Fixed Elements:</strong> Header, sidebar, and footer that might overlap the toggle button</li>
+                    <li><strong>High Z-Index:</strong> Elements with very high z-index values</li>
+                    <li><strong>Overflow Hidden:</strong> Body with overflow-x: hidden</li>
+                    <li><strong>Full Width:</strong> Container that spans the entire viewport</li>
+                    <li><strong>Complex Layout:</strong> Multiple fixed positioned elements</li>
+                </ul>
+            </div>
+            
+            <div class="test-highlight">
+                <h4>🎯 Critical Test Area</h4>
+                <p>This content must remain fully visible when the BillableAI panel opens. The extension should handle this complex layout properly.</p>
+                <p><strong>Test:</strong> Open the panel and verify this text is still readable and not cut off!</p>
+            </div>
+            
+            <div class="content-section">
+                <h3>🔧 Expected Behavior</h3>
+                <ul>
+                    <li>✅ Toggle button should be visible on the right edge</li>
+                    <li>✅ Toggle button should be clickable despite fixed elements</li>
+                    <li>✅ Panel should open without cutting off content</li>
+                    <li>✅ Sidebar should remain visible and functional</li>
+                    <li>✅ Header and footer should remain accessible</li>
+                    <li>✅ Content should shift appropriately</li>
+                </ul>
+            </div>
+            
+            <div class="warning-box">
+                <h4>🚨 Common Problems This Tests</h4>
+                <ul>
+                    <li><strong>Toggle Button Disappears:</strong> Fixed elements might cover it</li>
+                    <li><strong>Content Cut Off:</strong> Panel might overlap content</li>
+                    <li><strong>Layout Breaking:</strong> Complex layouts might not adjust properly</li>
+                    <li><strong>Z-Index Conflicts:</strong> High z-index elements might interfere</li>
+                </ul>
+            </div>
+            
+            <div class="info-box">
+                <h4>💡 How BillableAI Should Handle This</h4>
+                <ul>
+                    <li><strong>High Z-Index:</strong> Toggle and panel should have maximum z-index</li>
+                    <li><strong>Margin Adjustment:</strong> Should preserve existing margins and add to them</li>
+                    <li><strong>Content Preservation:</strong> All content should remain visible</li>
+                    <li><strong>Layout Respect:</strong> Should work with existing layout structure</li>
+                </ul>
+            </div>
+            
+            <div class="test-highlight">
+                <h4>📊 Another Important Content Area</h4>
+                <p>This is another section that tests content preservation. The BillableAI extension should handle multiple content areas properly, even in complex layouts.</p>
+                <p>Try opening and closing the panel multiple times to test consistency.</p>
+            </div>
+            
+            <div class="content-section">
+                <h3>📋 Test Checklist for Problematic Websites</h3>
+                <ul>
+                    <li>✅ Toggle button is visible and clickable</li>
+                    <li>✅ Panel opens without errors</li>
+                    <li>✅ Content shifts left (not cut off)</li>
+                    <li>✅ Sidebar remains visible and functional</li>
+                    <li>✅ Header and footer remain accessible</li>
+                    <li>✅ Panel closes properly</li>
+                    <li>✅ Content returns to original position</li>
+                    <li>✅ No layout breaking occurs</li>
+                    <li>✅ Works with overflow hidden</li>
+                    <li>✅ Handles high z-index elements</li>
+                </ul>
+            </div>
+            
+            <div class="test-highlight">
+                <h4>🎨 Layout Preservation Test</h4>
+                <p>This content area tests whether the extension properly preserves complex website layouts. The sidebar should stay on the left, header on top, footer on bottom, and this content should shift appropriately.</p>
+                <p><strong>Key Test:</strong> Open the panel and verify the overall page layout is maintained!</p>
+            </div>
+        </div>
+        
+        <!-- Fixed Footer -->
+        <div class="fixed-footer">
+            <p>&copy; 2024 Problematic Website Test. This footer should remain visible when the panel is open.</p>
+        </div>
+    </div>
+    
+    <script>
+        // Add some interactive elements
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('BillableAI Problematic Websites Test Page Loaded');
+            
+            // Add click effects to content sections
+            const contentSections = document.querySelectorAll('.content-section');
+            contentSections.forEach(section => {
+                section.addEventListener('click', () => {
+                    section.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        section.style.transform = 'scale(1)';
+                    }, 150);
+                });
+            });
+            
+            // Monitor for BillableAI elements
+            setInterval(() => {
+                const panel = document.getElementById('billableai-panel');
+                const toggle = document.getElementById('billableai-toggle');
+                
+                if (panel && toggle) {
+                    console.log('✅ BillableAI elements found and working');
+                    
+                    // Check if panel is visible
+                    if (panel.style.transform === 'translateX(0px)') {
+                        console.log('📊 Panel is currently open');
+                    } else {
+                        console.log('📊 Panel is currently closed');
+                    }
+                    
+                    // Check toggle visibility
+                    const toggleStyle = window.getComputedStyle(toggle);
+                    console.log('🔍 Toggle visibility:', toggleStyle.display, toggleStyle.visibility, toggleStyle.opacity);
+                } else {
+                    console.log('❌ BillableAI elements not found');
+                }
+            }, 3000);
+            
+            // Add navigation functionality
+            const sidebarLinks = document.querySelectorAll('.fixed-sidebar a');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    alert('Sidebar link clicked: ' + link.textContent);
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

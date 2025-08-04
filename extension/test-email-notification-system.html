@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Notification System Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 30px;
+            backdrop-blur: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .test-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .test-section h2 {
+            margin-top: 0;
+            color: #ffd700;
+            font-size: 1.5em;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        
+        .test-button.success {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        
+        .test-button.warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        }
+        
+        .test-button.danger {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+        }
+        
+        .log-container {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .log-entry.success {
+            background: rgba(76, 175, 80, 0.2);
+            border-left: 3px solid #4CAF50;
+        }
+        
+        .log-entry.error {
+            background: rgba(244, 67, 54, 0.2);
+            border-left: 3px solid #f44336;
+        }
+        
+        .log-entry.info {
+            background: rgba(33, 150, 243, 0.2);
+            border-left: 3px solid #2196F3;
+        }
+        
+        .log-entry.warning {
+            background: rgba(255, 152, 0, 0.2);
+            border-left: 3px solid #ff9800;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .feature-list li:before {
+            content: "✅ ";
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        .mock-gmail {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .mock-compose {
+            background: white;
+            color: black;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .mock-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        
+        .mock-send-button {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .mock-send-button:hover {
+            background: #1557b0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 BillableAI Email Notification System Test</h1>
+        
+        <div class="test-section">
+            <h2>📧 Email Notification System Features</h2>
+            <ul class="feature-list">
+                <li><strong>Track Time:</strong> Timer tracks time spent composing emails</li>
+                <li><strong>Send Button Detection:</strong> Detects when Gmail send button is clicked</li>
+                <li><strong>Email Data Capture:</strong> Captures recipient, subject, and content</li>
+                <li><strong>Notification Display:</strong> Shows beautiful notification with email details</li>
+                <li><strong>Open Assistant Button:</strong> One-click access to BillableAI Assistant</li>
+                <li><strong>Assistant Integration:</strong> Email data automatically sent to assistant chat</li>
+                <li><strong>Billing Summary:</strong> Generates billable work summary</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h2>🧪 Test Email Notification System</h2>
+            <p>This simulates the Gmail compose window and send button functionality:</p>
+            
+            <div class="mock-gmail">
+                <h3>📧 Gmail Compose Window (Mock)</h3>
+                <div class="mock-compose">
+                    <div>
+                        <label>To:</label>
+                        <input type="text" id="mock-to" class="mock-input" value="client@example.com" placeholder="Recipient email">
+                    </div>
+                    <div>
+                        <label>Subject:</label>
+                        <input type="text" id="mock-subject" class="mock-input" value="Contract Review - Follow Up" placeholder="Email subject">
+                    </div>
+                    <div>
+                        <label>Message:</label>
+                        <textarea id="mock-content" class="mock-input" rows="4" placeholder="Email content">Dear Client,
+
+I have reviewed the contract and have some suggestions for improvement. Please let me know if you have any questions.
+
+Best regards,
+John Doe</textarea>
+                    </div>
+                    <button id="mock-send-button" class="mock-send-button" onclick="simulateSendButton()">
+                        📤 Send
+                    </button>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button class="test-button success" onclick="testEmailNotification()">
+                    🧪 Test Email Notification
+                </button>
+                <button class="test-button warning" onclick="testAssistantIntegration()">
+                    🤖 Test Assistant Integration
+                </button>
+                <button class="test-button" onclick="testTimerTracking()">
+                    ⏱️ Test Timer Tracking
+                </button>
+                <button class="test-button danger" onclick="clearLogs()">
+                    🗑️ Clear Logs
+                </button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📋 Test Results</h2>
+            <div id="log-container" class="log-container">
+                <div class="log-entry info">🎯 BillableAI: Email notification system test loaded</div>
+                <div class="log-entry info">Ready to test the notification system...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock BillableAI state
+        window.billableAIState = {
+            isTracking: false,
+            startTime: null,
+            currentEmail: null,
+            sessionId: 'test_session_' + Date.now(),
+            draftId: 'test_draft_' + Date.now()
+        };
+
+        // Mock notification functions
+        function createNotificationElement() {
+            const existingNotification = document.getElementById('billableai-email-sent-notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            const notification = document.createElement('div');
+            notification.id = 'billableai-email-sent-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                width: 350px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-radius: 12px;
+                padding: 16px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+                z-index: 10000;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                transform: translateX(100%);
+                opacity: 0;
+                transition: all 0.3s ease;
+                border: 1px solid rgba(255,255,255,0.2);
+            `;
+            
+            return notification;
+        }
+
+        function showEmailSentNotification(emailSummary) {
+            try {
+                const notification = createNotificationElement();
+                
+                // Format time spent
+                const timeSpent = formatTime(emailSummary.timeSpent);
+                
+                // Create notification content
+                notification.innerHTML = `
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <div style="flex-shrink: 0; width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-center; font-size: 18px;">
+                            📧
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">
+                                Email Sent Successfully!
+                            </div>
+                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">
+                                <div><strong>To:</strong> ${emailSummary.emailData.to || 'Unknown'}</div>
+                                <div><strong>Subject:</strong> ${emailSummary.emailData.subject || 'No subject'}</div>
+                                <div><strong>Time Spent:</strong> ${timeSpent}</div>
+                            </div>
+                            <div style="display: flex; gap: 8px; margin-top: 12px;">
+                                <button id="billableai-open-assistant" style="
+                                    background: rgba(255,255,255,0.2);
+                                    border: 1px solid rgba(255,255,255,0.3);
+                                    color: white;
+                                    padding: 6px 12px;
+                                    border-radius: 6px;
+                                    font-size: 11px;
+                                    font-weight: 500;
+                                    cursor: pointer;
+                                    transition: all 0.2s ease;
+                                    flex: 1;
+                                " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                                    🤖 Open Assistant
+                                </button>
+                                <button id="billableai-close-notification" style="
+                                    background: rgba(255,255,255,0.1);
+                                    border: 1px solid rgba(255,255,255,0.2);
+                                    color: white;
+                                    padding: 6px 12px;
+                                    border-radius: 6px;
+                                    font-size: 11px;
+                                    cursor: pointer;
+                                    transition: all 0.2s ease;
+                                " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add to page
+                document.body.appendChild(notification);
+                
+                // Animate in
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(0)';
+                    notification.style.opacity = '1';
+                }, 100);
+                
+                // Handle "Open Assistant" button click
+                const openAssistantBtn = notification.querySelector('#billableai-open-assistant');
+                openAssistantBtn.addEventListener('click', () => {
+                    logResult('🤖 Open Assistant button clicked - would open BillableAI Assistant', 'success');
+                    removeEmailSentNotification();
+                });
+                
+                // Handle close button click
+                const closeBtn = notification.querySelector('#billableai-close-notification');
+                closeBtn.addEventListener('click', removeEmailSentNotification);
+                
+                // Auto-remove after 10 seconds
+                setTimeout(removeEmailSentNotification, 10000);
+                
+                logResult('📧 Email sent notification displayed successfully', 'success');
+            } catch (error) {
+                logResult('❌ Error showing email sent notification: ' + error.message, 'error');
+            }
+        }
+
+        function removeEmailSentNotification() {
+            const notification = document.getElementById('billableai-email-sent-notification');
+            if (notification) {
+                notification.style.transform = 'translateX(100%)';
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }
+        }
+
+        function formatTime(milliseconds) {
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            
+            if (minutes >= 60) {
+                const hours = Math.floor(minutes / 60);
+                const remainingMinutes = minutes % 60;
+                return `${hours}:${String(remainingMinutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            } else if (minutes > 0) {
+                return `${minutes}:${String(seconds % 60).padStart(2, '0')}`;
+            } else {
+                return `0:${String(seconds).padStart(2, '0')}`;
+            }
+        }
+
+        function simulateSendButton() {
+            logResult('📤 Send button clicked - simulating Gmail send action', 'info');
+            
+            // Capture email data
+            const emailData = {
+                to: document.getElementById('mock-to').value,
+                subject: document.getElementById('mock-subject').value,
+                content: document.getElementById('mock-content').value,
+                timestamp: Date.now()
+            };
+            
+            logResult('📧 Email data captured: ' + JSON.stringify(emailData, null, 2), 'info');
+            
+            // Simulate tracking time (random between 30 seconds and 5 minutes)
+            const timeSpent = Math.floor(Math.random() * 270000) + 30000; // 30s to 5m
+            
+            // Create email summary
+            const emailSummary = {
+                type: 'email_sent',
+                timeSpent: timeSpent,
+                emailData: emailData,
+                summary: 'Email correspondence regarding ' + emailData.subject.toLowerCase(),
+                timestamp: Date.now(),
+                sessionId: window.billableAIState.sessionId,
+                draftId: window.billableAIState.draftId
+            };
+            
+            logResult('⏱️ Time spent: ' + formatTime(timeSpent), 'info');
+            
+            // Show notification
+            showEmailSentNotification(emailSummary);
+            
+            // Store for assistant (simulate localStorage)
+            try {
+                localStorage.setItem('billableai_assistant_data', JSON.stringify({
+                    emailData: emailData,
+                    summary: emailSummary.summary,
+                    timeSpent: timeSpent,
+                    timestamp: emailSummary.timestamp,
+                    sessionId: emailSummary.sessionId,
+                    draftId: emailSummary.draftId
+                }));
+                logResult('💾 Email summary stored for assistant access', 'success');
+            } catch (error) {
+                logResult('❌ Error storing email summary: ' + error.message, 'error');
+            }
+        }
+
+        function testEmailNotification() {
+            logResult('🧪 Testing email notification system...', 'info');
+            
+            const mockEmailData = {
+                to: 'test@example.com',
+                subject: 'Test Email Notification',
+                content: 'This is a test email for the notification system.',
+                timestamp: Date.now()
+            };
+            
+            const emailSummary = {
+                type: 'email_sent',
+                timeSpent: 120000, // 2 minutes
+                emailData: mockEmailData,
+                summary: 'Test email correspondence',
+                timestamp: Date.now(),
+                sessionId: 'test_session',
+                draftId: 'test_draft'
+            };
+            
+            showEmailSentNotification(emailSummary);
+        }
+
+        function testAssistantIntegration() {
+            logResult('🤖 Testing assistant integration...', 'info');
+            
+            // Simulate opening assistant with email data
+            const assistantData = {
+                emailData: {
+                    to: 'client@example.com',
+                    subject: 'Contract Review - Follow Up',
+                    content: 'Dear Client, I have reviewed the contract...'
+                },
+                summary: 'Email correspondence regarding contract review',
+                timeSpent: 180000, // 3 minutes
+                timestamp: Date.now(),
+                sessionId: 'test_session',
+                draftId: 'test_draft'
+            };
+            
+            // Store data for assistant
+            try {
+                localStorage.setItem('billableai_assistant_data', JSON.stringify(assistantData));
+                logResult('💾 Assistant data stored successfully', 'success');
+                logResult('🤖 Assistant would open with email data: ' + JSON.stringify(assistantData, null, 2), 'info');
+            } catch (error) {
+                logResult('❌ Error storing assistant data: ' + error.message, 'error');
+            }
+        }
+
+        function testTimerTracking() {
+            logResult('⏱️ Testing timer tracking...', 'info');
+            
+            // Simulate starting timer
+            window.billableAIState.isTracking = true;
+            window.billableAIState.startTime = Date.now();
+            logResult('▶️ Timer started', 'success');
+            
+            // Simulate some time passing
+            setTimeout(() => {
+                const elapsed = Date.now() - window.billableAIState.startTime;
+                logResult('⏱️ Timer elapsed: ' + formatTime(elapsed), 'info');
+                
+                // Stop timer
+                window.billableAIState.isTracking = false;
+                logResult('⏹️ Timer stopped', 'success');
+            }, 3000); // 3 seconds
+        }
+
+        function logResult(message, type = 'info') {
+            const logContainer = document.getElementById('log-container');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            console.log(`🎯 BillableAI: ${message}`);
+        }
+
+        function clearLogs() {
+            const logContainer = document.getElementById('log-container');
+            logContainer.innerHTML = '<div class="log-entry info">🗑️ Logs cleared</div>';
+        }
+
+        // Initialize
+        logResult('🚀 Email notification system test page loaded', 'info');
+        logResult('📧 Ready to test send button detection and notifications', 'info');
+    </script>
+</body>
+</html> 

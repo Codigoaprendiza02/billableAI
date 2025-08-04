@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gmail Timer Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .gmail-compose {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .compose-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .compose-field {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .compose-content {
+            width: 100%;
+            min-height: 200px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: Arial, sans-serif;
+            resize: vertical;
+        }
+        .send-button {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .send-button:hover {
+            background: #1557b0;
+        }
+        .timer-display {
+            background: #1a73e8;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .test-results {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <h1>📧 Gmail Timer Test</h1>
+    
+    <div class="gmail-compose">
+        <h3>Gmail Compose Window (Simulated)</h3>
+        <div class="compose-header">
+            <input type="text" class="compose-field" placeholder="To" id="to-field">
+            <input type="text" class="compose-field" placeholder="Subject" id="subject-field">
+        </div>
+        <textarea class="compose-content" placeholder="Write your email here..." id="content-field"></textarea>
+        <button class="send-button" id="send-button">Send</button>
+    </div>
+    
+    <div class="timer-display" id="timer-display">00:00 (STOPPED)</div>
+    
+    <div class="test-results" id="test-results"></div>
+
+    <script>
+        function logResult(message, type = 'info') {
+            const container = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Timer state
+        const timerState = {
+            isTracking: false,
+            sessionStartTime: null,
+            isPaused: false,
+            accumulatedTime: 0
+        };
+
+        let timerInterval = null;
+        let typingTimeout = null;
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('timer-display');
+            let elapsed = timerState.accumulatedTime || 0;
+            
+            if (timerState.isTracking && !timerState.isPaused && timerState.sessionStartTime) {
+                elapsed += Date.now() - timerState.sessionStartTime;
+            }
+            
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            const statusText = timerState.isPaused ? ' (PAUSED)' : timerState.isTracking ? ' (ACTIVE)' : ' (STOPPED)';
+            
+            display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}${statusText}`;
+        }
+
+        function startTimer() {
+            logResult('Starting timer...', 'info');
+            
+            timerState.isTracking = true;
+            timerState.sessionStartTime = Date.now();
+            timerState.isPaused = false;
+            timerState.accumulatedTime = 0;
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            timerInterval = setInterval(updateTimerDisplay, 1000);
+            updateTimerDisplay();
+            
+            logResult('Timer started successfully', 'success');
+        }
+
+        function pauseTimer() {
+            if (!timerState.isTracking) return;
+            
+            logResult('Pausing timer...', 'info');
+            
+            // Accumulate time spent in current session
+            if (timerState.sessionStartTime) {
+                const sessionTime = Date.now() - timerState.sessionStartTime;
+                timerState.accumulatedTime += sessionTime;
+            }
+            
+            timerState.isPaused = true;
+            updateTimerDisplay();
+            logResult(`Timer paused. Accumulated time: ${(timerState.accumulatedTime / 1000).toFixed(1)}s`, 'success');
+        }
+
+        function resumeTimer() {
+            if (!timerState.isTracking || !timerState.isPaused) return;
+            
+            logResult('Resuming timer...', 'info');
+            
+            timerState.isPaused = false;
+            timerState.sessionStartTime = Date.now();
+            
+            updateTimerDisplay();
+            logResult('Timer resumed successfully', 'success');
+        }
+
+        function stopTimer() {
+            if (!timerState.isTracking) return;
+            
+            logResult('Stopping timer...', 'info');
+            
+            // Calculate final time
+            let totalTime = timerState.accumulatedTime;
+            if (!timerState.isPaused && timerState.sessionStartTime) {
+                const sessionTime = Date.now() - timerState.sessionStartTime;
+                totalTime += sessionTime;
+            }
+            
+            timerState.isTracking = false;
+            timerState.accumulatedTime = totalTime;
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            
+            updateTimerDisplay();
+            logResult(`Timer stopped. Total time: ${(totalTime / 1000).toFixed(1)}s`, 'success');
+        }
+
+        // Setup typing detection
+        function setupTypingDetection() {
+            const contentField = document.getElementById('content-field');
+            let isPaused = false;
+            
+            const handleTyping = () => {
+                // Clear existing timeout
+                if (typingTimeout) {
+                    clearTimeout(typingTimeout);
+                }
+                
+                // If was paused, resume tracking
+                if (isPaused) {
+                    logResult('Typing resumed, continuing tracking', 'info');
+                    isPaused = false;
+                    resumeTimer();
+                }
+                
+                // Set timeout to pause tracking after 5 seconds of inactivity
+                typingTimeout = setTimeout(() => {
+                    if (timerState.isTracking) {
+                        logResult('Typing stopped, pausing tracking', 'info');
+                        isPaused = true;
+                        pauseTimer();
+                    }
+                }, 5000);
+            };
+            
+            // Add event listeners
+            contentField.addEventListener('input', handleTyping);
+            contentField.addEventListener('keydown', handleTyping);
+            contentField.addEventListener('paste', handleTyping);
+            
+            logResult('Typing detection setup complete', 'success');
+        }
+
+        // Setup send button detection
+        function setupSendButtonDetection() {
+            const sendButton = document.getElementById('send-button');
+            
+            sendButton.addEventListener('click', () => {
+                logResult('Send button clicked', 'info');
+                stopTimer();
+                logResult('Email sent! Timer stopped.', 'success');
+            });
+            
+            logResult('Send button detection setup complete', 'success');
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            logResult('🚀 Gmail timer test page loaded', 'info');
+            logResult('Start typing in the compose area to test timer behavior', 'info');
+            
+            // Auto-start timer when user starts typing
+            const contentField = document.getElementById('content-field');
+            contentField.addEventListener('focus', () => {
+                if (!timerState.isTracking) {
+                    startTimer();
+                    setupTypingDetection();
+                    setupSendButtonDetection();
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

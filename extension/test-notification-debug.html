@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI - Notification Debug Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .test-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #5a6fd8;
+        }
+        .log-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
+        .status-warning { background: #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎯 BillableAI - Notification System Debug Test</h1>
+        
+        <div class="test-section">
+            <h3>1. Extension Context Test</h3>
+            <p>Check if the extension context is valid and communication is working.</p>
+            <button class="test-button" onclick="testExtensionContext()">Test Extension Context</button>
+            <button class="test-button" onclick="testChromeRuntime()">Test Chrome Runtime</button>
+            <button class="test-button" onclick="testBackgroundCommunication()">Test Background Communication</button>
+            <div id="context-log" class="log-output"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Notification System Test</h3>
+            <p>Test the email sent notification and "Open Assistant" functionality.</p>
+            <button class="test-button" onclick="testEmailNotification()">Test Email Notification</button>
+            <button class="test-button" onclick="testOpenAssistant()">Test Open Assistant</button>
+            <div id="notification-log" class="log-output"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Storage Test</h3>
+            <p>Test chrome.storage.local and localStorage functionality.</p>
+            <button class="test-button" onclick="testStorage()">Test Storage</button>
+            <button class="test-button" onclick="clearStorage()">Clear Storage</button>
+            <div id="storage-log" class="log-output"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Status Overview</h3>
+            <div id="status-overview"></div>
+        </div>
+    </div>
+
+    <script>
+        let logOutputs = {};
+
+        function log(section, message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById(section + '-log');
+            if (logElement) {
+                const logEntry = document.createElement('div');
+                logEntry.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#000';
+                logEntry.textContent = `[${timestamp}] ${message}`;
+                logElement.appendChild(logEntry);
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+            console.log(`🎯 BillableAI: ${message}`);
+        }
+
+        function updateStatus(elementId, status, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.innerHTML = `
+                    <span class="status-indicator status-${status}"></span>
+                    ${message}
+                `;
+            }
+        }
+
+        // Test 1: Extension Context
+        function testExtensionContext() {
+            log('context', 'Testing extension context...');
+            
+            const hasChrome = typeof chrome !== 'undefined';
+            const hasRuntime = hasChrome && chrome.runtime;
+            const hasId = hasRuntime && chrome.runtime.id;
+            const hasLastError = hasRuntime && chrome.runtime.lastError;
+            
+            log('context', `Chrome available: ${hasChrome}`);
+            log('context', `Runtime available: ${hasRuntime}`);
+            log('context', `Runtime ID: ${hasId ? 'Yes' : 'No'}`);
+            log('context', `Last error: ${hasLastError ? 'Yes' : 'No'}`);
+            
+            if (hasChrome && hasRuntime && hasId) {
+                log('context', '✅ Extension context is valid', 'success');
+                updateStatus('extension-context', 'success', 'Extension context is valid');
+            } else {
+                log('context', '❌ Extension context is invalid', 'error');
+                updateStatus('extension-context', 'error', 'Extension context is invalid');
+            }
+        }
+
+        function testChromeRuntime() {
+            log('context', 'Testing Chrome runtime communication...');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                try {
+                    chrome.runtime.sendMessage({ type: 'PING' }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            log('context', `❌ Runtime communication failed: ${chrome.runtime.lastError.message}`, 'error');
+                            updateStatus('runtime-communication', 'error', 'Runtime communication failed');
+                        } else {
+                            log('context', `✅ Runtime communication successful: ${JSON.stringify(response)}`, 'success');
+                            updateStatus('runtime-communication', 'success', 'Runtime communication working');
+                        }
+                    });
+                } catch (error) {
+                    log('context', `❌ Runtime communication error: ${error.message}`, 'error');
+                    updateStatus('runtime-communication', 'error', 'Runtime communication error');
+                }
+            } else {
+                log('context', '❌ Chrome runtime not available', 'error');
+                updateStatus('runtime-communication', 'error', 'Chrome runtime not available');
+            }
+        }
+
+        function testBackgroundCommunication() {
+            log('context', 'Testing background script communication...');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                try {
+                    chrome.runtime.sendMessage({ type: 'TEST_COMMUNICATION', data: 'test' }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            log('context', `❌ Background communication failed: ${chrome.runtime.lastError.message}`, 'error');
+                            updateStatus('background-communication', 'error', 'Background communication failed');
+                        } else {
+                            log('context', `✅ Background communication successful: ${JSON.stringify(response)}`, 'success');
+                            updateStatus('background-communication', 'success', 'Background communication working');
+                        }
+                    });
+                } catch (error) {
+                    log('context', `❌ Background communication error: ${error.message}`, 'error');
+                    updateStatus('background-communication', 'error', 'Background communication error');
+                }
+            } else {
+                log('context', '❌ Chrome runtime not available', 'error');
+                updateStatus('background-communication', 'error', 'Chrome runtime not available');
+            }
+        }
+
+        // Test 2: Notification System
+        function testEmailNotification() {
+            log('notification', 'Testing email notification system...');
+            
+            const mockEmailSummary = {
+                emailData: {
+                    to: 'test@example.com',
+                    subject: 'Test Email Subject',
+                    content: 'This is a test email content'
+                },
+                timeSpent: 300000, // 5 minutes in milliseconds
+                summary: 'Test email summary for debugging purposes'
+            };
+            
+            // Simulate the notification creation
+            const notification = document.createElement('div');
+            notification.id = 'billableai-email-sent-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                width: 350px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-radius: 12px;
+                padding: 16px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+                z-index: 10000;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            `;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                    <div style="flex-shrink: 0; width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                        📧
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">
+                            Email Sent Successfully!
+                        </div>
+                        <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">
+                            <div><strong>To:</strong> ${mockEmailSummary.emailData.to}</div>
+                            <div><strong>Subject:</strong> ${mockEmailSummary.emailData.subject}</div>
+                            <div><strong>Time Spent:</strong> 5 minutes</div>
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-top: 12px;">
+                            <button id="billableai-open-assistant" style="
+                                background: rgba(255,255,255,0.2);
+                                border: 1px solid rgba(255,255,255,0.3);
+                                color: white;
+                                padding: 6px 12px;
+                                border-radius: 6px;
+                                font-size: 11px;
+                                font-weight: 500;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                                flex: 1;
+                            " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                                🤖 Open Assistant
+                            </button>
+                            <button id="billableai-close-notification" style="
+                                background: rgba(255,255,255,0.1);
+                                border: 1px solid rgba(255,255,255,0.2);
+                                color: white;
+                                padding: 6px 12px;
+                                border-radius: 6px;
+                                font-size: 11px;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                            " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            log('notification', '✅ Email notification created successfully', 'success');
+            
+            // Add event listeners
+            const openAssistantBtn = notification.querySelector('#billableai-open-assistant');
+            const closeBtn = notification.querySelector('#billableai-close-notification');
+            
+            openAssistantBtn.addEventListener('click', () => {
+                log('notification', '🤖 Open Assistant button clicked');
+                testOpenAssistant();
+            });
+            
+            closeBtn.addEventListener('click', () => {
+                notification.remove();
+                log('notification', '✕ Notification closed');
+            });
+            
+            // Auto-remove after 10 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                    log('notification', '⏰ Notification auto-removed after 10 seconds');
+                }
+            }, 10000);
+        }
+
+        function testOpenAssistant() {
+            log('notification', 'Testing Open Assistant functionality...');
+            
+            const mockEmailSummary = {
+                emailData: {
+                    to: 'test@example.com',
+                    subject: 'Test Email Subject',
+                    content: 'This is a test email content'
+                },
+                timeSpent: 300000,
+                summary: 'Test email summary for debugging purposes'
+            };
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                log('notification', 'Sending OPEN_ASSISTANT message to background script...');
+                
+                chrome.runtime.sendMessage({
+                    type: 'OPEN_ASSISTANT',
+                    data: mockEmailSummary
+                }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        log('notification', `❌ Error sending OPEN_ASSISTANT message: ${chrome.runtime.lastError.message}`, 'error');
+                        updateStatus('open-assistant', 'error', 'Failed to send OPEN_ASSISTANT message');
+                    } else {
+                        log('notification', `✅ OPEN_ASSISTANT message sent successfully: ${JSON.stringify(response)}`, 'success');
+                        updateStatus('open-assistant', 'success', 'OPEN_ASSISTANT message sent successfully');
+                    }
+                });
+            } else {
+                log('notification', '❌ Chrome runtime not available for Open Assistant test', 'error');
+                updateStatus('open-assistant', 'error', 'Chrome runtime not available');
+            }
+        }
+
+        // Test 3: Storage
+        function testStorage() {
+            log('storage', 'Testing storage functionality...');
+            
+            const testData = {
+                testKey: 'testValue',
+                timestamp: Date.now()
+            };
+            
+            // Test chrome.storage.local
+            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                chrome.storage.local.set({ 'billableai_test_data': testData }, () => {
+                    if (chrome.runtime.lastError) {
+                        log('storage', `❌ Chrome storage error: ${chrome.runtime.lastError.message}`, 'error');
+                    } else {
+                        log('storage', '✅ Data stored in chrome.storage.local', 'success');
+                        
+                        // Test retrieval
+                        chrome.storage.local.get(['billableai_test_data'], (result) => {
+                            if (chrome.runtime.lastError) {
+                                log('storage', `❌ Chrome storage retrieval error: ${chrome.runtime.lastError.message}`, 'error');
+                            } else {
+                                log('storage', `✅ Data retrieved from chrome.storage.local: ${JSON.stringify(result.billableai_test_data)}`, 'success');
+                                updateStatus('chrome-storage', 'success', 'Chrome storage working');
+                            }
+                        });
+                    }
+                });
+            } else {
+                log('storage', '❌ Chrome storage not available', 'error');
+                updateStatus('chrome-storage', 'error', 'Chrome storage not available');
+            }
+            
+            // Test localStorage
+            try {
+                localStorage.setItem('billableai_test_data', JSON.stringify(testData));
+                const retrieved = JSON.parse(localStorage.getItem('billableai_test_data'));
+                log('storage', `✅ localStorage working: ${JSON.stringify(retrieved)}`, 'success');
+                updateStatus('local-storage', 'success', 'localStorage working');
+            } catch (error) {
+                log('storage', `❌ localStorage error: ${error.message}`, 'error');
+                updateStatus('local-storage', 'error', 'localStorage error');
+            }
+        }
+
+        function clearStorage() {
+            log('storage', 'Clearing test storage data...');
+            
+            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                chrome.storage.local.remove(['billableai_test_data'], () => {
+                    log('storage', '✅ Chrome storage test data cleared', 'success');
+                });
+            }
+            
+            try {
+                localStorage.removeItem('billableai_test_data');
+                log('storage', '✅ localStorage test data cleared', 'success');
+            } catch (error) {
+                log('storage', `❌ Error clearing localStorage: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize status overview
+        function initializeStatusOverview() {
+            const statusOverview = document.getElementById('status-overview');
+            statusOverview.innerHTML = `
+                <div style="margin-bottom: 10px;">
+                    <span class="status-indicator status-warning"></span>
+                    Extension Context: <span id="extension-context">Not tested</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <span class="status-indicator status-warning"></span>
+                    Runtime Communication: <span id="runtime-communication">Not tested</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <span class="status-indicator status-warning"></span>
+                    Background Communication: <span id="background-communication">Not tested</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <span class="status-indicator status-warning"></span>
+                    Open Assistant: <span id="open-assistant">Not tested</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <span class="status-indicator status-warning"></span>
+                    Chrome Storage: <span id="chrome-storage">Not tested</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <span class="status-indicator status-warning"></span>
+                    localStorage: <span id="local-storage">Not tested</span>
+                </div>
+            `;
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            log('context', '🎯 BillableAI Debug Test Page Loaded');
+            initializeStatusOverview();
+        });
+    </script>
+</body>
+</html> 

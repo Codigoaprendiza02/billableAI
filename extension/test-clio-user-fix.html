@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clio User Linking Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; }
+        button { padding: 12px 24px; margin: 5px; cursor: pointer; border: none; border-radius: 5px; background: #007bff; color: white; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Clio User Linking Fix Test</h1>
+    
+    <div id="results"></div>
+    
+    <div style="margin: 20px 0;">
+        <button onclick="testCurrentUser()">🔍 Test Current User</button>
+        <button onclick="testOAuthFlow()">🔗 Test OAuth Flow</button>
+        <button onclick="testConnection()">🔍 Test Connection</button>
+        <button onclick="clearResults()">🗑️ Clear Results</button>
+    </div>
+    
+    <script>
+        async function testCurrentUser() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="info">🔍 Testing current user...</div>';
+            
+            try {
+                const authToken = localStorage.getItem('billableai_auth_token');
+                const userData = localStorage.getItem('billableai_user_data');
+                
+                if (!authToken) {
+                    results.innerHTML = '<div class="error">❌ No authentication token found. Please login first.</div>';
+                    return;
+                }
+                
+                const response = await fetch('http://localhost:3001/api/auth/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Profile check failed: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                let html = '<div class="info">';
+                html += '<h3>📋 Current User Test</h3>';
+                html += `<strong>User ID:</strong> ${result.user?.id}<br>`;
+                html += `<strong>Email:</strong> ${result.user?.email}<br>`;
+                html += `<strong>Name:</strong> ${result.user?.name}<br>`;
+                html += `<strong>Has Clio Access:</strong> ${result.user?.hasClioAccess}<br>`;
+                html += `<strong>Is Connected to Clio:</strong> ${result.user?.isConnectedToClio}<br>`;
+                html += '</div>';
+                
+                results.innerHTML = html;
+                
+            } catch (error) {
+                results.innerHTML = `<div class="error">❌ Test failed: ${error.message}</div>`;
+            }
+        }
+        
+        async function testOAuthFlow() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="info">🔗 Testing OAuth flow...</div>';
+            
+            try {
+                const authToken = localStorage.getItem('billableai_auth_token');
+                
+                if (!authToken) {
+                    results.innerHTML = '<div class="error">❌ No authentication token found. Please login first.</div>';
+                    return;
+                }
+                
+                const response = await fetch('http://localhost:3001/api/auth/debug-clio-oauth', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`OAuth URL generation failed: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                let html = '<div class="info">';
+                html += '<h3>🔗 OAuth Flow Test</h3>';
+                html += '<div class="success">✅ OAuth URL generated successfully!</div>';
+                html += '<div class="warning">';
+                html += '<strong>Next Steps:</strong><br>';
+                html += '1. Copy the URL below<br>';
+                html += '2. Open it in a new tab<br>';
+                html += '3. Complete the authorization<br>';
+                html += '4. Come back and test connection<br>';
+                html += '</div>';
+                html += `<pre>${result.fullAuthUrl}</pre>`;
+                html += '</div>';
+                
+                results.innerHTML = html;
+                
+            } catch (error) {
+                results.innerHTML = `<div class="error">❌ OAuth test failed: ${error.message}</div>`;
+            }
+        }
+        
+        async function testConnection() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="info">🔍 Testing connection...</div>';
+            
+            try {
+                const authToken = localStorage.getItem('billableai_auth_token');
+                
+                if (!authToken) {
+                    results.innerHTML = '<div class="error">❌ No authentication token found. Please login first.</div>';
+                    return;
+                }
+                
+                const response = await fetch('http://localhost:3001/api/auth/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Profile check failed: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                let html = '<div class="info">';
+                html += '<h3>📋 Connection Test Results</h3>';
+                html += `<strong>Status:</strong> ${result.user?.hasClioAccess ? '✅ Connected' : '❌ Not Connected'}<br>`;
+                html += `<strong>User ID:</strong> ${result.user?.id}<br>`;
+                html += `<strong>Email:</strong> ${result.user?.email}<br>`;
+                html += `<strong>Name:</strong> ${result.user?.name}<br>`;
+                html += `<strong>Has Clio Access:</strong> ${result.user?.hasClioAccess}<br>`;
+                html += `<strong>Is Connected to Clio:</strong> ${result.user?.isConnectedToClio}<br>`;
+                html += `<strong>Has Clio Tokens:</strong> ${!!result.user?.clioTokens?.hasAccessToken}<br>`;
+                html += '</div>';
+                
+                if (result.user?.hasClioAccess) {
+                    html += '<div class="success">✅ Clio connection is working with correct user!</div>';
+                } else {
+                    html += '<div class="error">❌ Clio connection is not working. Try the OAuth flow.</div>';
+                }
+                
+                results.innerHTML = html;
+                
+            } catch (error) {
+                results.innerHTML = `<div class="error">❌ Test failed: ${error.message}</div>`;
+            }
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        // Auto-test on load
+        testCurrentUser();
+    </script>
+</body>
+</html> 

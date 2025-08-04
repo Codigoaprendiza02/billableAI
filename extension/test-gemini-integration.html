@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Integration Test</title>
+</head>
+<body>
+    <h1>Gemini Integration Test</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        import configService from './src/services/configService.js';
+        import GeminiService from './src/services/geminiService.js';
+
+        async function testGeminiIntegration() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                console.log('🔧 Testing Gemini integration...');
+                
+                // Test 1: ConfigService
+                console.log('📋 Testing ConfigService...');
+                const testResult = await configService.testConfigImport();
+                console.log('ConfigService result:', testResult);
+                
+                // Test 2: GeminiService initialization
+                console.log('🎯 Testing GeminiService initialization...');
+                const gemini = new GeminiService();
+                await gemini.initialize();
+                
+                const isReady = gemini.isReady();
+                const apiKey = gemini.getApiKey();
+                
+                console.log('GeminiService result:', {
+                    isReady,
+                    hasApiKey: !!apiKey,
+                    apiKey: apiKey ? `${apiKey.substring(0, 10)}...` : 'none'
+                });
+                
+                // Test 3: Test connection
+                console.log('🔗 Testing Gemini connection...');
+                const connectionTest = await gemini.testConnection();
+                console.log('Connection test result:', connectionTest);
+                
+                // Test 4: Generate a test summary
+                console.log('📝 Testing summary generation...');
+                const testEmailData = {
+                    subject: 'Test Email',
+                    to: 'test@example.com',
+                    body: 'This is a test email for Gemini integration testing.'
+                };
+                
+                const summary = await gemini.generateBillableSummary(testEmailData, 300000); // 5 minutes
+                console.log('Summary generation result:', summary ? 'Success' : 'Failed');
+                
+                // Display results
+                resultsDiv.innerHTML = `
+                    <h2>Test Results:</h2>
+                    <h3>ConfigService:</h3>
+                    <pre>${JSON.stringify(testResult, null, 2)}</pre>
+                    
+                    <h3>GeminiService:</h3>
+                    <pre>${JSON.stringify({
+                        isReady,
+                        hasApiKey: !!apiKey,
+                        apiKey: apiKey ? `${apiKey.substring(0, 10)}...` : 'none'
+                    }, null, 2)}</pre>
+                    
+                    <h3>Connection Test:</h3>
+                    <pre>${JSON.stringify(connectionTest, null, 2)}</pre>
+                    
+                    <h3>Summary Generation:</h3>
+                    <p>${summary ? '✅ Success - Gemini 2.5 Pro is working!' : '❌ Failed'}</p>
+                `;
+                
+            } catch (error) {
+                console.error('❌ Test failed:', error);
+                resultsDiv.innerHTML = `
+                    <h2>Test Failed:</h2>
+                    <pre>${error.message}</pre>
+                    <p>Make sure the backend server is running: cd backend && npm start</p>
+                `;
+            }
+        }
+
+        testGeminiIntegration();
+    </script>
+</body>
+</html> 

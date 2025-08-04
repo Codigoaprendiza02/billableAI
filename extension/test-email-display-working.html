@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Display Working Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .email-data-display {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .email-data-display h4 {
+            color: #1565c0;
+            margin: 0 0 10px 0;
+        }
+        .email-data-display p {
+            margin: 5px 0;
+            color: #0d47a1;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        
+        .step {
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+            margin: 10px 0;
+        }
+        
+        .step.success { border-left-color: #28a745; }
+        .step.error { border-left-color: #dc3545; }
+        .step.warning { border-left-color: #ffc107; }
+    </style>
+</head>
+<body>
+    <h1>🎯 BillableAI - Email Display Working Test</h1>
+    
+    <div class="test-section">
+        <h2>📧 Test Email Data Display</h2>
+        <p>This test verifies that email data is properly displayed in the Assistant:</p>
+        
+        <div class="step">
+            <strong>Step 1:</strong> Simulate email data capture
+            <button onclick="simulateEmailCapture()">Simulate Email Capture</button>
+        </div>
+        
+        <div class="step">
+            <strong>Step 2:</strong> Store email data via background script
+            <button onclick="simulateDataStorage()">Simulate Data Storage</button>
+        </div>
+        
+        <div class="step">
+            <strong>Step 3:</strong> Test data retrieval (what Assistant does)
+            <button onclick="simulateDataRetrieval()">Simulate Data Retrieval</button>
+        </div>
+        
+        <div class="step">
+            <strong>Step 4:</strong> Complete flow test
+            <button onclick="simulateCompleteFlow()">Simulate Complete Flow</button>
+        </div>
+        
+        <div id="flow-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Email Data Display Preview</h2>
+        <div id="email-data-preview" class="email-data-display" style="display: none;">
+            <h4>📧 Email Data Available</h4>
+            <div id="email-data-content"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Manual Tests</h2>
+        <button onclick="testBackgroundScript()">Test Background Script</button>
+        <button onclick="testChromeStorage()">Test Chrome Storage</button>
+        <button onclick="clearAllData()">Clear All Data</button>
+        <button onclick="checkExtensionStatus()">Check Extension Status</button>
+        <div id="manual-test-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Data Verification</h2>
+        <button onclick="verifyStoredData()">Verify Stored Data</button>
+        <button onclick="checkAllStorageLocations()">Check All Storage Locations</button>
+        <div id="verification-log" class="log"></div>
+    </div>
+
+    <script>
+        function log(elementId, message, type = 'info') {
+            const logElement = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logElement.innerHTML += logEntry + '\n';
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(logEntry);
+        }
+
+        // Step 1: Simulate Email Capture
+        async function simulateEmailCapture() {
+            const logId = 'flow-log';
+            log(logId, '📧 Step 1: Simulating email data capture...');
+            
+            const mockEmailData = {
+                subject: 'Test Email Subject - Display Test',
+                to: 'recipient@example.com',
+                cc: 'cc@example.com',
+                bcc: 'bcc@example.com',
+                body: 'This is a test email body for testing the display functionality. It contains multiple lines and should be displayed properly in the Assistant interface.',
+                content: 'This is the content field for testing.',
+                timestamp: new Date().toISOString()
+            };
+            
+            const mockTimeSpent = 180000; // 3 minutes
+            
+            log(logId, `✅ Captured email data:`, mockEmailData);
+            log(logId, `✅ Time spent: ${mockTimeSpent}ms (${Math.round(mockTimeSpent / 60000)} minutes)`);
+            
+            // Store for next step
+            window.mockEmailData = mockEmailData;
+            window.mockTimeSpent = mockTimeSpent;
+            
+            // Update display preview
+            updateEmailDataPreview(mockEmailData, mockTimeSpent);
+            
+            log(logId, '✅ Step 1 completed - Email data captured');
+        }
+
+        // Step 2: Simulate Data Storage
+        async function simulateDataStorage() {
+            const logId = 'flow-log';
+            log(logId, '💾 Step 2: Simulating data storage via background script...');
+            
+            if (!window.mockEmailData) {
+                log(logId, '❌ No email data available. Run Step 1 first.');
+                return;
+            }
+            
+            try {
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'EMAIL_DATA_STORED',
+                        data: {
+                            emailData: window.mockEmailData,
+                            timeSpent: window.mockTimeSpent,
+                            autoProcess: true,
+                            timestamp: Date.now()
+                        }
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, `✅ Background script response: ${JSON.stringify(response)}`);
+                
+                // Verify storage
+                const result = await chrome.storage.local.get(['billableAI_emailSummary']);
+                log(logId, `✅ Chrome storage verification: ${JSON.stringify(result)}`);
+                
+                log(logId, '✅ Step 2 completed - Data stored successfully');
+                
+            } catch (error) {
+                log(logId, `❌ Step 2 failed: ${error.message}`);
+            }
+        }
+
+        // Step 3: Simulate Data Retrieval
+        async function simulateDataRetrieval() {
+            const logId = 'flow-log';
+            log(logId, '🔍 Step 3: Simulating data retrieval (Assistant behavior)...');
+            
+            try {
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'GET_EMAIL_DATA'
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, `✅ Background script response: ${JSON.stringify(response)}`);
+                
+                if (response && response.success && response.data) {
+                    log(logId, `✅ Found email data:`, response.data);
+                    log(logId, `✅ Email subject: ${response.data.emailData?.subject}`);
+                    log(logId, `✅ Email to: ${response.data.emailData?.to}`);
+                    log(logId, `✅ Email cc: ${response.data.emailData?.cc || 'None'}`);
+                    log(logId, `✅ Email bcc: ${response.data.emailData?.bcc || 'None'}`);
+                    log(logId, `✅ Time spent: ${response.data.timeSpent}ms`);
+                    
+                    // Update display preview
+                    updateEmailDataPreview(response.data.emailData, response.data.timeSpent);
+                } else {
+                    log(logId, `❌ No email data found in response`);
+                }
+                
+                log(logId, '✅ Step 3 completed - Data retrieval simulated');
+                
+            } catch (error) {
+                log(logId, `❌ Step 3 failed: ${error.message}`);
+            }
+        }
+
+        // Step 4: Complete Flow
+        async function simulateCompleteFlow() {
+            const logId = 'flow-log';
+            log(logId, '🔄 Step 4: Simulating complete email flow...');
+            
+            try {
+                // Step 4a: Capture
+                log(logId, 'Step 4a: Capturing email data...');
+                await simulateEmailCapture();
+                
+                // Step 4b: Store
+                log(logId, 'Step 4b: Storing email data...');
+                await simulateDataStorage();
+                
+                // Step 4c: Wait a moment
+                log(logId, 'Step 4c: Waiting for data to be processed...');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Step 4d: Retrieve
+                log(logId, 'Step 4d: Retrieving email data...');
+                await simulateDataRetrieval();
+                
+                // Step 4e: Clear
+                log(logId, 'Step 4e: Clearing email data...');
+                await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'CLEAR_EMAIL_DATA'
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, '✅ Step 4 completed - Complete flow successful!');
+                
+            } catch (error) {
+                log(logId, `❌ Step 4 failed: ${error.message}`);
+            }
+        }
+
+        function updateEmailDataPreview(emailData, timeSpent) {
+            const previewElement = document.getElementById('email-data-preview');
+            const contentElement = document.getElementById('email-data-content');
+            
+            contentElement.innerHTML = `
+                <p><strong>Subject:</strong> ${emailData.subject || 'No subject'}</p>
+                <p><strong>To:</strong> ${emailData.to || 'No recipient'}</p>
+                ${emailData.cc ? `<p><strong>CC:</strong> ${emailData.cc}</p>` : ''}
+                ${emailData.bcc ? `<p><strong>BCC:</strong> ${emailData.bcc}</p>` : ''}
+                <p><strong>Content:</strong> ${(emailData.body || emailData.content || '').substring(0, 100)}...</p>
+                ${timeSpent > 0 ? `<p><strong>Time Spent:</strong> ${Math.round(timeSpent / 60000)} minutes</p>` : ''}
+            `;
+            
+            previewElement.style.display = 'block';
+        }
+
+        // Manual Tests
+        async function testBackgroundScript() {
+            const logId = 'manual-test-log';
+            log(logId, '🔧 Testing background script communication...');
+            
+            try {
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'TEST_COMMUNICATION',
+                        data: { test: 'email-display-test' }
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, `✅ Background script responded: ${JSON.stringify(response)}`);
+            } catch (error) {
+                log(logId, `❌ Background script error: ${error.message}`);
+            }
+        }
+
+        async function testChromeStorage() {
+            const logId = 'manual-test-log';
+            log(logId, '🔧 Testing chrome.storage.local...');
+            
+            try {
+                // Test write
+                await chrome.storage.local.set({ 
+                    'test_data': { 
+                        message: 'Test data', 
+                        timestamp: Date.now() 
+                    } 
+                });
+                log(logId, '✅ Data written to chrome.storage.local');
+                
+                // Test read
+                const result = await chrome.storage.local.get(['test_data']);
+                log(logId, `✅ Data read from chrome.storage.local: ${JSON.stringify(result)}`);
+                
+                // Clean up
+                await chrome.storage.local.remove(['test_data']);
+                log(logId, '✅ Test data cleaned up');
+                
+            } catch (error) {
+                log(logId, `❌ Chrome storage error: ${error.message}`);
+            }
+        }
+
+        async function clearAllData() {
+            const logId = 'manual-test-log';
+            log(logId, '🧹 Clearing all stored data...');
+            
+            try {
+                // Clear chrome.storage.local
+                await chrome.storage.local.clear();
+                log(logId, '✅ Chrome storage cleared');
+                
+                // Clear localStorage
+                localStorage.clear();
+                log(logId, '✅ LocalStorage cleared');
+                
+                // Clear via background script
+                await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'CLEAR_EMAIL_DATA'
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, '✅ All data cleared successfully');
+                
+            } catch (error) {
+                log(logId, `❌ Error clearing data: ${error.message}`);
+            }
+        }
+
+        async function checkExtensionStatus() {
+            const logId = 'manual-test-log';
+            log(logId, '🔍 Checking extension status...');
+            
+            try {
+                // Check if extension is installed and accessible
+                const manifest = chrome.runtime.getManifest();
+                log(logId, `✅ Extension manifest: ${manifest.name} v${manifest.version}`);
+                
+                // Check permissions
+                const permissions = await chrome.permissions.getAll();
+                log(logId, `✅ Permissions: ${JSON.stringify(permissions)}`);
+                
+                // Check storage
+                const storage = await chrome.storage.local.get(null);
+                log(logId, `✅ Storage keys: ${Object.keys(storage).join(', ')}`);
+                
+            } catch (error) {
+                log(logId, `❌ Extension status check failed: ${error.message}`);
+            }
+        }
+
+        // Data Verification
+        async function verifyStoredData() {
+            const logId = 'verification-log';
+            log(logId, '📊 Verifying stored data...');
+            
+            try {
+                // Check chrome.storage.local
+                const result = await chrome.storage.local.get(['billableAI_emailSummary']);
+                log(logId, `✅ Chrome storage data: ${JSON.stringify(result)}`);
+                
+                // Check localStorage
+                const localData = localStorage.getItem('billableAI_emailSummary');
+                log(logId, `✅ LocalStorage data: ${localData}`);
+                
+                // Check via background script
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'GET_EMAIL_DATA'
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, `✅ Background script data: ${JSON.stringify(response)}`);
+                
+            } catch (error) {
+                log(logId, `❌ Verification failed: ${error.message}`);
+            }
+        }
+
+        async function checkAllStorageLocations() {
+            const logId = 'verification-log';
+            log(logId, '📊 Checking all storage locations...');
+            
+            try {
+                // Chrome storage
+                const chromeData = await chrome.storage.local.get(null);
+                log(logId, `✅ Chrome storage keys: ${Object.keys(chromeData).join(', ')}`);
+                
+                // LocalStorage
+                const localKeys = Object.keys(localStorage);
+                log(logId, `✅ LocalStorage keys: ${localKeys.join(', ')}`);
+                
+                // SessionStorage
+                const sessionKeys = Object.keys(sessionStorage);
+                log(logId, `✅ SessionStorage keys: ${sessionKeys.join(', ')}`);
+                
+                // Check for BillableAI specific data
+                const billableKeys = [...localKeys, ...sessionKeys].filter(key => key.includes('billable'));
+                log(logId, `✅ BillableAI related keys: ${billableKeys.join(', ')}`);
+                
+            } catch (error) {
+                log(logId, `❌ Storage check failed: ${error.message}`);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🎯 BillableAI: Email Display Working Test initialized');
+        });
+    </script>
+</body>
+</html> 

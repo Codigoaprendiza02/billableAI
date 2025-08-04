@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Context Auth Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5;
+            color: #333;
+        }
+        .test-section { 
+            margin: 15px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            background: white;
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .info { color: #007bff; font-weight: bold; }
+        button { 
+            margin: 5px; 
+            padding: 10px 15px; 
+            cursor: pointer; 
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button:hover { background: #0056b3; }
+        .result { 
+            margin-top: 10px; 
+            padding: 10px; 
+            background: #f8f9fa; 
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .console { 
+            background: #000; 
+            color: #0f0; 
+            padding: 10px; 
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 11px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔄 Cross-Context Authentication Test</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Chrome Storage Availability</h3>
+        <button onclick="testChromeStorage()">Test Chrome Storage</button>
+        <div id="chrome-storage-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Test Cross-Context Persistence</h3>
+        <button onclick="testCrossContextPersistence()">Test Cross-Context</button>
+        <div id="cross-context-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Test Extension Flow with Chrome Storage</h3>
+        <button onclick="testExtensionFlow()">Test Extension Flow</button>
+        <div id="extension-flow-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Current Storage Status</h3>
+        <button onclick="checkStorageStatus()">Check Storage Status</button>
+        <div id="storage-status-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>5. Console Logs</h3>
+        <div id="console-logs" class="console"></div>
+    </div>
+
+    <script>
+        // Enhanced Simple Auth Implementation with Chrome Storage
+        const AUTH_TOKEN_KEY = 'billableai_auth_token';
+        const USER_DATA_KEY = 'billableai_user_data';
+
+        class SimpleAuth {
+            constructor() {
+                this.isAuthenticated = false;
+                this.user = null;
+                this.token = null;
+            }
+
+            async init() {
+                try {
+                    console.log('🎯 SimpleAuth: Initializing authentication...');
+                    
+                    // Try chrome.storage.local first (for cross-context persistence)
+                    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                        try {
+                            const result = await chrome.storage.local.get([AUTH_TOKEN_KEY, USER_DATA_KEY]);
+                            const token = result[AUTH_TOKEN_KEY];
+                            const userData = result[USER_DATA_KEY];
+                            
+                            console.log('🎯 SimpleAuth: Chrome storage - Token found:', !!token);
+                            console.log('🎯 SimpleAuth: Chrome storage - User data found:', !!userData);
+                            
+                            if (token && userData) {
+                                this.token = token;
+                                this.user = typeof userData === 'string' ? JSON.parse(userData) : userData;
+                                this.isAuthenticated = true;
+                                console.log('🎯 SimpleAuth: Authentication restored from chrome.storage.local');
+                                console.log('🎯 SimpleAuth: User:', this.user.name);
+                                
+                                // Also sync to localStorage for immediate access
+                                localStorage.setItem(AUTH_TOKEN_KEY, token);
+                                localStorage.setItem(USER_DATA_KEY, JSON.stringify(this.user));
+                                
+                                return true;
+                            }
+                        } catch (chromeError) {
+                            console.log('🎯 SimpleAuth: Chrome storage not available, trying localStorage');
+                        }
+                    }
+                    
+                    // Fallback to localStorage
+                    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+                    const userData = localStorage.getItem(USER_DATA_KEY);
+                    
+                    console.log('🎯 SimpleAuth: localStorage - Token found:', !!token);
+                    console.log('🎯 SimpleAuth: localStorage - User data found:', !!userData);
+                    
+                    if (token && userData) {
+                        this.token = token;
+                        this.user = JSON.parse(userData);
+                        this.isAuthenticated = true;
+                        console.log('🎯 SimpleAuth: Authentication restored from localStorage');
+                        console.log('🎯 SimpleAuth: User:', this.user.name);
+                        
+                        // Sync to chrome.storage.local if available
+                        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                            try {
+                                await chrome.storage.local.set({
+                                    [AUTH_TOKEN_KEY]: token,
+                                    [USER_DATA_KEY]: userData
+                                });
+                                console.log('🎯 SimpleAuth: Synced to chrome.storage.local');
+                            } catch (syncError) {
+                                console.log('🎯 SimpleAuth: Failed to sync to chrome.storage.local');
+                            }
+                        }
+                        
+                        return true;
+                    } else {
+                        this.clear();
+                        console.log('🎯 SimpleAuth: No stored authentication found');
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('🎯 SimpleAuth: Error initializing auth:', error);
+                    this.clear();
+                    return false;
+                }
+            }
+
+            async login(token, user) {
+                try {
+                    console.log('🎯 SimpleAuth: Logging in user:', user.name);
+                    
+                    // Store in localStorage (immediate access)
+                    localStorage.setItem(AUTH_TOKEN_KEY, token);
+                    localStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
+                    
+                    // Store in chrome.storage.local (cross-context persistence)
+                    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                        try {
+                            await chrome.storage.local.set({
+                                [AUTH_TOKEN_KEY]: token,
+                                [USER_DATA_KEY]: JSON.stringify(user)
+                            });
+                            console.log('🎯 SimpleAuth: Data stored in chrome.storage.local');
+                        } catch (chromeError) {
+                            console.log('🎯 SimpleAuth: Failed to store in chrome.storage.local, using localStorage only');
+                        }
+                    }
+                    
+                    // Update state
+                    this.token = token;
+                    this.user = user;
+                    this.isAuthenticated = true;
+                    
+                    console.log('🎯 SimpleAuth: Login successful, data stored');
+                    console.log('🎯 SimpleAuth: Token stored:', !!token);
+                    console.log('🎯 SimpleAuth: User stored:', !!user);
+                    return true;
+                } catch (error) {
+                    console.error('🎯 SimpleAuth: Login error:', error);
+                    return false;
+                }
+            }
+
+            async logout() {
+                try {
+                    // Clear localStorage
+                    localStorage.removeItem(AUTH_TOKEN_KEY);
+                    localStorage.removeItem(USER_DATA_KEY);
+                    
+                    // Clear chrome.storage.local
+                    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                        try {
+                            await chrome.storage.local.remove([AUTH_TOKEN_KEY, USER_DATA_KEY]);
+                            console.log('🎯 SimpleAuth: Cleared chrome.storage.local');
+                        } catch (chromeError) {
+                            console.log('🎯 SimpleAuth: Failed to clear chrome.storage.local');
+                        }
+                    }
+                    
+                    // Clear state
+                    this.token = null;
+                    this.user = null;
+                    this.isAuthenticated = false;
+                    
+                    console.log('🎯 SimpleAuth: Logout successful');
+                    return true;
+                } catch (error) {
+                    console.error('🎯 SimpleAuth: Logout error:', error);
+                    return false;
+                }
+            }
+
+            getCurrentUser() {
+                return this.user;
+            }
+
+            getToken() {
+                return this.token;
+            }
+
+            isUserAuthenticated() {
+                return this.isAuthenticated;
+            }
+
+            clear() {
+                this.token = null;
+                this.user = null;
+                this.isAuthenticated = false;
+            }
+        }
+
+        const simpleAuth = new SimpleAuth();
+
+        // Console logging
+        function logToConsole(message) {
+            const consoleDiv = document.getElementById('console-logs');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        // Override console.log to capture logs
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            logToConsole(args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            logToConsole('ERROR: ' + args.join(' '));
+        };
+
+        function displayResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            element.innerHTML = `<div class="${className}">${content}</div>`;
+        }
+
+        async function testChromeStorage() {
+            const result = [];
+            
+            try {
+                console.log('=== TESTING CHROME STORAGE AVAILABILITY ===');
+                
+                if (typeof chrome !== 'undefined') {
+                    result.push('✅ Chrome API available');
+                    
+                    if (chrome.storage) {
+                        result.push('✅ Chrome storage API available');
+                        
+                        if (chrome.storage.local) {
+                            result.push('✅ Chrome storage.local available');
+                            
+                            // Test chrome.storage.local operations
+                            try {
+                                await chrome.storage.local.set({ test_key: 'test_value' });
+                                const testResult = await chrome.storage.local.get(['test_key']);
+                                
+                                if (testResult.test_key === 'test_value') {
+                                    result.push('✅ Chrome storage.local read/write working');
+                                } else {
+                                    result.push('❌ Chrome storage.local read/write failed');
+                                }
+                                
+                                await chrome.storage.local.remove(['test_key']);
+                                result.push('✅ Chrome storage.local remove working');
+                                
+                            } catch (storageError) {
+                                result.push(`❌ Chrome storage.local error: ${storageError.message}`);
+                            }
+                        } else {
+                            result.push('❌ Chrome storage.local not available');
+                        }
+                    } else {
+                        result.push('❌ Chrome storage API not available');
+                    }
+                } else {
+                    result.push('❌ Chrome API not available (not in extension context)');
+                }
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+            }
+
+            displayResult('chrome-storage-result', result.join('<br>'), 'success');
+        }
+
+        async function testCrossContextPersistence() {
+            const result = [];
+            
+            try {
+                console.log('=== TESTING CROSS-CONTEXT PERSISTENCE ===');
+                
+                // Step 1: Login with chrome.storage.local
+                const testToken = 'cross_context_token_' + Date.now();
+                const testUser = {
+                    id: 'cross_context_user_123',
+                    username: 'crosscontextuser',
+                    email: 'crosscontext@example.com',
+                    name: 'Cross Context User',
+                    profession: 'Lawyer'
+                };
+
+                const loginSuccess = await simpleAuth.login(testToken, testUser);
+                if (loginSuccess) {
+                    result.push('✅ Step 1: Login successful');
+                    
+                    // Step 2: Verify data in both storages
+                    const localToken = localStorage.getItem(AUTH_TOKEN_KEY);
+                    const localUser = localStorage.getItem(USER_DATA_KEY);
+                    
+                    if (localToken && localUser) {
+                        result.push('✅ Step 2: Data in localStorage');
+                    } else {
+                        result.push('❌ Step 2: Data not in localStorage');
+                    }
+                    
+                    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                        try {
+                            const chromeResult = await chrome.storage.local.get([AUTH_TOKEN_KEY, USER_DATA_KEY]);
+                            if (chromeResult[AUTH_TOKEN_KEY] && chromeResult[USER_DATA_KEY]) {
+                                result.push('✅ Step 2: Data in chrome.storage.local');
+                            } else {
+                                result.push('❌ Step 2: Data not in chrome.storage.local');
+                            }
+                        } catch (chromeError) {
+                            result.push('❌ Step 2: Chrome storage error');
+                        }
+                    }
+                    
+                    // Step 3: Clear state (simulate context change)
+                    simpleAuth.clear();
+                    result.push('✅ Step 3: State cleared (context change)');
+                    
+                    // Step 4: Reinitialize (should restore from chrome.storage.local)
+                    const restored = await simpleAuth.init();
+                    if (restored) {
+                        result.push('✅ Step 4: Authentication restored from chrome.storage.local');
+                        
+                        if (simpleAuth.isUserAuthenticated()) {
+                            result.push('✅ Step 4: Authentication state maintained');
+                            
+                            const user = simpleAuth.getCurrentUser();
+                            if (user && user.name === testUser.name) {
+                                result.push('✅ Step 4: User data restored');
+                            } else {
+                                result.push('❌ Step 4: User data not restored');
+                            }
+                        } else {
+                            result.push('❌ Step 4: Authentication state lost');
+                        }
+                    } else {
+                        result.push('❌ Step 4: Authentication restoration failed');
+                    }
+                    
+                    // Clean up
+                    await simpleAuth.logout();
+                    result.push('✅ Cleanup completed');
+                } else {
+                    result.push('❌ Step 1: Login failed');
+                }
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+            }
+
+            displayResult('cross-context-result', result.join('<br>'), 'success');
+        }
+
+        async function testExtensionFlow() {
+            const result = [];
+            
+            try {
+                console.log('=== TESTING EXTENSION FLOW WITH CHROME STORAGE ===');
+                
+                // Step 1: Simulate AppContext.checkAuth() on extension load
+                console.log('🎯 BillableAI: Starting simple authentication check...');
+                const authRestored = await simpleAuth.init();
+                
+                if (authRestored) {
+                    result.push('✅ Step 1: Authentication restored successfully');
+                    
+                    const userData = simpleAuth.getCurrentUser();
+                    if (userData) {
+                        result.push(`✅ Step 1: User data loaded: ${userData.name}`);
+                    }
+                    
+                    if (simpleAuth.isUserAuthenticated()) {
+                        result.push('✅ Step 1: Authentication state set');
+                    }
+                    
+                    console.log('🎯 BillableAI: Authentication complete');
+                } else {
+                    result.push('❌ Step 1: Authentication restoration failed');
+                    console.log('🎯 BillableAI: No authentication found, starting fresh');
+                }
+
+                // Step 2: Simulate user login (like AppContext.login)
+                console.log('🎯 BillableAI: Login attempt for username: testuser');
+                const mockResponse = {
+                    success: true,
+                    token: 'extension_token_' + Date.now(),
+                    user: {
+                        id: 'extension_user_123',
+                        username: 'testuser',
+                        email: 'test@example.com',
+                        name: 'Extension Test User',
+                        profession: 'Lawyer'
+                    }
+                };
+                
+                console.log('🎯 BillableAI: Login response:', mockResponse);
+                console.log('🎯 BillableAI: Login successful, storing auth data...');
+                
+                const loginSuccess = await simpleAuth.login(mockResponse.token, mockResponse.user);
+                
+                if (loginSuccess) {
+                    result.push('✅ Step 2: Login successful');
+                    result.push('✅ Step 2: Auth data stored');
+                } else {
+                    result.push('❌ Step 2: Login failed');
+                }
+
+                // Step 3: Simulate popup close/reopen (clear and reinitialize)
+                console.log('🎯 BillableAI: Simulating popup close/reopen...');
+                simpleAuth.clear();
+                result.push('✅ Step 3: Popup closed (state cleared)');
+                
+                // Step 4: Simulate popup reopen (AppContext.checkAuth again)
+                console.log('🎯 BillableAI: Starting simple authentication check... (popup reopen)');
+                const authRestoredAgain = await simpleAuth.init();
+                
+                if (authRestoredAgain) {
+                    result.push('✅ Step 4: Authentication restored after popup reopen');
+                    
+                    const userDataAgain = simpleAuth.getCurrentUser();
+                    if (userDataAgain) {
+                        result.push(`✅ Step 4: User data restored: ${userDataAgain.name}`);
+                    }
+                    
+                    if (simpleAuth.isUserAuthenticated()) {
+                        result.push('✅ Step 4: Authentication state maintained');
+                    }
+                } else {
+                    result.push('❌ Step 4: Authentication restoration failed after popup reopen');
+                }
+
+                // Clean up
+                await simpleAuth.logout();
+                result.push('✅ Cleanup completed');
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+            }
+
+            displayResult('extension-flow-result', result.join('<br>'), 'success');
+        }
+
+        async function checkStorageStatus() {
+            const result = [];
+            
+            try {
+                console.log('=== CHECKING STORAGE STATUS ===');
+                
+                // Check localStorage
+                const localToken = localStorage.getItem(AUTH_TOKEN_KEY);
+                const localUser = localStorage.getItem(USER_DATA_KEY);
+                
+                result.push(`localStorage Token: ${localToken ? 'EXISTS' : 'NOT FOUND'}`);
+                result.push(`localStorage User: ${localUser ? 'EXISTS' : 'NOT FOUND'}`);
+                
+                // Check chrome.storage.local
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    try {
+                        const chromeResult = await chrome.storage.local.get([AUTH_TOKEN_KEY, USER_DATA_KEY]);
+                        const chromeToken = chromeResult[AUTH_TOKEN_KEY];
+                        const chromeUser = chromeResult[USER_DATA_KEY];
+                        
+                        result.push(`Chrome Storage Token: ${chromeToken ? 'EXISTS' : 'NOT FOUND'}`);
+                        result.push(`Chrome Storage User: ${chromeUser ? 'EXISTS' : 'NOT FOUND'}`);
+                        
+                        if (chromeToken && chromeUser) {
+                            result.push('✅ Chrome storage has authentication data');
+                        } else {
+                            result.push('❌ Chrome storage has no authentication data');
+                        }
+                    } catch (chromeError) {
+                        result.push(`❌ Chrome storage error: ${chromeError.message}`);
+                    }
+                } else {
+                    result.push('❌ Chrome storage not available');
+                }
+                
+                // Check current auth state
+                const restored = await simpleAuth.init();
+                if (restored) {
+                    result.push('✅ Authentication state: RESTORED');
+                    const user = simpleAuth.getCurrentUser();
+                    if (user) {
+                        result.push(`User: ${user.name} (${user.profession})`);
+                    }
+                } else {
+                    result.push('❌ Authentication state: NOT RESTORED');
+                }
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+            }
+
+            displayResult('storage-status-result', result.join('<br>'), 'info');
+        }
+
+        // Auto-run chrome storage test on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('=== PAGE LOADED ===');
+                testChromeStorage();
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Auth Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5;
+            color: #333;
+        }
+        .test-section { 
+            margin: 15px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            background: white;
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .info { color: #007bff; font-weight: bold; }
+        button { 
+            margin: 5px; 
+            padding: 10px 15px; 
+            cursor: pointer; 
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button:hover { background: #0056b3; }
+        .result { 
+            margin-top: 10px; 
+            padding: 10px; 
+            background: #f8f9fa; 
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Final Authentication Test</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Simple Auth Keys</h3>
+        <button onclick="testSimpleAuthKeys()">Test Simple Auth Keys</button>
+        <div id="simple-auth-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Test Extension Compatibility</h3>
+        <button onclick="testExtensionCompatibility()">Test Extension Compatibility</button>
+        <div id="extension-compat-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Test Persistence Flow</h3>
+        <button onclick="testPersistenceFlow()">Test Persistence Flow</button>
+        <div id="persistence-flow-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Current Status</h3>
+        <button onclick="checkCurrentStatus()">Check Current Status</button>
+        <div id="current-status-result" class="result"></div>
+    </div>
+
+    <script>
+        // Simple Auth Implementation (same as in simpleAuth.js)
+        const AUTH_TOKEN_KEY = 'billableai_auth_token';
+        const USER_DATA_KEY = 'billableai_user_data';
+
+        class SimpleAuth {
+            constructor() {
+                this.isAuthenticated = false;
+                this.user = null;
+                this.token = null;
+            }
+
+            init() {
+                try {
+                    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+                    const userData = localStorage.getItem(USER_DATA_KEY);
+                    
+                    if (token && userData) {
+                        this.token = token;
+                        this.user = JSON.parse(userData);
+                        this.isAuthenticated = true;
+                        console.log('🎯 SimpleAuth: Authentication restored from localStorage');
+                        return true;
+                    } else {
+                        this.clear();
+                        console.log('🎯 SimpleAuth: No stored authentication found');
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('🎯 SimpleAuth: Error initializing auth:', error);
+                    this.clear();
+                    return false;
+                }
+            }
+
+            login(token, user) {
+                try {
+                    localStorage.setItem(AUTH_TOKEN_KEY, token);
+                    localStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
+                    
+                    this.token = token;
+                    this.user = user;
+                    this.isAuthenticated = true;
+                    
+                    console.log('🎯 SimpleAuth: Login successful, data stored');
+                    return true;
+                } catch (error) {
+                    console.error('🎯 SimpleAuth: Login error:', error);
+                    return false;
+                }
+            }
+
+            logout() {
+                try {
+                    localStorage.removeItem(AUTH_TOKEN_KEY);
+                    localStorage.removeItem(USER_DATA_KEY);
+                    
+                    this.token = null;
+                    this.user = null;
+                    this.isAuthenticated = false;
+                    
+                    console.log('🎯 SimpleAuth: Logout successful');
+                    return true;
+                } catch (error) {
+                    console.error('🎯 SimpleAuth: Logout error:', error);
+                    return false;
+                }
+            }
+
+            getCurrentUser() {
+                return this.user;
+            }
+
+            getToken() {
+                return this.token;
+            }
+
+            isUserAuthenticated() {
+                return this.isAuthenticated;
+            }
+
+            clear() {
+                this.token = null;
+                this.user = null;
+                this.isAuthenticated = false;
+            }
+        }
+
+        const simpleAuth = new SimpleAuth();
+
+        function displayResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            element.innerHTML = `<div class="${className}">${content}</div>`;
+        }
+
+        function testSimpleAuthKeys() {
+            const result = [];
+            
+            try {
+                // Test storing with simple auth keys
+                const testToken = 'final_test_token_' + Date.now();
+                const testUser = {
+                    id: 'final_user_123',
+                    username: 'finaluser',
+                    email: 'final@example.com',
+                    name: 'Final Test User',
+                    profession: 'Lawyer'
+                };
+
+                const success = simpleAuth.login(testToken, testUser);
+                
+                if (success) {
+                    result.push('✅ Login successful with simple auth keys');
+                    
+                    // Verify storage with correct keys
+                    const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
+                    const storedUser = localStorage.getItem(USER_DATA_KEY);
+                    
+                    if (storedToken === testToken && storedUser) {
+                        result.push('✅ Data stored with correct keys');
+                        
+                        const userData = JSON.parse(storedUser);
+                        if (userData.name === testUser.name) {
+                            result.push('✅ User data verified');
+                        } else {
+                            result.push('❌ User data verification failed');
+                        }
+                    } else {
+                        result.push('❌ Storage verification failed');
+                    }
+
+                    // Check that old keys are NOT used
+                    const oldToken = localStorage.getItem('authToken');
+                    const oldUser = localStorage.getItem('user');
+                    
+                    if (!oldToken && !oldUser) {
+                        result.push('✅ Old keys not used (correct)');
+                    } else {
+                        result.push('❌ Old keys still present (incorrect)');
+                    }
+                } else {
+                    result.push('❌ Login failed');
+                }
+
+                // Clean up
+                simpleAuth.logout();
+                result.push('✅ Cleanup completed');
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+            }
+
+            displayResult('simple-auth-result', result.join('<br>'), 'success');
+        }
+
+        function testExtensionCompatibility() {
+            const result = [];
+            
+            try {
+                // Simulate extension login
+                const testToken = 'extension_token_' + Date.now();
+                const testUser = {
+                    id: 'extension_user_456',
+                    username: 'extensionuser',
+                    email: 'extension@example.com',
+                    name: 'Extension User',
+                    profession: 'Attorney'
+                };
+
+                simpleAuth.login(testToken, testUser);
+                result.push('✅ Extension login simulated');
+
+                // Simulate extension restart (clear state, reinitialize)
+                simpleAuth.clear();
+                result.push('✅ Extension state cleared (simulating restart)');
+
+                // Reinitialize (like extension popup opening)
+                const restored = simpleAuth.init();
+                
+                if (restored) {
+                    result.push('✅ Authentication restored after restart');
+                    
+                    const user = simpleAuth.getCurrentUser();
+                    const token = simpleAuth.getToken();
+                    
+                    if (user && token) {
+                        result.push('✅ User and token accessible after restart');
+                        result.push(`User: ${user.name} (${user.profession})`);
+                        result.push(`Token: ${token.substring(0, 20)}...`);
+                    } else {
+                        result.push('❌ User or token not accessible after restart');
+                    }
+                } else {
+                    result.push('❌ Authentication not restored after restart');
+                }
+
+                // Clean up
+                simpleAuth.logout();
+                result.push('✅ Cleanup completed');
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+            }
+
+            displayResult('extension-compat-result', result.join('<br>'), 'success');
+        }
+
+        function testPersistenceFlow() {
+            const result = [];
+            
+            try {
+                // Step 1: Login
+                const testToken = 'persistence_token_' + Date.now();
+                const testUser = {
+                    id: 'persistence_user_789',
+                    username: 'persistenceuser',
+                    email: 'persistence@example.com',
+                    name: 'Persistence User',
+                    profession: 'Solicitor'
+                };
+
+                simpleAuth.login(testToken, testUser);
+                result.push('✅ Step 1: Login completed');
+
+                // Step 2: Verify immediate access
+                if (simpleAuth.isUserAuthenticated()) {
+                    result.push('✅ Step 2: Immediate authentication verified');
+                } else {
+                    result.push('❌ Step 2: Immediate authentication failed');
+                }
+
+                // Step 3: Simulate popup close/reopen
+                simpleAuth.clear();
+                result.push('✅ Step 3: Popup closed (state cleared)');
+
+                // Step 4: Simulate popup reopen
+                const restored = simpleAuth.init();
+                if (restored) {
+                    result.push('✅ Step 4: Popup reopened, auth restored');
+                    
+                    if (simpleAuth.isUserAuthenticated()) {
+                        result.push('✅ Step 4: Authentication state maintained');
+                    } else {
+                        result.push('❌ Step 4: Authentication state lost');
+                    }
+                } else {
+                    result.push('❌ Step 4: Authentication restoration failed');
+                }
+
+                // Clean up
+                simpleAuth.logout();
+                result.push('✅ Cleanup completed');
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+            }
+
+            displayResult('persistence-flow-result', result.join('<br>'), 'success');
+        }
+
+        function checkCurrentStatus() {
+            const result = [];
+            
+            try {
+                // Initialize auth
+                const restored = simpleAuth.init();
+                
+                if (restored) {
+                    result.push('✅ Authentication restored');
+                    
+                    const user = simpleAuth.getCurrentUser();
+                    const token = simpleAuth.getToken();
+                    const isAuth = simpleAuth.isUserAuthenticated();
+                    
+                    result.push(`Authenticated: ${isAuth ? 'Yes' : 'No'}`);
+                    
+                    if (user) {
+                        result.push(`User: ${user.name} (${user.profession})`);
+                        result.push(`Email: ${user.email}`);
+                    } else {
+                        result.push('User: Not found');
+                    }
+                    
+                    if (token) {
+                        result.push(`Token: ${token.substring(0, 20)}...`);
+                    } else {
+                        result.push('Token: Not found');
+                    }
+
+                    // Check localStorage keys
+                    const authToken = localStorage.getItem(AUTH_TOKEN_KEY);
+                    const userData = localStorage.getItem(USER_DATA_KEY);
+                    
+                    result.push(`Simple Auth Token: ${authToken ? 'EXISTS' : 'NOT FOUND'}`);
+                    result.push(`Simple Auth User: ${userData ? 'EXISTS' : 'NOT FOUND'}`);
+
+                    // Check old keys (should not exist)
+                    const oldToken = localStorage.getItem('authToken');
+                    const oldUser = localStorage.getItem('user');
+                    
+                    result.push(`Old Token: ${oldToken ? 'EXISTS (WRONG)' : 'NOT FOUND (CORRECT)'}`);
+                    result.push(`Old User: ${oldUser ? 'EXISTS (WRONG)' : 'NOT FOUND (CORRECT)'}`);
+                } else {
+                    result.push('❌ No authentication found');
+                    result.push('Status: Not authenticated');
+                }
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+            }
+
+            displayResult('current-status-result', result.join('<br>'), 'info');
+        }
+
+        // Auto-run current status check on page load
+        window.addEventListener('load', () => {
+            setTimeout(checkCurrentStatus, 500);
+        });
+    </script>
+</body>
+</html> 

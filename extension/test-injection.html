@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI Injection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 BillableAI Injection Test</h1>
+        <div id="status" class="status info">
+            Testing content script injection...
+        </div>
+        
+        <div>
+            <button onclick="checkInjection()">Check Injection</button>
+            <button onclick="checkState()">Check State</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+        
+        <div class="log" id="log">
+            Test log will appear here...
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        function checkInjection() {
+            log('Checking BillableAI injection...');
+            
+            if (typeof window.billableAI !== 'undefined') {
+                log('✅ window.billableAI object found');
+                log(`Available functions: ${Object.keys(window.billableAI).join(', ')}`);
+                updateStatus('Content script injected successfully!', 'success');
+            } else {
+                log('❌ window.billableAI object not found');
+                updateStatus('Content script not injected', 'error');
+            }
+        }
+
+        function checkState() {
+            log('Checking BillableAI state...');
+            
+            if (window.billableAIState) {
+                log('✅ window.billableAIState found');
+                log(`State: ${JSON.stringify(window.billableAIState, null, 2)}`);
+            } else {
+                log('❌ window.billableAIState not found');
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = 'Log cleared...\n';
+        }
+
+        // Auto-check on page load
+        window.addEventListener('load', () => {
+            log('Page loaded, checking injection...');
+            setTimeout(checkInjection, 1000);
+        });
+
+        // Check every 5 seconds
+        setInterval(() => {
+            if (typeof window.billableAI === 'undefined') {
+                log('Extension still not detected...');
+            }
+        }, 5000);
+    </script>
+</body>
+</html> 

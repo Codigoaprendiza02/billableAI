@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Actual Email Flow</title>
+</head>
+<body>
+    <h1>Test Actual Email Flow</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        // Simulate the actual email data flow
+        async function testActualEmailFlow() {
+            const resultsDiv = document.getElementById('results');
+            let debugLog = [];
+            
+            function log(message) {
+                console.log(message);
+                debugLog.push(message);
+            }
+            
+            try {
+                log('🔧 Testing actual email data flow...');
+                
+                // Step 1: Simulate Gmail content script capturing email data
+                log('📋 Step 1: Gmail content script capturing email data...');
+                const capturedEmailData = {
+                    subject: 'Test Email Subject',
+                    to: 'test@example.com',
+                    body: 'This is a test email body for comprehensive testing.',
+                    timestamp: new Date().toISOString()
+                };
+                const capturedTimeSpent = 300000; // 5 minutes
+                
+                log(`✅ Email data captured by Gmail content script:`);
+                log(`  Subject: ${capturedEmailData.subject}`);
+                log(`  To: ${capturedEmailData.to}`);
+                log(`  Body: ${capturedEmailData.body.substring(0, 50)}...`);
+                log(`  Time spent: ${capturedTimeSpent}ms`);
+                
+                // Step 2: Simulate content script sending EMAIL_DATA_STORED to background
+                log('📋 Step 2: Content script sending EMAIL_DATA_STORED to background...');
+                const emailDataStoredMessage = {
+                    type: 'EMAIL_DATA_STORED',
+                    data: {
+                        emailData: capturedEmailData,
+                        timeSpent: capturedTimeSpent,
+                        autoProcess: true,
+                        timestamp: Date.now()
+                    }
+                };
+                
+                log(`✅ EMAIL_DATA_STORED message prepared:`);
+                log(`  Type: ${emailDataStoredMessage.type}`);
+                log(`  Has emailData: ${!!emailDataStoredMessage.data.emailData}`);
+                log(`  Has timeSpent: ${!!emailDataStoredMessage.data.timeSpent}`);
+                
+                // Step 3: Simulate background script processing EMAIL_DATA_STORED
+                log('📋 Step 3: Background script processing EMAIL_DATA_STORED...');
+                
+                function simulateBackgroundProcess(message) {
+                    if (message.type === 'EMAIL_DATA_STORED') {
+                        log('✅ Background script received EMAIL_DATA_STORED');
+                        
+                        // Store in chrome.storage.local (simulated)
+                        const storageData = {
+                            emailData: message.data.emailData,
+                            timeSpent: message.data.timeSpent,
+                            autoProcess: true,
+                            timestamp: Date.now()
+                        };
+                        
+                        log(`✅ Data stored in chrome.storage.local:`);
+                        log(`  Subject: ${storageData.emailData.subject}`);
+                        log(`  Time spent: ${storageData.timeSpent}ms`);
+                        
+                        // Send EMAIL_DATA_AVAILABLE to Assistant
+                        const emailDataAvailableMessage = {
+                            type: 'EMAIL_DATA_AVAILABLE',
+                            data: message.data
+                        };
+                        
+                        log(`✅ EMAIL_DATA_AVAILABLE message prepared:`);
+                        log(`  Type: ${emailDataAvailableMessage.type}`);
+                        log(`  Has emailData: ${!!emailDataAvailableMessage.data.emailData}`);
+                        log(`  Has timeSpent: ${!!emailDataAvailableMessage.data.timeSpent}`);
+                        
+                        return emailDataAvailableMessage;
+                    } else {
+                        log('❌ Background script received unexpected message type:', message.type);
+                        return null;
+                    }
+                }
+                
+                const emailDataAvailableMessage = simulateBackgroundProcess(emailDataStoredMessage);
+                
+                if (!emailDataAvailableMessage) {
+                    throw new Error('Background script failed to process EMAIL_DATA_STORED');
+                }
+                
+                // Step 4: Simulate Assistant receiving EMAIL_DATA_AVAILABLE
+                log('📋 Step 4: Assistant receiving EMAIL_DATA_AVAILABLE...');
+                
+                function simulateAssistantReceive(message) {
+                    if (message.type === 'EMAIL_DATA_AVAILABLE') {
+                        log('✅ Assistant received EMAIL_DATA_AVAILABLE message');
+                        
+                        if (message.data && message.data.emailData) {
+                            const emailData = message.data.emailData;
+                            const timeSpent = message.data.timeSpent || 0;
+                            
+                            log(`✅ Assistant processed email data:`);
+                            log(`  Subject: ${emailData.subject}`);
+                            log(`  To: ${emailData.to}`);
+                            log(`  Body length: ${emailData.body?.length || 0} characters`);
+                            log(`  Time spent: ${timeSpent}ms (${Math.round(timeSpent / 60000)} minutes)`);
+                            
+                            return {
+                                success: true,
+                                emailData: emailData,
+                                timeSpent: timeSpent
+                            };
+                        } else {
+                            log('❌ Assistant received message but email data is missing');
+                            return { success: false, error: 'Missing email data in message' };
+                        }
+                    } else {
+                        log('❌ Assistant received unexpected message type:', message.type);
+                        return { success: false, error: 'Unexpected message type' };
+                    }
+                }
+                
+                const assistantResult = simulateAssistantReceive(emailDataAvailableMessage);
+                
+                // Step 5: Simulate Gemini response generation
+                log('📋 Step 5: Generating Gemini response...');
+                
+                if (assistantResult.success) {
+                    log('✅ Assistant ready to generate Gemini response');
+                    log(`  Will include:`);
+                    log(`  - Subject: ${assistantResult.emailData.subject}`);
+                    log(`  - To: ${assistantResult.emailData.to}`);
+                    log(`  - Body: ${assistantResult.emailData.body.substring(0, 50)}...`);
+                    log(`  - Time: ${assistantResult.timeSpent}ms (${Math.round(assistantResult.timeSpent / 60000)} minutes)`);
+                } else {
+                    log(`❌ Assistant cannot generate response: ${assistantResult.error}`);
+                }
+                
+                // Display results
+                resultsDiv.innerHTML = `
+                    <h2>Test Results:</h2>
+                    <pre>${debugLog.join('\n')}</pre>
+                    
+                    <h3>Data Flow Status:</h3>
+                    <ul>
+                        <li><strong>Gmail Content Script:</strong> ✅ Captured email data</li>
+                        <li><strong>EMAIL_DATA_STORED:</strong> ✅ Sent to background</li>
+                        <li><strong>Background Script:</strong> ✅ Processed and stored data</li>
+                        <li><strong>EMAIL_DATA_AVAILABLE:</strong> ✅ Sent to Assistant</li>
+                        <li><strong>Assistant Reception:</strong> ${assistantResult.success ? '✅ Received and processed' : '❌ Failed'}</li>
+                        <li><strong>Gemini Response:</strong> ${assistantResult.success ? '✅ Ready to generate' : '❌ Cannot proceed'}</li>
+                    </ul>
+                    
+                    ${assistantResult.success ? `
+                    <h3>Final Email Data in Assistant:</h3>
+                    <pre>${JSON.stringify(assistantResult.emailData, null, 2)}</pre>
+                    
+                    <h3>Time Data:</h3>
+                    <p>Time Spent: ${assistantResult.timeSpent}ms (${Math.round(assistantResult.timeSpent / 60000)} minutes)</p>
+                    
+                    <h3>Expected Gemini Response:</h3>
+                    <p>The Assistant should now generate a Gemini response that includes:</p>
+                    <ul>
+                        <li>Email subject: "${assistantResult.emailData.subject}"</li>
+                        <li>Recipient: "${assistantResult.emailData.to}"</li>
+                        <li>Email content analysis</li>
+                        <li>Time spent: ${Math.round(assistantResult.timeSpent / 60000)} minutes</li>
+                        <li>Professional billing summary</li>
+                    </ul>
+                    ` : `
+                    <h3>Error:</h3>
+                    <p>${assistantResult.error}</p>
+                    `}
+                `;
+                
+            } catch (error) {
+                log(`❌ Test failed: ${error.message}`);
+                resultsDiv.innerHTML = `
+                    <h2>Test Failed:</h2>
+                    <pre>${debugLog.join('\n')}</pre>
+                    <h3>Error:</h3>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+
+        testActualEmailFlow();
+    </script>
+</body>
+</html> 

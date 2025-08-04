@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .test-button.warning {
+            background: #f44336;
+        }
+        .test-button.warning:hover {
+            background: #d32f2f;
+        }
+        .test-button.info {
+            background: #2196F3;
+        }
+        .test-button.info:hover {
+            background: #1976D2;
+        }
+        .test-button.tracking {
+            background: #FF9800;
+        }
+        .test-button.tracking:hover {
+            background: #F57C00;
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+    </style>
+</head>
+<body>
+    <h1>🔔 Notification System Test</h1>
+    
+    <div class="test-section">
+        <h2>Notification Tests</h2>
+        <button class="test-button" onclick="testBasicNotification()">Test Basic Notification</button>
+        <button class="test-button tracking" onclick="testTrackingNotification()">Test Tracking Notification</button>
+        <button class="test-button success" onclick="testSuccessNotification()">Test Success Notification</button>
+        <button class="test-button warning" onclick="testErrorNotification()">Test Error Notification</button>
+        <button class="test-button info" onclick="testInfoNotification()">Test Info Notification</button>
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        function logResult(message, type = 'info') {
+            const container = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+        }
+
+        // Mock notification functions for testing
+        function createNotificationElement() {
+            // Remove existing notification if any
+            const existingNotification = document.getElementById('billableai-notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+
+            const notification = document.createElement('div');
+            notification.id = 'billableai-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                z-index: 10000;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-size: 14px;
+                max-width: 300px;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                transition: all 0.3s ease;
+                opacity: 0;
+                transform: translateX(100%);
+            `;
+
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            return notification;
+        }
+
+        function showNotificationWithTimer(message, type = 'info', duration = 5000) {
+            const notification = createNotificationElement();
+            
+            let timerDisplay = '';
+            let timerInterval = null;
+            
+            if (type === 'tracking') {
+                // Add timer for tracking notifications
+                const startTime = Date.now();
+                timerInterval = setInterval(() => {
+                    const elapsed = Date.now() - startTime;
+                    const minutes = Math.floor(elapsed / 60000);
+                    const seconds = Math.floor((elapsed % 60000) / 1000);
+                    timerDisplay = ` (${minutes}:${seconds.toString().padStart(2, '0')})`;
+                    
+                    notification.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; margin-bottom: 5px;">${message}</div>
+                                <div style="font-size: 12px; opacity: 0.8;">${timerDisplay}</div>
+                            </div>
+                            <div style="width: 8px; height: 8px; background: #4CAF50; border-radius: 50%; animation: pulse 1s infinite;"></div>
+                        </div>
+                    `;
+                }, 1000);
+            } else {
+                // Regular notification without timer
+                notification.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="flex: 1;">${message}</div>
+                        <div style="width: 8px; height: 8px; background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'}; border-radius: 50%;"></div>
+                    </div>
+                `;
+            }
+
+            // Add CSS animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes pulse {
+                    0% { opacity: 1; }
+                    50% { opacity: 0.5; }
+                    100% { opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Auto-remove after duration
+            setTimeout(() => {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, duration);
+
+            return notification;
+        }
+
+        function testBasicNotification() {
+            logResult('Testing basic notification...', 'info');
+            showNotificationWithTimer('This is a basic notification', 'info', 3000);
+        }
+
+        function testTrackingNotification() {
+            logResult('Testing tracking notification with timer...', 'info');
+            showNotificationWithTimer('📧 Email tracking started', 'tracking', 10000);
+        }
+
+        function testSuccessNotification() {
+            logResult('Testing success notification...', 'success');
+            showNotificationWithTimer('✅ Operation completed successfully', 'success', 3000);
+        }
+
+        function testErrorNotification() {
+            logResult('Testing error notification...', 'error');
+            showNotificationWithTimer('❌ An error occurred', 'error', 3000);
+        }
+
+        function testInfoNotification() {
+            logResult('Testing info notification...', 'info');
+            showNotificationWithTimer('ℹ️ This is an informational message', 'info', 3000);
+        }
+
+        // Auto-run basic test on page load
+        window.addEventListener('load', () => {
+            logResult('🚀 Notification system test page loaded', 'info');
+            logResult('Click the buttons above to test different notification types', 'info');
+        });
+    </script>
+</body>
+</html> 

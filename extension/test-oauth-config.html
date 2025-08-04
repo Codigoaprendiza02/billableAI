@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI - OAuth Configuration Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f7fafc;
+            color: #2d3748;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        .test-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 5px;
+            transition: all 0.2s;
+        }
+        .test-button:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+        .test-button.success {
+            background: #38a169;
+        }
+        .test-button.success:hover {
+            background: #2f855a;
+        }
+        .test-button.danger {
+            background: #e53e3e;
+        }
+        .test-button.danger:hover {
+            background: #c53030;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .status.info {
+            background: #bee3f8;
+            color: #2b6cb0;
+            border: 1px solid #90cdf4;
+        }
+        .status.success {
+            background: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+        .status.error {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+        .result-box {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+            white-space: pre-wrap;
+        }
+        .step-list {
+            background: #f7fafc;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .step-list ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .step-list li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .step-list strong {
+            color: #2d3748;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 BillableAI</h1>
+            <p>OAuth Configuration Test</p>
+        </div>
+        <div class="content">
+            <div class="test-section">
+                <div class="test-title">🔍 Test Overview</div>
+                <div style="color: #4a5568; line-height: 1.6;">
+                    <p><strong>Purpose:</strong> Verify that the OAuth2 configuration is properly set up with the Google Client ID from backend.</p>
+                    <p><strong>Configuration:</strong> Google Client ID is loaded from backend/env.local via build script</p>
+                    <p><strong>Expected:</strong> Manifest.json should contain the actual Google Client ID, not placeholder</p>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">🧪 Test Controls</div>
+                <div style="margin: 20px 0;">
+                    <button class="test-button" onclick="testBackendConfig()">Test Backend Config</button>
+                    <button class="test-button success" onclick="testManifestConfig()">Test Manifest Config</button>
+                    <button class="test-button" onclick="testOAuthFlow()">Test OAuth Flow</button>
+                    <button class="test-button danger" onclick="clearResults()">Clear Results</button>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">📊 Test Status</div>
+                <div id="status" class="status info">Ready to test OAuth configuration</div>
+                <div id="results" class="result-box" style="display: none;"></div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">📋 Test Steps</div>
+                <div class="step-list">
+                    <ol>
+                        <li><strong>Test Backend Config:</strong> Verify Google Client ID is available from backend</li>
+                        <li><strong>Test Manifest Config:</strong> Check if manifest.json has proper OAuth2 configuration</li>
+                        <li><strong>Test OAuth Flow:</strong> Verify OAuth URL generation works correctly</li>
+                        <li><strong>Verify Extension Build:</strong> Ensure build script replaces placeholders</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">✅ Expected Results</div>
+                <div style="color: #4a5568; line-height: 1.6;">
+                    <p><strong>✅ Backend Config:</strong> Should return Google Client ID from env.local</p>
+                    <p><strong>✅ Manifest Config:</strong> Should contain actual client_id, not placeholder</p>
+                    <p><strong>✅ OAuth Flow:</strong> Should generate valid OAuth URLs</p>
+                    <p><strong>✅ Build Process:</strong> Should replace {{GOOGLE_CLIENT_ID}} with actual value</p>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">🐛 Common Issues</div>
+                <div style="color: #4a5568; line-height: 1.6;">
+                    <p><strong>❌ Backend not running:</strong> Start the backend server first</p>
+                    <p><strong>❌ Client ID not set:</strong> Update backend/env.local with real Google Client ID</p>
+                    <p><strong>❌ Build not run:</strong> Run the build script to update manifest.json</p>
+                    <p><strong>❌ OAuth scopes missing:</strong> Ensure all required Gmail scopes are included</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        function addResult(message) {
+            testResults.push(`[${new Date().toLocaleTimeString()}] ${message}`);
+            const results = document.getElementById('results');
+            results.textContent = testResults.join('\n');
+            results.style.display = 'block';
+        }
+
+        async function testBackendConfig() {
+            updateStatus('Testing backend configuration...', 'info');
+            addResult('Testing backend configuration...');
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/config/config');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult('✅ Backend configuration accessible');
+                    addResult(`Google Client ID: ${data.googleClientId ? 'Set' : 'Not set'}`);
+                    
+                    if (data.googleClientId && data.googleClientId !== 'your_google_client_id_here') {
+                        addResult('✅ Google Client ID is properly configured');
+                        addResult(`Client ID starts with: ${data.googleClientId.substring(0, 20)}...`);
+                        updateStatus('Backend configuration test successful', 'success');
+                    } else {
+                        addResult('❌ Google Client ID not configured properly');
+                        addResult('Please update backend/env.local with your real Google Client ID');
+                        updateStatus('Backend configuration test failed', 'error');
+                    }
+                } else {
+                    addResult(`❌ Backend configuration error: ${response.status}`);
+                    updateStatus('Backend configuration test failed', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Backend configuration failed: ${error.message}`);
+                updateStatus('Backend configuration test failed', 'error');
+            }
+        }
+
+        async function testManifestConfig() {
+            updateStatus('Testing manifest configuration...', 'info');
+            addResult('Testing manifest configuration...');
+            
+            try {
+                // Try to fetch the manifest.json file
+                const response = await fetch('./manifest.json');
+                
+                if (response.ok) {
+                    const manifest = await response.json();
+                    addResult('✅ Manifest.json is accessible');
+                    
+                    if (manifest.oauth2 && manifest.oauth2.client_id) {
+                        addResult('✅ OAuth2 configuration found in manifest');
+                        addResult(`Client ID: ${manifest.oauth2.client_id}`);
+                        addResult(`Scopes: ${manifest.oauth2.scopes.join(', ')}`);
+                        
+                        if (manifest.oauth2.client_id.includes('{{') || manifest.oauth2.client_id.includes('your_')) {
+                            addResult('❌ Manifest still contains placeholder values');
+                            addResult('Please run the build script to update manifest.json');
+                            updateStatus('Manifest configuration test failed', 'error');
+                        } else {
+                            addResult('✅ Manifest contains actual Google Client ID');
+                            updateStatus('Manifest configuration test successful', 'success');
+                        }
+                    } else {
+                        addResult('❌ OAuth2 configuration missing from manifest');
+                        updateStatus('Manifest configuration test failed', 'error');
+                    }
+                } else {
+                    addResult(`❌ Manifest.json error: ${response.status}`);
+                    updateStatus('Manifest configuration test failed', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Manifest configuration failed: ${error.message}`);
+                updateStatus('Manifest configuration test failed', 'error');
+            }
+        }
+
+        async function testOAuthFlow() {
+            updateStatus('Testing OAuth flow...', 'info');
+            addResult('Testing OAuth flow...');
+            
+            try {
+                // Get the client ID from backend
+                const response = await fetch('http://localhost:3001/api/config/config');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.googleClientId && data.googleClientId !== 'your_google_client_id_here') {
+                        // Test OAuth URL generation
+                        const scopes = [
+                            'https://www.googleapis.com/auth/gmail.readonly',
+                            'https://www.googleapis.com/auth/gmail.send',
+                            'https://www.googleapis.com/auth/gmail.modify',
+                            'https://www.googleapis.com/auth/gmail.labels'
+                        ].join(' ');
+
+                        const params = new URLSearchParams({
+                            client_id: data.googleClientId,
+                            redirect_uri: chrome.identity.getRedirectURL(),
+                            response_type: 'code',
+                            scope: scopes,
+                            access_type: 'offline',
+                            prompt: 'consent'
+                        });
+
+                        const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+                        
+                        addResult('✅ OAuth URL generation successful');
+                        addResult(`OAuth URL starts with: ${oauthUrl.substring(0, 100)}...`);
+                        addResult('✅ OAuth flow configuration is working correctly');
+                        updateStatus('OAuth flow test successful', 'success');
+                    } else {
+                        addResult('❌ Google Client ID not configured');
+                        updateStatus('OAuth flow test failed', 'error');
+                    }
+                } else {
+                    addResult(`❌ Failed to fetch configuration: ${response.status}`);
+                    updateStatus('OAuth flow test failed', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ OAuth flow test failed: ${error.message}`);
+                updateStatus('OAuth flow test failed', 'error');
+            }
+        }
+
+        function clearResults() {
+            testResults = [];
+            const results = document.getElementById('results');
+            results.style.display = 'none';
+            updateStatus('Results cleared', 'info');
+        }
+
+        // Initialize test tools
+        window.billableAITest = {
+            testBackendConfig,
+            testManifestConfig,
+            testOAuthFlow,
+            clearResults
+        };
+
+        updateStatus('OAuth configuration test tool ready. Use buttons above to test.', 'info');
+    </script>
+</body>
+</html> 

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI Simple Script Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 BillableAI Simple Script Test</h1>
+    
+    <div class="container">
+        <h2>📋 Test Overview</h2>
+        <p>This page tests the simple tracking script to verify it works correctly.</p>
+        <p><strong>Current URL:</strong> <span id="current-url"></span></p>
+        <p><strong>Protocol:</strong> <span id="current-protocol"></span></p>
+    </div>
+
+    <div class="container">
+        <h2>1. Extension Loading Test</h2>
+        <div id="extension-status" class="status info">Checking...</div>
+        <button onclick="checkExtension()">Check Extension</button>
+    </div>
+
+    <div class="container">
+        <h2>2. Content Script Injection Test</h2>
+        <div id="content-script-status" class="status info">Checking...</div>
+        <button onclick="checkContentScript()">Check Content Script</button>
+    </div>
+
+    <div class="container">
+        <h2>3. Function Availability Test</h2>
+        <div id="function-status" class="status info">Ready to test</div>
+        <button onclick="testFunctions()">Test Functions</button>
+        <button onclick="testGmailAPI()">Test Gmail API</button>
+        <button onclick="testGeminiAPI()">Test Gemini API</button>
+    </div>
+
+    <div class="container">
+        <h2>4. State Management Test</h2>
+        <div id="state-status" class="status info">Ready to test</div>
+        <button onclick="testStateManagement()">Test State Management</button>
+        <button onclick="testLocalStorage()">Test LocalStorage</button>
+    </div>
+
+    <div class="container">
+        <h2>5. Console Log</h2>
+        <div class="log" id="log"></div>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <script>
+        let logMessages = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logMessages.push(logEntry);
+            
+            const logElement = document.getElementById('log');
+            logElement.textContent = logMessages.join('\n');
+            logElement.scrollTop = logElement.scrollHeight;
+            
+            console.log(`🎯 BillableAI Debug: ${message}`);
+        }
+
+        function clearLog() {
+            logMessages = [];
+            document.getElementById('log').textContent = '';
+        }
+
+        function updateStatus(elementId, message, className) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${className}`;
+        }
+
+        function checkExtension() {
+            log('🔍 Checking extension availability...');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                log('✅ chrome.runtime is available');
+                updateStatus('extension-status', '✅ Extension is loaded!', 'success');
+                
+                try {
+                    chrome.runtime.getManifest((manifest) => {
+                        log(`📋 Extension name: ${manifest.name}`);
+                        log(`📋 Extension version: ${manifest.version}`);
+                        log(`📋 Extension ID: ${chrome.runtime.id}`);
+                    });
+                } catch (error) {
+                    log(`⚠️ Could not get manifest: ${error.message}`);
+                }
+            } else {
+                log('❌ chrome.runtime is NOT available');
+                updateStatus('extension-status', '❌ Extension not loaded', 'error');
+            }
+        }
+
+        function checkContentScript() {
+            log('🔍 Checking content script...');
+            
+            if (window.billableAI) {
+                log('✅ window.billableAI object found');
+                updateStatus('content-script-status', '✅ Content script is injected!', 'success');
+                
+                // Check for specific functions
+                const functions = ['startTracking', 'stopTracking', 'getStatus', 'testGmailApi', 'generateTestSummary'];
+                functions.forEach(func => {
+                    if (typeof window.billableAI[func] === 'function') {
+                        log(`✅ ${func} function available`);
+                    } else {
+                        log(`❌ ${func} function NOT available`);
+                    }
+                });
+            } else {
+                log('❌ window.billableAI object NOT found');
+                updateStatus('content-script-status', '❌ Content script not injected', 'error');
+            }
+        }
+
+        function testFunctions() {
+            log('🔍 Testing function availability...');
+            
+            if (!window.billableAI) {
+                log('❌ window.billableAI not available');
+                updateStatus('function-status', '❌ Functions not available', 'error');
+                return;
+            }
+            
+            const functions = [
+                'startTracking',
+                'stopTracking',
+                'getStatus',
+                'testGmailApi',
+                'generateTestSummary',
+                'getDraftsCount'
+            ];
+            
+            let availableCount = 0;
+            functions.forEach(func => {
+                if (typeof window.billableAI[func] === 'function') {
+                    log(`✅ ${func} function available`);
+                    availableCount++;
+                } else {
+                    log(`❌ ${func} function NOT available`);
+                }
+            });
+            
+            if (availableCount === functions.length) {
+                updateStatus('function-status', `✅ All ${availableCount} functions available`, 'success');
+            } else {
+                updateStatus('function-status', `⚠️ ${availableCount}/${functions.length} functions available`, 'warning');
+            }
+        }
+
+        async function testGmailAPI() {
+            log('🔍 Testing Gmail API...');
+            
+            if (window.billableAI && window.billableAI.testGmailApi) {
+                try {
+                    const result = await window.billableAI.testGmailApi();
+                    log(`Gmail API test result: ${result}`);
+                } catch (error) {
+                    log(`❌ Gmail API test error: ${error.message}`);
+                }
+            } else {
+                log('❌ Gmail API test function not available');
+            }
+        }
+
+        async function testGeminiAPI() {
+            log('🔍 Testing Gemini API...');
+            
+            if (window.billableAI && window.billableAI.generateTestSummary) {
+                try {
+                    const testData = {
+                        to: 'test@example.com',
+                        subject: 'Test Email',
+                        content: 'This is a test email for API testing.'
+                    };
+                    const result = await window.billableAI.generateTestSummary(testData, 60000);
+                    log(`Gemini API test result: ${result}`);
+                } catch (error) {
+                    log(`❌ Gemini API test error: ${error.message}`);
+                }
+            } else {
+                log('❌ Gemini API test function not available');
+            }
+        }
+
+        function testStateManagement() {
+            log('🔍 Testing state management...');
+            
+            if (window.billableAIState) {
+                log('✅ billableAIState object available');
+                log(`State: ${JSON.stringify(window.billableAIState, null, 2)}`);
+                updateStatus('state-status', '✅ State management working', 'success');
+            } else {
+                log('❌ billableAIState object not available');
+                updateStatus('state-status', '❌ State management not working', 'error');
+            }
+        }
+
+        function testLocalStorage() {
+            log('🔍 Testing localStorage...');
+            
+            try {
+                const testKey = 'billableai_test';
+                const testValue = { test: true, timestamp: Date.now() };
+                
+                localStorage.setItem(testKey, JSON.stringify(testValue));
+                const retrieved = JSON.parse(localStorage.getItem(testKey));
+                localStorage.removeItem(testKey);
+                
+                if (retrieved && retrieved.test) {
+                    log('✅ localStorage working correctly');
+                    updateStatus('state-status', '✅ localStorage working', 'success');
+                } else {
+                    log('❌ localStorage not working correctly');
+                    updateStatus('state-status', '❌ localStorage not working', 'error');
+                }
+            } catch (error) {
+                log(`❌ localStorage error: ${error.message}`);
+                updateStatus('state-status', '❌ localStorage error', 'error');
+            }
+        }
+
+        // Initialize tests
+        window.addEventListener('load', () => {
+            log('🚀 Page loaded, starting tests...');
+            
+            document.getElementById('current-url').textContent = window.location.href;
+            document.getElementById('current-protocol').textContent = window.location.protocol;
+            
+            setTimeout(checkExtension, 1000);
+            setTimeout(checkContentScript, 2000);
+        });
+    </script>
+</body>
+</html> 

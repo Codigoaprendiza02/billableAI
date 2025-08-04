@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Data Flow Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🎯 BillableAI - Email Data Flow Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Test Background Script Communication</h2>
+        <button onclick="testBackgroundCommunication()">Test Background Script</button>
+        <div id="background-test-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Chrome Storage</h2>
+        <button onclick="testChromeStorage()">Test Chrome Storage</button>
+        <button onclick="clearChromeStorage()">Clear Chrome Storage</button>
+        <div id="storage-test-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Email Data Storage</h2>
+        <button onclick="testEmailDataStorage()">Store Test Email Data</button>
+        <button onclick="testEmailDataRetrieval()">Retrieve Email Data</button>
+        <div id="email-data-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test Complete Flow</h2>
+        <button onclick="testCompleteFlow()">Test Complete Flow</button>
+        <div id="complete-flow-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Test Assistant Communication</h2>
+        <button onclick="testAssistantCommunication()">Test Assistant Communication</button>
+        <div id="assistant-log" class="log"></div>
+    </div>
+
+    <script>
+        function log(elementId, message, type = 'info') {
+            const logElement = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logElement.innerHTML += logEntry + '\n';
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(logEntry);
+        }
+
+        // Test 1: Background Script Communication
+        async function testBackgroundCommunication() {
+            const logId = 'background-test-log';
+            log(logId, '🔧 Testing background script communication...');
+            
+            try {
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'TEST_COMMUNICATION',
+                        data: { test: 'email-data-flow-test' }
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, `✅ Background script responded: ${JSON.stringify(response)}`);
+            } catch (error) {
+                log(logId, `❌ Background script error: ${error.message}`);
+            }
+        }
+
+        // Test 2: Chrome Storage
+        async function testChromeStorage() {
+            const logId = 'storage-test-log';
+            log(logId, '🔧 Testing chrome.storage.local...');
+            
+            try {
+                // Test write
+                await chrome.storage.local.set({ 
+                    'test_data': { 
+                        message: 'Test data', 
+                        timestamp: Date.now() 
+                    } 
+                });
+                log(logId, '✅ Data written to chrome.storage.local');
+                
+                // Test read
+                const result = await chrome.storage.local.get(['test_data']);
+                log(logId, `✅ Data read from chrome.storage.local: ${JSON.stringify(result)}`);
+                
+                // Clean up
+                await chrome.storage.local.remove(['test_data']);
+                log(logId, '✅ Test data cleaned up');
+                
+            } catch (error) {
+                log(logId, `❌ Chrome storage error: ${error.message}`);
+            }
+        }
+
+        async function clearChromeStorage() {
+            const logId = 'storage-test-log';
+            log(logId, '🧹 Clearing chrome.storage.local...');
+            
+            try {
+                await chrome.storage.local.clear();
+                log(logId, '✅ Chrome storage cleared');
+            } catch (error) {
+                log(logId, `❌ Error clearing storage: ${error.message}`);
+            }
+        }
+
+        // Test 3: Email Data Storage
+        async function testEmailDataStorage() {
+            const logId = 'email-data-log';
+            log(logId, '📧 Testing email data storage...');
+            
+            const testEmailData = {
+                subject: 'Test Email Subject',
+                to: 'test@example.com',
+                cc: 'cc@example.com',
+                bcc: 'bcc@example.com',
+                body: 'This is a test email body for testing the data flow.',
+                timestamp: new Date().toISOString()
+            };
+            
+            const testTimeSpent = 120000; // 2 minutes in milliseconds
+            
+            try {
+                // Store via background script
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'EMAIL_DATA_STORED',
+                        data: {
+                            emailData: testEmailData,
+                            timeSpent: testTimeSpent,
+                            autoProcess: true,
+                            timestamp: Date.now()
+                        }
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, `✅ Email data stored via background script: ${JSON.stringify(response)}`);
+                
+                // Verify storage
+                const result = await chrome.storage.local.get(['billableAI_emailSummary']);
+                log(logId, `✅ Verification - stored data: ${JSON.stringify(result)}`);
+                
+            } catch (error) {
+                log(logId, `❌ Email data storage error: ${error.message}`);
+            }
+        }
+
+        async function testEmailDataRetrieval() {
+            const logId = 'email-data-log';
+            log(logId, '📧 Testing email data retrieval...');
+            
+            try {
+                // Request from background script
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'GET_EMAIL_DATA'
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, `✅ Email data retrieved via background script: ${JSON.stringify(response)}`);
+                
+                // Also check chrome.storage directly
+                const result = await chrome.storage.local.get(['billableAI_emailSummary']);
+                log(logId, `✅ Direct chrome.storage check: ${JSON.stringify(result)}`);
+                
+            } catch (error) {
+                log(logId, `❌ Email data retrieval error: ${error.message}`);
+            }
+        }
+
+        // Test 4: Complete Flow
+        async function testCompleteFlow() {
+            const logId = 'complete-flow-log';
+            log(logId, '🔄 Testing complete email data flow...');
+            
+            try {
+                // Step 1: Store email data
+                log(logId, 'Step 1: Storing email data...');
+                const testEmailData = {
+                    subject: 'Complete Flow Test',
+                    to: 'flow@example.com',
+                    cc: 'flow-cc@example.com',
+                    bcc: 'flow-bcc@example.com',
+                    body: 'Testing the complete flow from storage to retrieval.',
+                    timestamp: new Date().toISOString()
+                };
+                
+                const testTimeSpent = 180000; // 3 minutes
+                
+                await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'EMAIL_DATA_STORED',
+                        data: {
+                            emailData: testEmailData,
+                            timeSpent: testTimeSpent,
+                            autoProcess: true,
+                            timestamp: Date.now()
+                        }
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, '✅ Step 1: Email data stored');
+                
+                // Step 2: Wait a moment
+                log(logId, 'Step 2: Waiting for data to be processed...');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Step 3: Retrieve email data
+                log(logId, 'Step 3: Retrieving email data...');
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'GET_EMAIL_DATA'
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, `✅ Step 3: Email data retrieved: ${JSON.stringify(response)}`);
+                
+                // Step 4: Clear data
+                log(logId, 'Step 4: Clearing email data...');
+                await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'CLEAR_EMAIL_DATA'
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, '✅ Step 4: Email data cleared');
+                log(logId, '🎉 Complete flow test successful!');
+                
+            } catch (error) {
+                log(logId, `❌ Complete flow error: ${error.message}`);
+            }
+        }
+
+        // Test 5: Assistant Communication
+        async function testAssistantCommunication() {
+            const logId = 'assistant-log';
+            log(logId, '🤖 Testing assistant communication...');
+            
+            try {
+                // Simulate what the Assistant does
+                log(logId, 'Simulating Assistant checking for email data...');
+                
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'GET_EMAIL_DATA'
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                if (response && response.success && response.data) {
+                    log(logId, `✅ Assistant found email data: ${JSON.stringify(response.data)}`);
+                    
+                    // Simulate processing
+                    log(logId, 'Simulating Assistant processing email data...');
+                    
+                    // Clear after processing
+                    await new Promise((resolve, reject) => {
+                        chrome.runtime.sendMessage({
+                            type: 'CLEAR_EMAIL_DATA'
+                        }, (response) => {
+                            if (chrome.runtime.lastError) {
+                                reject(new Error(chrome.runtime.lastError.message));
+                            } else {
+                                resolve(response);
+                            }
+                        });
+                    });
+                    
+                    log(logId, '✅ Assistant processed and cleared email data');
+                } else {
+                    log(logId, `ℹ️ Assistant found no email data: ${JSON.stringify(response)}`);
+                }
+                
+            } catch (error) {
+                log(logId, `❌ Assistant communication error: ${error.message}`);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🎯 BillableAI: Email Data Flow Test initialized');
+        });
+    </script>
+</body>
+</html> 
