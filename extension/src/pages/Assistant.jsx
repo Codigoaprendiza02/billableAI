@@ -4,7 +4,18 @@ import SendIcon from '../icons/SendIcon';
 import GenerateIcon from '../icons/GenerateIcon';
 
 const Assistant = () => {
+<<<<<<< HEAD
   const { geminiService, isConnectedToClio } = useAppContext();
+=======
+  const { 
+    geminiService, 
+    isConnectedToClio, 
+    assistantContext,
+    addAssistantMessage,
+    updateLastUsedEmail,
+    clearAssistantHistory
+  } = useAppContext();
+>>>>>>> 5189f8f (updations)
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -12,7 +23,10 @@ const Assistant = () => {
   const messagesEndRef = useRef(null);
   const [currentEmailData, setCurrentEmailData] = useState(null);
   const [currentTimeSpent, setCurrentTimeSpent] = useState(0);
+<<<<<<< HEAD
   const [emailDataVisible, setEmailDataVisible] = useState(true);
+=======
+>>>>>>> 5189f8f (updations)
   const [isProcessingEmail, setIsProcessingEmail] = useState(false); // Prevent duplicate processing
 
   const scrollToBottom = () => {
@@ -23,6 +37,32 @@ const Assistant = () => {
     scrollToBottom();
   }, [messages]);
 
+<<<<<<< HEAD
+=======
+  // Load conversation history from assistant context
+  useEffect(() => {
+    if (assistantContext && assistantContext.conversationHistory) {
+      const historyMessages = assistantContext.conversationHistory.map((entry, index) => [
+        {
+          id: `user-${index}`,
+          type: 'user',
+          content: entry.message,
+          timestamp: new Date(entry.timestamp)
+        },
+        {
+          id: `assistant-${index}`,
+          type: 'assistant',
+          content: entry.response,
+          timestamp: new Date(entry.timestamp)
+        }
+      ]).flat();
+      
+      setMessages(historyMessages);
+      console.log('✅ Loaded conversation history from assistant context');
+    }
+  }, [assistantContext]);
+
+>>>>>>> 5189f8f (updations)
   // Handle email data available messages
   const handleEmailDataAvailable = (message) => {
     console.log('🎯 BillableAI: Assistant received message:', message);
@@ -30,6 +70,7 @@ const Assistant = () => {
     if (message.type === 'EMAIL_DATA_AVAILABLE') {
       console.log('🎯 BillableAI: Received EMAIL_DATA_AVAILABLE message:', message.data);
       
+<<<<<<< HEAD
       // Auto-process the email data
       if (message.data && message.data.emailData) {
         console.log('🎯 BillableAI: Email data found in message:', {
@@ -53,6 +94,34 @@ const Assistant = () => {
       } else {
         console.log('🎯 BillableAI: No email data found in EMAIL_DATA_AVAILABLE message');
       }
+=======
+              // Auto-process the email data
+        if (message.data && message.data.emailData) {
+          console.log('🎯 BillableAI: Email data found in message:', {
+            subject: message.data.emailData.subject,
+            to: message.data.emailData.to,
+            bodyLength: message.data.emailData.body?.length || 0,
+            timeSpent: message.data.timeSpent || 0
+          });
+          
+          // Prevent duplicate processing
+          if (isProcessingEmail) {
+            console.log('🎯 BillableAI: Skipping email processing - already processing');
+            return;
+          }
+          
+          setCurrentEmailData(message.data.emailData);
+          setCurrentTimeSpent(message.data.timeSpent || 0);
+          
+          // Update last used email in assistant context
+          updateLastUsedEmail(message.data.emailData);
+          
+          // Generate summary
+          generateBillableSummary(message.data.emailData, message.data.timeSpent);
+        } else {
+          console.log('🎯 BillableAI: No email data found in EMAIL_DATA_AVAILABLE message');
+        }
+>>>>>>> 5189f8f (updations)
     } else {
       console.log('🎯 BillableAI: Received message with type:', message.type);
     }
@@ -260,6 +329,7 @@ const Assistant = () => {
     }
   };
 
+<<<<<<< HEAD
   // Function to clear email data completely (including UI state)
   const clearEmailData = async () => {
     try {
@@ -277,6 +347,9 @@ const Assistant = () => {
       console.log('🎯 BillableAI: Error clearing email data completely:', error);
     }
   };
+=======
+
+>>>>>>> 5189f8f (updations)
 
   const generateBillableSummary = async (emailData, timeSpent) => {
     if (!emailData) {
@@ -476,7 +549,11 @@ Note: This is a fallback response. For enhanced analysis, please configure your 
         
         // Check Clio connection status directly from backend
         try {
+<<<<<<< HEAD
           const { checkClioConnection } = await import('../services/oauthService.js');
+=======
+          const { completeOneClickBilling, checkClioConnection } = await import('../services/oauthService.js');
+>>>>>>> 5189f8f (updations)
           const connectionStatus = await checkClioConnection();
           console.log('🎯 BillableAI: Clio connection status:', connectionStatus);
           
@@ -490,9 +567,12 @@ To use automatic client and matter detection, please:
 1. Connect to Clio first (click "Connect to Clio" in the popup)
 2. Make sure you have email data available
 
+<<<<<<< HEAD
 Current Status: ${connectionStatus.isConnected ? '✅ Clio Connected' : '❌ Clio Not Connected'}
 ${connectionStatus.error ? `Error: ${connectionStatus.error}` : ''}
 
+=======
+>>>>>>> 5189f8f (updations)
 Would you like me to help you connect to Clio or process this manually?`;
           }
         } catch (error) {
@@ -503,8 +583,11 @@ To use automatic client and matter detection, please:
 1. Connect to Clio first (click "Connect to Clio" in the popup)
 2. Make sure you have email data available
 
+<<<<<<< HEAD
 Current Status: ❌ Clio Connection Check Failed
 
+=======
+>>>>>>> 5189f8f (updations)
 Would you like me to help you connect to Clio or process this manually?`;
         }
       } else {
@@ -585,6 +668,17 @@ To get started, compose an email in Gmail and I'll help you create professional 
       const assistantMessage = { id: Date.now() + 1, type: 'assistant', content: response, timestamp: new Date() };
       setMessages(prev => [...prev, assistantMessage]);
       
+<<<<<<< HEAD
+=======
+      // Save conversation to assistant context
+      await addAssistantMessage(message, response);
+      
+      // Update last used email if available
+      if (currentEmailData) {
+        await updateLastUsedEmail(currentEmailData);
+      }
+      
+>>>>>>> 5189f8f (updations)
     } catch (error) {
       console.log('🎯 BillableAI: Error generating response:', error);
       
@@ -734,6 +828,7 @@ Your time has been automatically logged to Clio with the detected client and mat
     }
   };
 
+<<<<<<< HEAD
   const clearChat = () => {
     setMessages([]);
     setCurrentEmailData(null);
@@ -877,6 +972,22 @@ Your time has been automatically logged to Clio with the detected client and mat
       setMessages(prev => [...prev, errorMessage]);
     }
   };
+=======
+  const clearChat = async () => {
+    setMessages([]);
+    setCurrentEmailData(null);
+    
+    // Clear assistant conversation history
+    try {
+      await clearAssistantHistory();
+      console.log('✅ Chat and assistant history cleared');
+    } catch (error) {
+      console.error('❌ Error clearing assistant history:', error);
+    }
+  };
+
+
+>>>>>>> 5189f8f (updations)
 
   const getModelStatusBadge = () => {
     switch (modelStatus) {
@@ -924,6 +1035,7 @@ Your time has been automatically logged to Clio with the detected client and mat
             <p className="text-xs text-gray-500">Powered by Gemini 2.5 Pro</p>
           </div>
         </div>
+<<<<<<< HEAD
         {getModelStatusBadge()}
       </div>
 
@@ -963,6 +1075,21 @@ Your time has been automatically logged to Clio with the detected client and mat
           )}
         </div>
       )}
+=======
+        <div className="flex items-center gap-2">
+          {getModelStatusBadge()}
+          <button
+            onClick={clearChat}
+            className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
+            title="Clear chat history"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+>>>>>>> 5189f8f (updations)
 
       {/* Messages - Full height chat area */}
       <div className="flex-1 overflow-y-auto">
@@ -979,6 +1106,16 @@ Your time has been automatically logged to Clio with the detected client and mat
                 I can help you generate billable summaries for your emails using Gemini 2.5 Pro. 
                 Compose an email first to get started.
               </p>
+<<<<<<< HEAD
+=======
+              {assistantContext?.conversationHistory?.length > 0 && (
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-gray-500">
+                    📝 You have {assistantContext.conversationHistory.length} previous conversations
+                  </p>
+                </div>
+              )}
+>>>>>>> 5189f8f (updations)
             </div>
 
             {/* Model Status Info */}
@@ -1015,6 +1152,7 @@ Your time has been automatically logged to Clio with the detected client and mat
                 </svg>
                 Analyze Email
               </button>
+<<<<<<< HEAD
 
               {/* Debug Test Button */}
               <button
@@ -1059,6 +1197,8 @@ Your time has been automatically logged to Clio with the detected client and mat
                 </svg>
                 Test Email Capture
               </button>
+=======
+>>>>>>> 5189f8f (updations)
             </div>
           </div>
         )}

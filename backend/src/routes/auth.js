@@ -44,8 +44,13 @@ const validateSignup = [
     .withMessage('Name must be between 2 and 50 characters')
     .trim(),
   body('password')
+<<<<<<< HEAD
     .isLength({ min: 15 })
     .withMessage('Password must be at least 15 characters long'),
+=======
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters long'),
+>>>>>>> 5189f8f (updations)
   body('profession')
     .optional()
     .isLength({ max: 50 })

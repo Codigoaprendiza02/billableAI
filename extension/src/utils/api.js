@@ -204,6 +204,50 @@ export const extensionAPI = {
   }
 };
 
+<<<<<<< HEAD
+=======
+// Assistant context API functions
+export const assistantAPI = {
+  // Get assistant context
+  getAssistantContext: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/assistant-context`, {
+        headers: getAuthHeaders()
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to get assistant context');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Get assistant context error:', error);
+      throw error;
+    }
+  },
+
+  // Update assistant context
+  updateAssistantContext: async (assistantContext) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/assistant-context`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ assistantContext })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update assistant context');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Update assistant context error:', error);
+      throw error;
+    }
+  }
+};
+
+>>>>>>> 5189f8f (updations)
 import { isAuthenticated as simpleAuthIsAuthenticated, getCurrentUser } from './simpleAuth.js';
 
 // Check if user is authenticated

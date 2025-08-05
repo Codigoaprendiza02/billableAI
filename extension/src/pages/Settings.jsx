@@ -26,6 +26,10 @@ const Settings = () => {
   } = useAppContext();
 
   const [showAvatarUpload, setShowAvatarUpload] = useState(false);
+<<<<<<< HEAD
+=======
+  const [avatarPreview, setAvatarPreview] = useState(null);
+>>>>>>> 5189f8f (updations)
 
   const handleConnectClio = async () => {
     await updateClioConnection(!isConnectedToClio);
@@ -48,14 +52,48 @@ const Settings = () => {
   const handleAvatarUpdate = async (event) => {
     const file = event.target.files[0];
     if (file) {
+<<<<<<< HEAD
       const reader = new FileReader();
       reader.onload = async (e) => {
         await updateUserProfile({ avatar: e.target.result });
+=======
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image file size must be less than 5MB');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const avatarDataUrl = e.target.result;
+        setAvatarPreview(avatarDataUrl);
+        
+        try {
+          await updateUserProfile({ avatar: avatarDataUrl });
+          console.log('✅ Avatar updated successfully');
+        } catch (error) {
+          console.error('❌ Error updating avatar:', error);
+          alert('Failed to update avatar. Please try again.');
+        }
+>>>>>>> 5189f8f (updations)
       };
       reader.readAsDataURL(file);
     }
   };
 
+<<<<<<< HEAD
+=======
+  const handleAvatarClick = () => {
+    setShowAvatarUpload(!showAvatarUpload);
+  };
+
+>>>>>>> 5189f8f (updations)
   const handleLogout = () => {
     // Clear localStorage
     localStorage.removeItem('authToken');
@@ -75,14 +113,35 @@ const Settings = () => {
   };
 
   // Avatar logic
+<<<<<<< HEAD
   const avatar = user.avatar ? (
     <img src={user.avatar} alt="User Avatar" className="w-14 h-14 rounded-full object-cover" />
+=======
+  const avatar = (avatarPreview || user.avatar) ? (
+    <img src={avatarPreview || user.avatar} alt="User Avatar" className="w-14 h-14 rounded-full object-cover" />
+>>>>>>> 5189f8f (updations)
   ) : USER_PROFILE_SVG;
 
   return (
     <div className="w-96 h-[600px] bg-gradient-to-br from-black via-blue-900 to-purple-600 flex flex-col">
       {/* Header */}
+<<<<<<< HEAD
       
+=======
+      <div className="p-4 border-b border-white/20">
+        <div className="flex items-center justify-between">
+          <h1 className="text-white text-xl font-bold">Settings</h1>
+          <button
+            onClick={() => navigateTo('popup')}
+            className="text-white/60 hover:text-white transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+>>>>>>> 5189f8f (updations)
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -94,7 +153,11 @@ const Settings = () => {
               {avatar}
             </div>
             <button 
+<<<<<<< HEAD
               onClick={() => setShowAvatarUpload(!showAvatarUpload)}
+=======
+              onClick={handleAvatarClick}
+>>>>>>> 5189f8f (updations)
               className="absolute bottom-0 right-0 bg-white rounded-full p-1 border border-gray-300 hover:bg-blue-500 hover:text-white transition-colors"
             >
               <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -151,6 +214,7 @@ const Settings = () => {
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Horizontal Line */}
         <div className="border-t border-white/20"></div>
 
@@ -212,10 +276,46 @@ const Settings = () => {
                   <span className="text-white text-xs">Casual</span>
                 </label>
               </div>
+=======
+        {/* AI Preferences Section */}
+        <div className="text-sm">
+          <h2 className="text-white text-base font-semibold mb-3">AI Preferences</h2>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-white font-medium text-xs">Email Auto-Suggestions</h3>
+                <p className="text-white/60 text-xs">Get AI suggestions while composing emails</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={aiPreferences.emailAutoSuggestions}
+                  onChange={(e) => handleAiPreferenceChange('emailAutoSuggestions', e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-white font-medium text-xs">Default Tone</h3>
+                <p className="text-white/60 text-xs">Preferred communication style</p>
+              </div>
+              <select
+                value={aiPreferences.defaultTone}
+                onChange={(e) => handleAiPreferenceChange('defaultTone', e.target.value)}
+                className="bg-white/10 text-white text-xs rounded px-2 py-1 border border-white/20"
+              >
+                <option value="Formal">Formal</option>
+                <option value="Casual">Casual</option>
+              </select>
+>>>>>>> 5189f8f (updations)
             </div>
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Horizontal Line */}
         <div className="border-t border-white/20"></div>
 
@@ -280,10 +380,47 @@ const Settings = () => {
                 checked={billableLogging.confirmationBeforeAttaching}
                 onChange={(value) => handleBillableLoggingChange('confirmationBeforeAttaching', value)}
               />
+=======
+        {/* Billable Logging Section */}
+        <div className="text-sm">
+          <h2 className="text-white text-base font-semibold mb-3">Billable Logging</h2>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-white font-medium text-xs">Default Time Unit</h3>
+                <p className="text-white/60 text-xs">Preferred time tracking unit</p>
+              </div>
+              <select
+                value={billableLogging.defaultTimeUnit}
+                onChange={(e) => handleBillableLoggingChange('defaultTimeUnit', e.target.value)}
+                className="bg-white/10 text-white text-xs rounded px-2 py-1 border border-white/20"
+              >
+                <option value="Hours">Hours</option>
+                <option value="Minutes">Minutes</option>
+                <option value="Seconds">Seconds</option>
+              </select>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-white font-medium text-xs">Confirmation Before Logging</h3>
+                <p className="text-white/60 text-xs">Ask for confirmation before logging time</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={billableLogging.confirmationBeforeLogging}
+                  onChange={(e) => handleBillableLoggingChange('confirmationBeforeLogging', e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+>>>>>>> 5189f8f (updations)
             </div>
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Horizontal Line */}
         
 
@@ -299,6 +436,30 @@ const Settings = () => {
             Logout
           </button>
           <button className="w-full py-2 rounded-lg border border-red-600 text-red-600 font-semibold hover:bg-red-500 hover:text-white transition-colors">Delete Account</button>
+=======
+        {/* Account Management Section */}
+        <div className="text-sm">
+          <h2 className="text-white text-base font-semibold mb-3">Account Management</h2>
+          <div className="space-y-4">
+            <button
+              onClick={handleLogout}
+              className="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            >
+              Logout
+            </button>
+            <button
+              onClick={() => {
+                if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                  // Handle account deletion
+                  console.log('Account deletion requested');
+                }
+              }}
+              className="w-full px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition-colors"
+            >
+              Delete Account
+            </button>
+          </div>
+>>>>>>> 5189f8f (updations)
         </div>
       </div>
     </div>

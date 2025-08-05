@@ -105,9 +105,17 @@ export const registerUser = async (userData) => {
     
     return {
       success: true,
+<<<<<<< HEAD
       accessToken,
       refreshToken: refreshTokenData.token,
       expiresIn: 900, // 15 minutes in seconds
+=======
+      token: accessToken, // Keep 'token' for backward compatibility
+      accessToken: accessToken, // Add 'accessToken' for frontend
+      refreshToken: refreshTokenData.token,
+      expiresIn: 900, // 15 minutes in seconds
+      expiresAt: new Date(Date.now() + 900 * 1000).toISOString(), // Add expiry timestamp
+>>>>>>> 5189f8f (updations)
       user: {
         id: user._id,
         username: user.username,
@@ -119,7 +127,14 @@ export const registerUser = async (userData) => {
         hasCompletedOnboarding: user.hasCompletedOnboarding,
         aiPreferences: user.aiPreferences,
         billableLogging: user.billableLogging,
+<<<<<<< HEAD
         notificationSettings: user.notificationSettings
+=======
+        notificationSettings: user.notificationSettings,
+        assistantContext: user.assistantContext,
+        workHistory: user.workHistory,
+        isConnectedToClio: user.isConnectedToClio
+>>>>>>> 5189f8f (updations)
       }
     };
   } catch (error) {
@@ -171,9 +186,17 @@ export const loginUser = async (credentials) => {
     
     return {
       success: true,
+<<<<<<< HEAD
       accessToken,
       refreshToken: refreshTokenData.token,
       expiresIn: 900, // 15 minutes in seconds
+=======
+      token: accessToken, // Keep 'token' for backward compatibility
+      accessToken: accessToken, // Add 'accessToken' for frontend
+      refreshToken: refreshTokenData.token,
+      expiresIn: 900, // 15 minutes in seconds
+      expiresAt: new Date(Date.now() + 900 * 1000).toISOString(), // Add expiry timestamp
+>>>>>>> 5189f8f (updations)
       user: {
         id: user._id,
         username: user.username,
@@ -187,7 +210,12 @@ export const loginUser = async (credentials) => {
         billableLogging: user.billableLogging,
         notificationSettings: user.notificationSettings,
         assistantContext: user.assistantContext,
+<<<<<<< HEAD
         workHistory: user.workHistory
+=======
+        workHistory: user.workHistory,
+        isConnectedToClio: user.isConnectedToClio
+>>>>>>> 5189f8f (updations)
       }
     };
   } catch (error) {

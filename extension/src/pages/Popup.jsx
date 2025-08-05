@@ -4,7 +4,11 @@ import WorkHistoryComponent from '../components/WorkHistoryComponent';
 import GreetingComponent from '../components/GreetingComponent';
 
 const Popup = () => {
+<<<<<<< HEAD
   const { navigateTo, user, isConnectedToClio, updateClioConnection, refreshClioConnectionStatus } = useAppContext();
+=======
+  const { navigateTo, user, isConnectedToClio } = useAppContext();
+>>>>>>> 5189f8f (updations)
   const [workHistory, setWorkHistory] = useState({
     emailLogs: 0,
     timeSpent: '0 mins',
@@ -58,6 +62,7 @@ const Popup = () => {
     return () => clearInterval(interval);
   }, []);
 
+<<<<<<< HEAD
   // Auto-refresh Clio connection status when popup opens
   useEffect(() => {
     const refreshConnectionStatus = async () => {
@@ -71,6 +76,9 @@ const Popup = () => {
 
     refreshConnectionStatus();
   }, [refreshClioConnectionStatus]);
+=======
+
+>>>>>>> 5189f8f (updations)
 
   // Timer effect to update tracking status
   useEffect(() => {
@@ -123,6 +131,7 @@ const Popup = () => {
     return 'Good evening';
   };
 
+<<<<<<< HEAD
   const handleConnectClio = async () => {
     try {
       if (!isConnectedToClio) {
@@ -183,6 +192,9 @@ const Popup = () => {
       showNotification('Clear failed', 'error');
     }
   };
+=======
+
+>>>>>>> 5189f8f (updations)
 
   // Handle one-click billing
   const handleOneClickBilling = async () => {
@@ -237,6 +249,7 @@ const Popup = () => {
           </div>
         </div>
         <div className="flex items-center space-x-2">
+<<<<<<< HEAD
           {/* Refresh Clio Status Button */}
           <button
             onClick={refreshClioStatus}
@@ -263,6 +276,9 @@ const Popup = () => {
             }`}></div>
             <span>{isConnectedToClio ? 'Clio ✓' : 'Connect to Clio'}</span>
           </button>
+=======
+
+>>>>>>> 5189f8f (updations)
           
           {/* Settings Button */}
           <button
@@ -317,6 +333,7 @@ const Popup = () => {
           </div>
         )}
 
+<<<<<<< HEAD
         {/* Clio Connection Section */}
         <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-4">
           <div className="flex items-center justify-between mb-3">
@@ -359,6 +376,9 @@ const Popup = () => {
             <span>{isConnectedToClio ? 'Clio ✓' : 'Connect to Clio'}</span>
           </button>
         </div>
+=======
+
+>>>>>>> 5189f8f (updations)
 
         {/* Work History Stats with Spacing */}
         <div className="mt-auto px-6 pb-6">

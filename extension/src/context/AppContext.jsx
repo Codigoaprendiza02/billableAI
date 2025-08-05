@@ -1,5 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+<<<<<<< HEAD
 import { authAPI, userAPI, preferencesAPI, clioAPI, workHistoryAPI } from '../utils/api.js';
+=======
+import { authAPI, userAPI, preferencesAPI, clioAPI, workHistoryAPI, assistantAPI } from '../utils/api.js';
+>>>>>>> 5189f8f (updations)
 import { initiateClioOAuth, handleClioOAuthCallback, checkClioConnection } from '../services/oauthService.js';
 import { initAuth, loginUser, logoutUser, getCurrentUser, isAuthenticated, verifyToken, debugStorage } from '../utils/simpleAuth.js';
 import simpleAuth from '../utils/simpleAuth.js';
@@ -78,7 +82,33 @@ export const AppProvider = ({ children }) => {
   const [workHistory, setWorkHistory] = useState({
     emailLogs: 10,
     timeSpent: '3 hrs',
+<<<<<<< HEAD
     summaries: 10
+=======
+    summaries: 10,
+    totalBillableTime: 0,
+    weeklyTimeSpent: 0,
+    monthlyTimeSpent: 0
+  });
+  
+  const [notificationSettings, setNotificationSettings] = useState({
+    emailTrackingNotifications: true,
+    summaryGenerationNotifications: true,
+    confirmationNotifications: true,
+    errorNotifications: true,
+    desktopNotifications: true,
+    soundEnabled: false
+  });
+  
+  const [assistantContext, setAssistantContext] = useState({
+    conversationHistory: [],
+    preferences: {
+      defaultClientMatter: '',
+      commonTasks: [],
+      billingRates: new Map()
+    },
+    lastUsedEmail: null
+>>>>>>> 5189f8f (updations)
   });
   const [aiPreferences, setAiPreferences] = useState({
     emailAutoSuggestions: true,
@@ -208,6 +238,16 @@ export const AppProvider = ({ children }) => {
           // Check if user has completed onboarding
           const onboardingCompleted = localStorage.getItem('billableai_onboarding_completed') === 'true';
           
+<<<<<<< HEAD
+=======
+          // Load assistant context if user is authenticated
+          try {
+            await loadAssistantContext();
+          } catch (error) {
+            console.log('⚠️ Failed to load assistant context during auth check:', error);
+          }
+          
+>>>>>>> 5189f8f (updations)
           // Navigate to appropriate page
           if (onboardingCompleted) {
             setCurrentPage('popup');
@@ -329,17 +369,34 @@ export const AppProvider = ({ children }) => {
       
       setAiPreferences(userData.aiPreferences || {
         emailAutoSuggestions: true,
+<<<<<<< HEAD
         defaultTone: 'Formal'
+=======
+        defaultTone: 'Formal',
+        autoSummaryGeneration: true,
+        preferredResponseLength: 'Medium',
+        customPrompts: []
+>>>>>>> 5189f8f (updations)
       });
       
       setBillableLogging(userData.billableLogging || {
         defaultTimeUnit: 'Hours',
         confirmationBeforeLogging: true,
+<<<<<<< HEAD
         confirmationBeforeAttaching: true
       });
       
       setTwoFactorAuth(userData.twoFactorAuth || {
         enabled: true,
+=======
+        confirmationBeforeAttaching: true,
+        autoTrackingEnabled: true,
+        minimumTrackingTime: 30
+      });
+      
+      setTwoFactorAuth(userData.twoFactorAuth || {
+        enabled: false,
+>>>>>>> 5189f8f (updations)
         method: 'Email',
         email: '',
         phone: ''
@@ -349,10 +406,43 @@ export const AppProvider = ({ children }) => {
       setWorkHistory(userData.workHistory || {
         emailLogs: 0,
         timeSpent: '0 hrs',
+<<<<<<< HEAD
         summaries: 0
       });
       
       setHasCompletedOnboarding(userData.hasCompletedOnboarding || false);
+=======
+        summaries: 0,
+        totalBillableTime: 0,
+        weeklyTimeSpent: 0,
+        monthlyTimeSpent: 0
+      });
+      
+      setHasCompletedOnboarding(userData.hasCompletedOnboarding || false);
+      
+      // Load notification settings
+      setNotificationSettings(userData.notificationSettings || {
+        emailTrackingNotifications: true,
+        summaryGenerationNotifications: true,
+        confirmationNotifications: true,
+        errorNotifications: true,
+        desktopNotifications: true,
+        soundEnabled: false
+      });
+      
+      // Load assistant context
+      setAssistantContext(userData.assistantContext || {
+        conversationHistory: [],
+        preferences: {
+          defaultClientMatter: '',
+          commonTasks: [],
+          billingRates: new Map()
+        },
+        lastUsedEmail: null
+      });
+      
+      console.log('✅ User profile loaded from backend:', userData);
+>>>>>>> 5189f8f (updations)
     } catch (error) {
       console.error('Failed to load user profile from API, trying localStorage:', error);
       
@@ -960,6 +1050,121 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+<<<<<<< HEAD
+=======
+  // Load assistant context and conversation history
+  const loadAssistantContext = async () => {
+    try {
+      // Try to load from backend first
+      const response = await assistantAPI.getAssistantContext();
+      if (response.success && response.assistantContext) {
+        setAssistantContext(response.assistantContext);
+        console.log('✅ Assistant context loaded from backend');
+        return;
+      }
+    } catch (error) {
+      console.log('⚠️ Failed to load assistant context from backend, trying localStorage');
+    }
+
+    // Fallback to localStorage
+    try {
+      const storedContext = localStorage.getItem('billableai_assistant_context');
+      if (storedContext) {
+        const parsedContext = JSON.parse(storedContext);
+        setAssistantContext(parsedContext);
+        console.log('✅ Assistant context loaded from localStorage');
+      }
+    } catch (error) {
+      console.error('❌ Failed to load assistant context from localStorage:', error);
+    }
+  };
+
+  // Save assistant context and conversation history
+  const saveAssistantContext = async (context) => {
+    try {
+      // Save to backend
+      await assistantAPI.updateAssistantContext(context);
+      console.log('✅ Assistant context saved to backend');
+    } catch (error) {
+      console.log('⚠️ Failed to save assistant context to backend, using localStorage');
+    }
+
+    // Always save to localStorage as backup
+    try {
+      localStorage.setItem('billableai_assistant_context', JSON.stringify(context));
+      console.log('✅ Assistant context saved to localStorage');
+    } catch (error) {
+      console.error('❌ Failed to save assistant context to localStorage:', error);
+    }
+  };
+
+  // Add message to assistant conversation history
+  const addAssistantMessage = async (message, response) => {
+    const newContext = {
+      ...assistantContext,
+      conversationHistory: [
+        ...assistantContext.conversationHistory,
+        {
+          timestamp: new Date(),
+          message,
+          response,
+          emailContext: currentEmailData || null
+        }
+      ]
+    };
+
+    // Keep only last 50 messages to prevent storage bloat
+    if (newContext.conversationHistory.length > 50) {
+      newContext.conversationHistory = newContext.conversationHistory.slice(-50);
+    }
+
+    setAssistantContext(newContext);
+    await saveAssistantContext(newContext);
+  };
+
+  // Update assistant preferences
+  const updateAssistantPreferences = async (preferences) => {
+    const newContext = {
+      ...assistantContext,
+      preferences: {
+        ...assistantContext.preferences,
+        ...preferences
+      }
+    };
+
+    setAssistantContext(newContext);
+    await saveAssistantContext(newContext);
+  };
+
+  // Update last used email
+  const updateLastUsedEmail = async (emailData) => {
+    const newContext = {
+      ...assistantContext,
+      lastUsedEmail: {
+        to: emailData.to || '',
+        subject: emailData.subject || '',
+        content: emailData.body || emailData.content || '',
+        timestamp: new Date()
+      }
+    };
+
+    setAssistantContext(newContext);
+    await saveAssistantContext(newContext);
+  };
+
+  // Clear assistant conversation history
+  const clearAssistantHistory = async () => {
+    const newContext = {
+      ...assistantContext,
+      conversationHistory: []
+    };
+
+    setAssistantContext(newContext);
+    await saveAssistantContext(newContext);
+    console.log('✅ Assistant conversation history cleared');
+  };
+
+>>>>>>> 5189f8f (updations)
   const value = {
     currentPage,
     setCurrentPage,
@@ -975,6 +1180,19 @@ export const AppProvider = ({ children }) => {
     workHistory,
     setWorkHistory,
     updateWorkHistory,
+<<<<<<< HEAD
+=======
+    notificationSettings,
+    setNotificationSettings,
+    assistantContext,
+    setAssistantContext,
+    loadAssistantContext,
+    saveAssistantContext,
+    addAssistantMessage,
+    updateAssistantPreferences,
+    updateLastUsedEmail,
+    clearAssistantHistory,
+>>>>>>> 5189f8f (updations)
     aiPreferences,
     setAiPreferences,
     updateAiPreferences,
