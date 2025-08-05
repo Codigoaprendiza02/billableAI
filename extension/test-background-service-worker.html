@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI Background Service Worker Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .test-section {
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 BillableAI Background Service Worker Test</h1>
+    
+    <div class="container">
+        <h2>📋 Extension Status</h2>
+        <div id="extension-status" class="status info">Checking...</div>
+        <button onclick="checkExtensionStatus()">Check Extension Status</button>
+    </div>
+
+    <div class="container">
+        <h2>🔄 Background Service Worker Tests</h2>
+        
+        <div class="test-section">
+            <h3>1. Service Worker Communication</h3>
+            <div id="sw-communication" class="status info">Ready to test</div>
+            <button onclick="testServiceWorkerCommunication()">Test Communication</button>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Message Passing</h3>
+            <div id="message-passing" class="status info">Ready to test</div>
+            <button onclick="testMessagePassing()">Test Message Passing</button>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Storage Access</h3>
+            <div id="storage-access" class="status info">Ready to test</div>
+            <button onclick="testStorageAccess()">Test Storage Access</button>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Content Script Injection</h3>
+            <div id="content-script-injection" class="status info">Ready to test</div>
+            <button onclick="testContentScriptInjection()">Test Content Script</button>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Extension Permissions</h3>
+            <div id="extension-permissions" class="status info">Ready to test</div>
+            <button onclick="testExtensionPermissions()">Test Permissions</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📊 Background Process Monitoring</h2>
+        <div id="background-monitoring" class="status info">Monitoring...</div>
+        <button onclick="startBackgroundMonitoring()">Start Monitoring</button>
+        <button onclick="stopBackgroundMonitoring()">Stop Monitoring</button>
+    </div>
+
+    <div class="container">
+        <h2>📝 Console Log</h2>
+        <div class="log" id="log"></div>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <script>
+        let logMessages = [];
+        let monitoringInterval = null;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logMessages.push(logEntry);
+            
+            const logElement = document.getElementById('log');
+            logElement.textContent = logMessages.join('\n');
+            logElement.scrollTop = logElement.scrollHeight;
+            
+            console.log(`🎯 BillableAI Background Test: ${message}`);
+        }
+
+        function clearLog() {
+            logMessages = [];
+            document.getElementById('log').textContent = '';
+        }
+
+        function updateStatus(elementId, message, className) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${className}`;
+        }
+
+        function checkExtensionStatus() {
+            log('🔍 Checking extension status...');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                log('✅ chrome.runtime is available');
+                
+                try {
+                    chrome.runtime.getManifest((manifest) => {
+                        log(`📋 Extension name: ${manifest.name}`);
+                        log(`📋 Extension version: ${manifest.version}`);
+                        log(`📋 Extension ID: ${chrome.runtime.id}`);
+                        updateStatus('extension-status', '✅ Extension is loaded and running!', 'success');
+                    });
+                } catch (error) {
+                    log(`⚠️ Could not get manifest: ${error.message}`);
+                    updateStatus('extension-status', '⚠️ Extension loaded but manifest error', 'warning');
+                }
+            } else {
+                log('❌ chrome.runtime is NOT available');
+                updateStatus('extension-status', '❌ Extension not loaded', 'error');
+            }
+        }
+
+        function testServiceWorkerCommunication() {
+            log('🔄 Testing service worker communication...');
+            
+            try {
+                chrome.runtime.sendMessage({ type: 'TEST_COMMUNICATION', data: 'Hello from content script' }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        log(`❌ Service worker communication failed: ${chrome.runtime.lastError.message}`);
+                        updateStatus('sw-communication', '❌ Service worker not responding', 'error');
+                    } else if (response && response.success) {
+                        log('✅ Service worker communication successful');
+                        log(`📨 Response: ${JSON.stringify(response)}`);
+                        updateStatus('sw-communication', '✅ Service worker communication working', 'success');
+                    } else {
+                        log('⚠️ Service worker responded but no success flag');
+                        updateStatus('sw-communication', '⚠️ Service worker responded but unclear', 'warning');
+                    }
+                });
+            } catch (error) {
+                log(`❌ Service worker communication error: ${error.message}`);
+                updateStatus('sw-communication', '❌ Service worker communication error', 'error');
+            }
+        }
+
+        function testMessagePassing() {
+            log('📨 Testing message passing...');
+            
+            const testMessages = [
+                { type: 'CONTENT_SCRIPT_LOADED', data: { url: window.location.href } },
+                { type: 'TRACKING_STARTED', data: { emailData: { to: 'test@example.com', subject: 'Test' } } },
+                { type: 'TRACKING_STOPPED', data: { accumulatedTime: 60000 } }
+            ];
+            
+            let successCount = 0;
+            let totalCount = testMessages.length;
+            
+            testMessages.forEach((message, index) => {
+                setTimeout(() => {
+                    try {
+                        chrome.runtime.sendMessage(message, (response) => {
+                            if (chrome.runtime.lastError) {
+                                log(`❌ Message ${index + 1} failed: ${chrome.runtime.lastError.message}`);
+                            } else {
+                                log(`✅ Message ${index + 1} sent successfully`);
+                                successCount++;
+                            }
+                            
+                            if (successCount + (totalCount - successCount) === totalCount) {
+                                if (successCount === totalCount) {
+                                    updateStatus('message-passing', '✅ All messages sent successfully', 'success');
+                                } else {
+                                    updateStatus('message-passing', `⚠️ ${successCount}/${totalCount} messages sent`, 'warning');
+                                }
+                            }
+                        });
+                    } catch (error) {
+                        log(`❌ Message ${index + 1} error: ${error.message}`);
+                    }
+                }, index * 500);
+            });
+        }
+
+        function testStorageAccess() {
+            log('💾 Testing storage access...');
+            
+            try {
+                // Test chrome.storage.local
+                chrome.storage.local.set({ testKey: 'testValue' }, () => {
+                    if (chrome.runtime.lastError) {
+                        log(`❌ Storage set failed: ${chrome.runtime.lastError.message}`);
+                        updateStatus('storage-access', '❌ Storage access failed', 'error');
+                    } else {
+                        log('✅ Storage set successful');
+                        
+                        chrome.storage.local.get(['testKey'], (result) => {
+                            if (chrome.runtime.lastError) {
+                                log(`❌ Storage get failed: ${chrome.runtime.lastError.message}`);
+                                updateStatus('storage-access', '❌ Storage access failed', 'error');
+                            } else {
+                                log('✅ Storage get successful');
+                                log(`📦 Retrieved: ${JSON.stringify(result)}`);
+                                updateStatus('storage-access', '✅ Storage access working', 'success');
+                                
+                                // Clean up
+                                chrome.storage.local.remove(['testKey']);
+                            }
+                        });
+                    }
+                });
+            } catch (error) {
+                log(`❌ Storage access error: ${error.message}`);
+                updateStatus('storage-access', '❌ Storage access error', 'error');
+            }
+        }
+
+        function testContentScriptInjection() {
+            log('📜 Testing content script injection...');
+            
+            if (window.billableAI) {
+                log('✅ window.billableAI object found');
+                log(`📋 Available functions: ${Object.keys(window.billableAI).join(', ')}`);
+                updateStatus('content-script-injection', '✅ Content script injected successfully', 'success');
+            } else {
+                log('❌ window.billableAI object not found');
+                updateStatus('content-script-injection', '❌ Content script not injected', 'error');
+            }
+        }
+
+        function testExtensionPermissions() {
+            log('🔐 Testing extension permissions...');
+            
+            const permissions = [
+                'storage',
+                'activeTab',
+                'identity',
+                'identity.email',
+                'tabs',
+                'scripting'
+            ];
+            
+            let availableCount = 0;
+            permissions.forEach(permission => {
+                try {
+                    if (chrome[permission]) {
+                        log(`✅ ${permission} permission available`);
+                        availableCount++;
+                    } else {
+                        log(`❌ ${permission} permission not available`);
+                    }
+                } catch (error) {
+                    log(`❌ ${permission} permission error: ${error.message}`);
+                }
+            });
+            
+            if (availableCount === permissions.length) {
+                updateStatus('extension-permissions', `✅ All ${availableCount} permissions available`, 'success');
+            } else {
+                updateStatus('extension-permissions', `⚠️ ${availableCount}/${permissions.length} permissions available`, 'warning');
+            }
+        }
+
+        function startBackgroundMonitoring() {
+            log('📊 Starting background process monitoring...');
+            
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+            }
+            
+            monitoringInterval = setInterval(() => {
+                try {
+                    chrome.runtime.sendMessage({ type: 'PING' }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            log('❌ Background service worker not responding');
+                            updateStatus('background-monitoring', '❌ Background service worker not responding', 'error');
+                        } else {
+                            log('✅ Background service worker responding');
+                            updateStatus('background-monitoring', '✅ Background service worker running', 'success');
+                        }
+                    });
+                } catch (error) {
+                    log(`❌ Monitoring error: ${error.message}`);
+                    updateStatus('background-monitoring', '❌ Monitoring error', 'error');
+                }
+            }, 5000); // Check every 5 seconds
+            
+            log('📊 Background monitoring started (checking every 5 seconds)');
+        }
+
+        function stopBackgroundMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+                log('📊 Background monitoring stopped');
+                updateStatus('background-monitoring', '📊 Monitoring stopped', 'info');
+            }
+        }
+
+        // Initialize tests
+        window.addEventListener('load', () => {
+            log('🚀 Background service worker test page loaded');
+            log('📍 Current URL: ' + window.location.href);
+            
+            setTimeout(checkExtensionStatus, 1000);
+            setTimeout(testContentScriptInjection, 2000);
+            setTimeout(startBackgroundMonitoring, 3000);
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI Simple Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .instructions {
+            background: #fff3e0;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .keyboard-shortcut {
+            background: #f3e5f5;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 BillableAI Extension Test</h1>
+        
+        <div class="test-info">
+            <h2>Test Instructions:</h2>
+            <ol>
+                <li>Load the BillableAI extension in Chrome</li>
+                <li>Refresh this page</li>
+                <li>Look for a blue toggle button on the right edge</li>
+                <li>Click the button or press <span class="keyboard-shortcut">Ctrl+Shift+B</span></li>
+                <li>The side panel should slide in from the right</li>
+            </ol>
+        </div>
+        
+        <div class="instructions">
+            <h2>Expected Behavior:</h2>
+            <ul>
+                <li>✅ Blue toggle button appears on right edge</li>
+                <li>✅ Clicking button shows/hides panel</li>
+                <li>✅ Panel slides in from right side</li>
+                <li>✅ Panel has dark background with content</li>
+                <li>✅ Keyboard shortcut works</li>
+            </ul>
+        </div>
+        
+        <div class="test-info">
+            <h2>Debug Information:</h2>
+            <p>Check the browser console for:</p>
+            <ul>
+                <li>"BillableAI: Initializing side panel extension..."</li>
+                <li>"BillableAI: Side panel and toggle created successfully"</li>
+                <li>"BillableAI: Panel and toggle found, ready for use"</li>
+                <li>"BillableAI: Panel shown for testing" (after 2 seconds)</li>
+            </ul>
+        </div>
+        
+        <div class="instructions">
+            <h2>Troubleshooting:</h2>
+            <ul>
+                <li>Make sure the extension is loaded in Chrome</li>
+                <li>Check that content scripts are enabled</li>
+                <li>Look for any errors in the console</li>
+                <li>Try refreshing the page</li>
+                <li>Check if the panel appears after 2 seconds automatically</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Add some debug info
+        console.log('Page loaded, waiting for BillableAI extension...');
+        
+        // Check if extension elements exist
+        setInterval(() => {
+            const panel = document.getElementById('billableai-side-panel');
+            const toggle = document.getElementById('billableai-toggle');
+            
+            if (panel) {
+                console.log('✅ BillableAI panel found');
+            } else {
+                console.log('❌ BillableAI panel not found');
+            }
+            
+            if (toggle) {
+                console.log('✅ BillableAI toggle found');
+            } else {
+                console.log('❌ BillableAI toggle not found');
+            }
+        }, 3000);
+    </script>
+</body>
+</html> 

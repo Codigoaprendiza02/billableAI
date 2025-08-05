@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Context Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Extension Context Test</h1>
+    
+    <div class="test-section">
+        <h2>Extension Context Tests</h2>
+        <button class="test-button" onclick="testExtensionContext()">Test Extension Context</button>
+        <button class="test-button" onclick="testLocalStorage()">Test LocalStorage</button>
+        <button class="test-button" onclick="testTrackingStatus()">Test Tracking Status</button>
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        function logResult(message, type = 'info') {
+            const container = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+        }
+
+        function testExtensionContext() {
+            try {
+                // Test if Chrome extension APIs are available
+                const hasChrome = typeof chrome !== 'undefined';
+                const hasRuntime = hasChrome && chrome.runtime;
+                const hasRuntimeId = hasRuntime && chrome.runtime.id;
+                
+                logResult(`✅ Chrome available: ${hasChrome}`, 'success');
+                logResult(`✅ Runtime available: ${hasRuntime}`, 'success');
+                logResult(`✅ Runtime ID available: ${hasRuntimeId}`, 'success');
+                
+                if (hasRuntimeId) {
+                    logResult(`✅ Extension ID: ${chrome.runtime.id}`, 'success');
+                } else {
+                    logResult('⚠️ Extension context not available', 'error');
+                }
+            } catch (error) {
+                logResult(`❌ Extension context test failed: ${error.message}`, 'error');
+            }
+        }
+
+        function testLocalStorage() {
+            try {
+                // Test localStorage functionality
+                const testKey = 'billableai_test';
+                const testData = { test: true, timestamp: Date.now() };
+                
+                localStorage.setItem(testKey, JSON.stringify(testData));
+                const retrieved = JSON.parse(localStorage.getItem(testKey));
+                
+                if (retrieved && retrieved.test) {
+                    logResult('✅ LocalStorage working correctly', 'success');
+                    localStorage.removeItem(testKey);
+                } else {
+                    logResult('❌ LocalStorage test failed', 'error');
+                }
+            } catch (error) {
+                logResult(`❌ LocalStorage test failed: ${error.message}`, 'error');
+            }
+        }
+
+        function testTrackingStatus() {
+            try {
+                // Test tracking status storage
+                const testStatus = {
+                    isTracking: true,
+                    currentTime: 30000,
+                    isPaused: false,
+                    lastUpdated: Date.now()
+                };
+                
+                localStorage.setItem('billableai_trackingStatus', JSON.stringify(testStatus));
+                const retrieved = JSON.parse(localStorage.getItem('billableai_trackingStatus'));
+                
+                if (retrieved && retrieved.isTracking) {
+                    logResult('✅ Tracking status storage working', 'success');
+                    logResult(`✅ Retrieved status: ${JSON.stringify(retrieved, null, 2)}`, 'success');
+                } else {
+                    logResult('❌ Tracking status storage failed', 'error');
+                }
+            } catch (error) {
+                logResult(`❌ Tracking status test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            logResult('🚀 Starting extension context tests...', 'info');
+            testExtensionContext();
+            testLocalStorage();
+            testTrackingStatus();
+        });
+    </script>
+</body>
+</html> 

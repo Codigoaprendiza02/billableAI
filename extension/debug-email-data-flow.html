@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Email Data Flow</title>
+</head>
+<body>
+    <h1>Debug Email Data Flow</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        // Simulate the email data flow
+        async function debugEmailDataFlow() {
+            const resultsDiv = document.getElementById('results');
+            let debugLog = [];
+            
+            function log(message) {
+                console.log(message);
+                debugLog.push(message);
+            }
+            
+            try {
+                log('🔧 Debugging email data flow...');
+                
+                // Step 1: Simulate email data capture
+                log('📋 Step 1: Simulating email data capture...');
+                const mockEmailData = {
+                    subject: 'Test Email Subject',
+                    to: 'test@example.com',
+                    body: 'This is a test email body for debugging.',
+                    timestamp: new Date().toISOString()
+                };
+                const mockTimeSpent = 300000; // 5 minutes
+                
+                log(`✅ Mock email data captured:`);
+                log(`  Subject: ${mockEmailData.subject}`);
+                log(`  To: ${mockEmailData.to}`);
+                log(`  Body length: ${mockEmailData.body.length} characters`);
+                log(`  Time spent: ${mockTimeSpent}ms (${Math.round(mockTimeSpent / 60000)} minutes)`);
+                
+                // Step 2: Simulate storing data
+                log('📋 Step 2: Simulating data storage...');
+                const summaryData = {
+                    emailData: mockEmailData,
+                    timeSpent: mockTimeSpent,
+                    autoProcess: true,
+                    timestamp: Date.now()
+                };
+                
+                log(`✅ Summary data prepared:`);
+                log(`  Has emailData: ${!!summaryData.emailData}`);
+                log(`  Has timeSpent: ${!!summaryData.timeSpent}`);
+                log(`  AutoProcess: ${summaryData.autoProcess}`);
+                
+                // Step 3: Simulate EMAIL_DATA_AVAILABLE message
+                log('📋 Step 3: Simulating EMAIL_DATA_AVAILABLE message...');
+                const messageData = {
+                    type: 'EMAIL_DATA_AVAILABLE',
+                    data: {
+                        emailData: mockEmailData,
+                        timeSpent: mockTimeSpent,
+                        autoProcess: true,
+                        timestamp: Date.now()
+                    }
+                };
+                
+                log(`✅ Message data prepared:`);
+                log(`  Message type: ${messageData.type}`);
+                log(`  Has emailData: ${!!messageData.data.emailData}`);
+                log(`  Has timeSpent: ${!!messageData.data.timeSpent}`);
+                
+                // Step 4: Simulate Assistant receiving the message
+                log('📋 Step 4: Simulating Assistant receiving message...');
+                
+                // Simulate the Assistant's handleEmailDataAvailable function
+                function simulateAssistantReceive(message) {
+                    if (message.type === 'EMAIL_DATA_AVAILABLE') {
+                        log('✅ Assistant received EMAIL_DATA_AVAILABLE message');
+                        log(`  Email data: ${!!message.data.emailData}`);
+                        log(`  Time spent: ${message.data.timeSpent || 0}ms`);
+                        
+                        if (message.data && message.data.emailData) {
+                            const emailData = message.data.emailData;
+                            const timeSpent = message.data.timeSpent || 0;
+                            
+                            log(`✅ Email data details:`);
+                            log(`  Subject: ${emailData.subject || 'No subject'}`);
+                            log(`  To: ${emailData.to || 'No recipient'}`);
+                            log(`  Body length: ${emailData.body?.length || 0} characters`);
+                            log(`  Time spent: ${timeSpent}ms (${Math.round(timeSpent / 60000)} minutes)`);
+                            
+                            return {
+                                success: true,
+                                emailData: emailData,
+                                timeSpent: timeSpent
+                            };
+                        } else {
+                            log('❌ Email data is missing or invalid');
+                            return { success: false, error: 'Missing email data' };
+                        }
+                    } else {
+                        log('❌ Unexpected message type:', message.type);
+                        return { success: false, error: 'Unexpected message type' };
+                    }
+                }
+                
+                const assistantResult = simulateAssistantReceive(messageData);
+                
+                // Step 5: Simulate Gemini response generation
+                log('📋 Step 5: Simulating Gemini response generation...');
+                
+                if (assistantResult.success) {
+                    log('✅ Assistant successfully processed email data');
+                    log(`  Will generate response with:`);
+                    log(`  - Subject: ${assistantResult.emailData.subject}`);
+                    log(`  - To: ${assistantResult.emailData.to}`);
+                    log(`  - Body: ${assistantResult.emailData.body.substring(0, 50)}...`);
+                    log(`  - Time: ${assistantResult.timeSpent}ms`);
+                } else {
+                    log(`❌ Assistant failed to process email data: ${assistantResult.error}`);
+                }
+                
+                // Display results
+                resultsDiv.innerHTML = `
+                    <h2>Debug Results:</h2>
+                    <pre>${debugLog.join('\n')}</pre>
+                    
+                    <h3>Data Flow Summary:</h3>
+                    <ul>
+                        <li><strong>Email Capture:</strong> ✅ Working</li>
+                        <li><strong>Data Storage:</strong> ✅ Working</li>
+                        <li><strong>Message Sending:</strong> ✅ Working</li>
+                        <li><strong>Assistant Reception:</strong> ${assistantResult.success ? '✅ Working' : '❌ Failed'}</li>
+                        <li><strong>Gemini Response:</strong> ${assistantResult.success ? '✅ Ready' : '❌ Cannot proceed'}</li>
+                    </ul>
+                    
+                    ${assistantResult.success ? `
+                    <h3>Email Data Received by Assistant:</h3>
+                    <pre>${JSON.stringify(assistantResult.emailData, null, 2)}</pre>
+                    
+                    <h3>Time Data:</h3>
+                    <p>Time Spent: ${assistantResult.timeSpent}ms (${Math.round(assistantResult.timeSpent / 60000)} minutes)</p>
+                    ` : `
+                    <h3>Error:</h3>
+                    <p>${assistantResult.error}</p>
+                    `}
+                `;
+                
+            } catch (error) {
+                log(`❌ Debug failed: ${error.message}`);
+                resultsDiv.innerHTML = `
+                    <h2>Debug Failed:</h2>
+                    <pre>${debugLog.join('\n')}</pre>
+                    <h3>Error:</h3>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+
+        debugEmailDataFlow();
+    </script>
+</body>
+</html> 

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer Behavior Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .test-button.warning {
+            background: #f44336;
+        }
+        .test-button.warning:hover {
+            background: #d32f2f;
+        }
+        .test-button.info {
+            background: #FF9800;
+        }
+        .test-button.info:hover {
+            background: #F57C00;
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        .timer-display {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>⏱️ Timer Behavior Test</h1>
+    
+    <div class="test-section">
+        <h2>Timer Controls</h2>
+        <button class="test-button" onclick="startTimer()">Start Timer</button>
+        <button class="test-button info" onclick="pauseTimer()">Pause Timer</button>
+        <button class="test-button" onclick="resumeTimer()">Resume Timer</button>
+        <button class="test-button warning" onclick="stopTimer()">Stop Timer</button>
+        <button class="test-button" onclick="simulateTyping()">Simulate Typing</button>
+        <div class="timer-display" id="timer-display">00:00</div>
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        function logResult(message, type = 'info') {
+            const container = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+        }
+
+        // Mock BillableAI state
+        window.billableAIState = {
+            isTracking: false,
+            startTime: null,
+            isPaused: false,
+            accumulatedTime: 0,
+            sessionId: null,
+            draftId: null,
+            currentEmail: null,
+            lastActivityTime: null,
+            userId: 'test_user_123',
+            backendUrl: 'http://localhost:3001/api',
+            authToken: 'mock_token',
+            backendTracking: false,
+            gmailApiReady: false,
+            trackingNotification: null,
+            trackingTimerInterval: null
+        };
+
+        let timerInterval = null;
+        let pauseStartTime = null;
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('timer-display');
+            let elapsed = window.billableAIState.accumulatedTime || 0;
+            
+            if (window.billableAIState.isTracking && !window.billableAIState.isPaused && window.billableAIState.startTime) {
+                elapsed += Date.now() - window.billableAIState.startTime;
+            }
+            
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            const statusText = window.billableAIState.isPaused ? ' (PAUSED)' : window.billableAIState.isTracking ? ' (ACTIVE)' : ' (STOPPED)';
+            
+            display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}${statusText}`;
+        }
+
+        function startTimer() {
+            logResult('Starting timer...', 'info');
+            
+            window.billableAIState.isTracking = true;
+            window.billableAIState.startTime = Date.now();
+            window.billableAIState.isPaused = false;
+            window.billableAIState.accumulatedTime = 0;
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            timerInterval = setInterval(updateTimerDisplay, 1000);
+            updateTimerDisplay();
+            
+            logResult('Timer started successfully', 'success');
+        }
+
+        function pauseTimer() {
+            if (!window.billableAIState.isTracking) {
+                logResult('No active timer to pause', 'error');
+                return;
+            }
+            
+            logResult('Pausing timer...', 'info');
+            
+            window.billableAIState.isPaused = true;
+            pauseStartTime = Date.now();
+            
+            // Accumulate time spent so far
+            if (window.billableAIState.startTime) {
+                window.billableAIState.accumulatedTime += Date.now() - window.billableAIState.startTime;
+                window.billableAIState.startTime = Date.now(); // Reset start time for next session
+            }
+            
+            updateTimerDisplay();
+            logResult('Timer paused successfully', 'success');
+        }
+
+        function resumeTimer() {
+            if (!window.billableAIState.isTracking || !window.billableAIState.isPaused) {
+                logResult('No paused timer to resume', 'error');
+                return;
+            }
+            
+            logResult('Resuming timer...', 'info');
+            
+            window.billableAIState.isPaused = false;
+            
+            // Adjust start time to account for pause duration
+            if (pauseStartTime) {
+                const pauseDuration = Date.now() - pauseStartTime;
+                window.billableAIState.startTime += pauseDuration;
+                pauseStartTime = null;
+            }
+            
+            updateTimerDisplay();
+            logResult('Timer resumed successfully', 'success');
+        }
+
+        function stopTimer() {
+            if (!window.billableAIState.isTracking) {
+                logResult('No active timer to stop', 'error');
+                return;
+            }
+            
+            logResult('Stopping timer...', 'info');
+            
+            // Calculate final time
+            let totalTime = window.billableAIState.accumulatedTime;
+            if (window.billableAIState.startTime && !window.billableAIState.isPaused) {
+                totalTime += Date.now() - window.billableAIState.startTime;
+            }
+            
+            window.billableAIState.isTracking = false;
+            window.billableAIState.accumulatedTime = totalTime;
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            
+            updateTimerDisplay();
+            logResult(`Timer stopped. Total time: ${(totalTime / 1000).toFixed(1)} seconds`, 'success');
+        }
+
+        function simulateTyping() {
+            if (!window.billableAIState.isTracking) {
+                logResult('No active timer for typing simulation', 'error');
+                return;
+            }
+            
+            logResult('Simulating typing activity...', 'info');
+            
+            if (window.billableAIState.isPaused) {
+                resumeTimer();
+            }
+            
+            window.billableAIState.lastActivityTime = Date.now();
+            logResult('Typing activity recorded', 'success');
+        }
+
+        // Auto-run basic test on page load
+        window.addEventListener('load', () => {
+            logResult('🚀 Timer behavior test page loaded', 'info');
+            logResult('Click "Start Timer" to begin testing pause/resume behavior', 'info');
+        });
+    </script>
+</body>
+</html> 

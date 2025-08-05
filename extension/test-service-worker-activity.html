@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Worker Activity Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .activity-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .active { background-color: #28a745; }
+        .inactive { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Service Worker Activity Test</h1>
+    
+    <div class="container">
+        <h2>📊 Extension Status</h2>
+        <div id="extension-status" class="status info">
+            <span class="activity-indicator inactive"></span>
+            Extension Status: Checking...
+        </div>
+        <button onclick="checkExtension()">Check Extension</button>
+    </div>
+
+    <div class="container">
+        <h2>📜 Content Script Status</h2>
+        <div id="content-script-status" class="status info">
+            <span class="activity-indicator inactive"></span>
+            Content Script Status: Checking...
+        </div>
+        <button onclick="checkContentScript()">Check Content Script</button>
+    </div>
+
+    <div class="container">
+        <h2>🔄 Service Worker Communication</h2>
+        <div id="sw-communication-status" class="status info">Ready to test</div>
+        <button onclick="testServiceWorkerCommunication()">Test Communication</button>
+        <button onclick="startKeepAliveTest()">Start Keep-Alive Test</button>
+        <button onclick="stopKeepAliveTest()">Stop Keep-Alive Test</button>
+    </div>
+
+    <div class="container">
+        <h2>📝 Activity Log</h2>
+        <div class="log" id="log"></div>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <script>
+        let logMessages = [];
+        let keepAliveTestInterval = null;
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logMessages.push(logEntry);
+            
+            const logElement = document.getElementById('log');
+            logElement.textContent = logMessages.join('\n');
+            logElement.scrollTop = logElement.scrollHeight;
+            
+            console.log(`🎯 Service Worker Test: ${message}`);
+        }
+
+        function clearLog() {
+            logMessages = [];
+            document.getElementById('log').textContent = '';
+        }
+
+        function updateStatus(elementId, message, className) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${className}`;
+        }
+
+        function updateExtensionStatus(isActive) {
+            const element = document.getElementById('extension-status');
+            const indicator = element.querySelector('.activity-indicator');
+            
+            if (isActive) {
+                indicator.className = 'activity-indicator active';
+                element.innerHTML = '<span class="activity-indicator active"></span>Extension Status: Active';
+                element.className = 'status success';
+            } else {
+                indicator.className = 'activity-indicator inactive';
+                element.innerHTML = '<span class="activity-indicator inactive"></span>Extension Status: Inactive';
+                element.className = 'status error';
+            }
+        }
+
+        function updateContentScriptStatus(isActive) {
+            const element = document.getElementById('content-script-status');
+            const indicator = element.querySelector('.activity-indicator');
+            
+            if (isActive) {
+                indicator.className = 'activity-indicator active';
+                element.innerHTML = '<span class="activity-indicator active"></span>Content Script Status: Active';
+                element.className = 'status success';
+            } else {
+                indicator.className = 'activity-indicator inactive';
+                element.innerHTML = '<span class="activity-indicator inactive"></span>Content Script Status: Inactive';
+                element.className = 'status error';
+            }
+        }
+
+        function checkExtension() {
+            log('🔍 Checking extension availability...');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                log('✅ chrome.runtime is available');
+                
+                try {
+                    chrome.runtime.getManifest((manifest) => {
+                        log(`📋 Extension name: ${manifest.name}`);
+                        log(`📋 Extension version: ${manifest.version}`);
+                        log(`📋 Extension ID: ${chrome.runtime.id}`);
+                        updateExtensionStatus(true);
+                        updateStatus('extension-status', '✅ Extension is loaded!', 'success');
+                    });
+                } catch (error) {
+                    log(`⚠️ Could not get manifest: ${error.message}`);
+                    updateExtensionStatus(false);
+                    updateStatus('extension-status', '⚠️ Extension loaded but manifest error', 'warning');
+                }
+            } else {
+                log('❌ chrome.runtime is NOT available');
+                updateExtensionStatus(false);
+                updateStatus('extension-status', '❌ Extension not loaded', 'error');
+            }
+        }
+
+        function checkContentScript() {
+            log('📜 Checking content script...');
+            
+            if (window.billableAI) {
+                log('✅ window.billableAI object found');
+                log(`📋 Available functions: ${Object.keys(window.billableAI).join(', ')}`);
+                updateContentScriptStatus(true);
+                updateStatus('content-script-status', '✅ Content script is injected!', 'success');
+            } else {
+                log('❌ window.billableAI object not found');
+                updateContentScriptStatus(false);
+                updateStatus('content-script-status', '❌ Content script not injected', 'error');
+            }
+        }
+
+        function testServiceWorkerCommunication() {
+            log('🔄 Testing service worker communication...');
+            
+            if (!window.billableAI) {
+                log('❌ Content script not available');
+                updateStatus('sw-communication-status', '❌ Content script not available', 'error');
+                return;
+            }
+            
+            // Use the content script's functions to test communication
+            try {
+                // Test by calling a function that communicates with background
+                window.billableAI.getStatus();
+                log('✅ Service worker communication test successful');
+                updateStatus('sw-communication-status', '✅ Service worker communication working', 'success');
+            } catch (error) {
+                log(`❌ Service worker communication test failed: ${error.message}`);
+                updateStatus('sw-communication-status', '❌ Service worker communication failed', 'error');
+            }
+        }
+
+        function startKeepAliveTest() {
+            log('🔄 Starting keep-alive test...');
+            
+            if (keepAliveTestInterval) {
+                clearInterval(keepAliveTestInterval);
+            }
+            
+            keepAliveTestInterval = setInterval(() => {
+                log('🔄 Sending keep-alive test...');
+                
+                if (window.billableAI) {
+                    try {
+                        // Call a function that triggers keep-alive
+                        window.billableAI.getStatus();
+                        log('✅ Keep-alive test successful');
+                    } catch (error) {
+                        log(`❌ Keep-alive test failed: ${error.message}`);
+                    }
+                } else {
+                    log('❌ Content script not available for keep-alive test');
+                }
+            }, 15000); // Send keep-alive every 15 seconds
+            
+            log('🔄 Keep-alive test started (sending every 15 seconds)');
+        }
+
+        function stopKeepAliveTest() {
+            if (keepAliveTestInterval) {
+                clearInterval(keepAliveTestInterval);
+                keepAliveTestInterval = null;
+                log('🔄 Keep-alive test stopped');
+            }
+        }
+
+        // Initialize tests
+        window.addEventListener('load', () => {
+            log('🚀 Service worker activity test page loaded');
+            log('📍 URL: ' + window.location.href);
+            
+            setTimeout(checkExtension, 1000);
+            setTimeout(checkContentScript, 2000);
+            setTimeout(testServiceWorkerCommunication, 3000);
+        });
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            stopKeepAliveTest();
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+    </style>
+</head>
+<body>
+    <h1>🎯 BillableAI Integration Test</h1>
+    
+    <div class="test-section">
+        <h2>Backend API Tests</h2>
+        <button class="test-button" onclick="testBackendHealth()">Test Backend Health</button>
+        <button class="test-button" onclick="testEmailTracking()">Test Email Tracking</button>
+        <button class="test-button" onclick="testBillingSummary()">Test Billing Summary</button>
+        <button class="test-button" onclick="testOneClickBilling()">Test One-Click Billing</button>
+        <div id="backend-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Extension Integration Tests</h2>
+        <button class="test-button" onclick="testExtensionCommunication()">Test Extension Communication</button>
+        <button class="test-button" onclick="testTimerIntegration()">Test Timer Integration</button>
+        <button class="test-button" onclick="testChatIntegration()">Test Chat Integration</button>
+        <div id="extension-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Gmail Integration Tests</h2>
+        <button class="test-button" onclick="testGmailDetection()">Test Gmail Detection</button>
+        <button class="test-button" onclick="testSendButtonDetection()">Test Send Button Detection</button>
+        <div id="gmail-results"></div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'http://localhost:3001/api';
+        const TEST_EMAIL_DATA = {
+            to: 'test@example.com',
+            subject: 'Integration Test Email',
+            content: 'This is a test email for integration testing.',
+            from: 'user@gmail.com'
+        };
+
+        function logResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+        }
+
+        async function testBackendHealth() {
+            try {
+                const response = await fetch(`${BACKEND_URL.replace('/api', '')}/health`);
+                const data = await response.json();
+                logResult('backend-results', `✅ Backend Health: ${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                logResult('backend-results', `❌ Backend Health Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testEmailTracking() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/email-tracking/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer mock_token'
+                    },
+                    body: JSON.stringify(TEST_EMAIL_DATA)
+                });
+                const data = await response.json();
+                logResult('backend-results', `✅ Email Tracking: ${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                logResult('backend-results', `❌ Email Tracking Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testBillingSummary() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/email-tracking/stop`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer mock_token'
+                    },
+                    body: JSON.stringify({
+                        sessionId: 'test_session_' + Date.now(),
+                        finalContent: TEST_EMAIL_DATA.content
+                    })
+                });
+                const data = await response.json();
+                logResult('backend-results', `✅ Billing Summary: ${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                logResult('backend-results', `❌ Billing Summary Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testOneClickBilling() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/email-tracking/one-click-billing`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer mock_token'
+                    },
+                    body: JSON.stringify({
+                        sessionId: 'test_session_' + Date.now(),
+                        emailData: TEST_EMAIL_DATA,
+                        sendEmail: false
+                    })
+                });
+                const data = await response.json();
+                logResult('backend-results', `✅ One-Click Billing: ${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                logResult('backend-results', `❌ One-Click Billing Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testExtensionCommunication() {
+            try {
+                if (typeof chrome !== 'undefined' && chrome.runtime) {
+                    chrome.runtime.sendMessage({ type: 'TEST_COMMUNICATION', data: 'Integration test' }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            logResult('extension-results', `❌ Extension Communication Error: ${chrome.runtime.lastError.message}`, 'error');
+                        } else {
+                            logResult('extension-results', `✅ Extension Communication: ${JSON.stringify(response, null, 2)}`, 'success');
+                        }
+                    });
+                } else {
+                    logResult('extension-results', '❌ Chrome extension not available', 'error');
+                }
+            } catch (error) {
+                logResult('extension-results', `❌ Extension Communication Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testTimerIntegration() {
+            try {
+                // Test localStorage integration
+                const testData = {
+                    isTracking: true,
+                    currentTime: 30000,
+                    isPaused: false
+                };
+                localStorage.setItem('billableai_trackingStatus', JSON.stringify(testData));
+                
+                const retrieved = JSON.parse(localStorage.getItem('billableai_trackingStatus'));
+                if (retrieved && retrieved.isTracking) {
+                    logResult('extension-results', `✅ Timer Integration: ${JSON.stringify(retrieved, null, 2)}`, 'success');
+                } else {
+                    logResult('extension-results', '❌ Timer Integration: Data not stored correctly', 'error');
+                }
+            } catch (error) {
+                logResult('extension-results', `❌ Timer Integration Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testChatIntegration() {
+            try {
+                // Test chat message storage
+                const testMessage = {
+                    type: 'billing_summary',
+                    timeSpent: 45000,
+                    emailData: TEST_EMAIL_DATA,
+                    summary: 'Test billing summary for integration testing.',
+                    timestamp: new Date().toISOString()
+                };
+                
+                const chatMessages = JSON.parse(localStorage.getItem('billableai_chatMessages') || '[]');
+                chatMessages.push(testMessage);
+                localStorage.setItem('billableai_chatMessages', JSON.stringify(chatMessages));
+                
+                logResult('extension-results', `✅ Chat Integration: Message stored successfully`, 'success');
+            } catch (error) {
+                logResult('extension-results', `❌ Chat Integration Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testGmailDetection() {
+            try {
+                // Simulate Gmail compose window detection
+                const composeWindow = document.querySelector('[role="dialog"]') || 
+                                   document.querySelector('[data-tooltip="Compose"]') ||
+                                   document.querySelector('[aria-label*="Compose"]');
+                
+                if (composeWindow) {
+                    logResult('gmail-results', `✅ Gmail Detection: Compose window found`, 'success');
+                } else {
+                    logResult('gmail-results', `ℹ️ Gmail Detection: No compose window found (expected if not on Gmail)`, 'info');
+                }
+            } catch (error) {
+                logResult('gmail-results', `❌ Gmail Detection Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testSendButtonDetection() {
+            try {
+                // Simulate send button detection
+                const sendButton = document.querySelector('[data-tooltip="Send"]') ||
+                                 document.querySelector('[aria-label*="Send"]') ||
+                                 document.querySelector('button[title*="Send"]');
+                
+                if (sendButton) {
+                    logResult('gmail-results', `✅ Send Button Detection: Send button found`, 'success');
+                } else {
+                    logResult('gmail-results', `ℹ️ Send Button Detection: No send button found (expected if not on Gmail)`, 'info');
+                }
+            } catch (error) {
+                logResult('gmail-results', `❌ Send Button Detection Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run basic tests on page load
+        window.addEventListener('load', () => {
+            logResult('backend-results', '🚀 Starting integration tests...', 'info');
+            testBackendHealth();
+            testTimerIntegration();
+            testChatIntegration();
+        });
+    </script>
+</body>
+</html> 

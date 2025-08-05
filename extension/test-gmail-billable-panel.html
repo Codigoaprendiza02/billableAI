@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI Gmail Billable Panel Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .notification-preview {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 300px;
+            border: 1px solid #e5e7eb;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #efe;
+            color: #0a0;
+        }
+        .error {
+            background: #fee;
+            color: #c00;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎯 BillableAI Gmail Billable Panel Test</h1>
+        
+        <div>
+            <h3>Test Steps:</h3>
+            <ol>
+                <li>Click "Create Notification" to simulate the Gmail notification</li>
+                <li>Click "Open Assistant" button in the notification</li>
+                <li>Verify the billable panel appears on the right</li>
+                <li>Click "Generate Billable Summary" in the panel</li>
+                <li>Test the copy and clear functionality</li>
+            </ol>
+        </div>
+        
+        <button onclick="createNotification()">Create Notification</button>
+        <button onclick="testBillablePanel()">Test Billable Panel Directly</button>
+        <button onclick="clearAll()">Clear All Panels</button>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        // Simulate the notification state
+        window.billableAINotificationState = {
+            isVisible: true,
+            isTracking: true,
+            timeSpent: 120000, // 2 minutes
+            isPaused: false,
+            emailData: {
+                to: 'client@example.com',
+                subject: 'Project Update - Q4 Review',
+                body: 'Hi John, I wanted to follow up on our discussion about the Q4 project timeline. We need to review the deliverables and ensure everything is on track for the end-of-year deadline. Please let me know if you have any questions or concerns.',
+                recipients: ['client@example.com']
+            },
+            sessionId: 'session_' + Date.now(),
+            draftId: 'draft_' + Date.now(),
+            isProcessing: false
+        };
+
+        // Simulate the billable panel
+        window.billableAIPanelState = {
+            isVisible: false,
+            emailData: null,
+            timeSpent: 0,
+            summary: null,
+            isGenerating: false
+        };
+
+        // Simulate the openAssistant function
+        window.billableAI = {
+            openAssistant: async () => {
+                console.log('🎯 BillableAI: Open Assistant button clicked!');
+                
+                try {
+                    window.billableAINotificationState.isProcessing = true;
+                    updateNotificationComponent();
+                    
+                    // Show the billable panel directly
+                    if (window.billableAIPanel) {
+                        window.billableAIPanel.show(
+                            window.billableAINotificationState.emailData,
+                            window.billableAINotificationState.timeSpent
+                        );
+                        console.log('🎯 BillableAI: Billable panel shown successfully');
+                        
+                        document.getElementById('result').className = 'result success';
+                        document.getElementById('result').textContent = '✅ Billable panel opened successfully!';
+                    } else {
+                        console.log('🎯 BillableAI: Billable panel not available');
+                        document.getElementById('result').className = 'result error';
+                        document.getElementById('result').textContent = '❌ Billable panel not available';
+                    }
+                    
+                    // Hide the notification
+                    window.billableAINotificationState.isVisible = false;
+                    updateNotificationComponent();
+                    
+                } catch (error) {
+                    console.error('🎯 BillableAI: Error opening billable panel:', error);
+                    document.getElementById('result').className = 'result error';
+                    document.getElementById('result').textContent = `❌ Error: ${error.message}`;
+                } finally {
+                    window.billableAINotificationState.isProcessing = false;
+                    updateNotificationComponent();
+                }
+            },
+            getState: () => window.billableAINotificationState
+        };
+
+        function createNotification() {
+            // Remove existing notification if any
+            const existingNotification = document.getElementById('billableai-gmail-notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            const notification = document.createElement('div');
+            notification.className = 'notification-preview';
+            notification.id = 'billableai-gmail-notification';
+            
+            notification.innerHTML = `
+                <div style="padding: 16px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 1s infinite;"></div>
+                            <span style="font-size: 14px; font-weight: 600; color: #111827;">BillableAI Tracking</span>
+                        </div>
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" style="color: #9ca3af; background: none; border: none; cursor: pointer; padding: 4px;">
+                            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <svg style="width: 16px; height: 16px; color: #3b82f6;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span style="font-size: 18px; font-family: monospace; color: #111827; font-weight: 600;">
+                                2:00
+                            </span>
+                        </div>
+                        
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                            <span style="font-weight: 600;">Subject:</span> Project Update - Q4 Review
+                        </div>
+                        
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                            <span style="font-weight: 600;">To:</span> client@example.com
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 8px;">
+                        <button onclick="window.billableAI.openAssistant()" style="
+                            width: 100%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 8px;
+                            background: #3b82f6;
+                            color: white;
+                            font-size: 14px;
+                            font-weight: 600;
+                            padding: 8px 12px;
+                            border-radius: 6px;
+                            border: none;
+                            cursor: pointer;
+                            transition: background-color 0.2s;
+                        ">
+                            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                            Open Assistant
+                        </button>
+                    </div>
+                    
+                    <div style="text-align: center; font-size: 12px; color: #6b7280;">
+                        Tracking active
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            console.log('🎯 BillableAI: Test notification created');
+        }
+
+        function updateNotificationComponent() {
+            console.log('🎯 BillableAI: Notification component updated');
+        }
+
+        function testBillablePanel() {
+            // Test the billable panel directly
+            const emailData = {
+                to: 'test@example.com',
+                subject: 'Test Email Subject',
+                body: 'This is a test email body for testing the billable panel functionality.',
+                recipients: ['test@example.com']
+            };
+            
+            if (window.billableAIPanel) {
+                window.billableAIPanel.show(emailData, 90000); // 1.5 minutes
+                console.log('🎯 BillableAI: Billable panel test successful');
+                
+                document.getElementById('result').className = 'result success';
+                document.getElementById('result').textContent = '✅ Billable panel test successful!';
+            } else {
+                console.log('🎯 BillableAI: Billable panel not available');
+                document.getElementById('result').className = 'result error';
+                document.getElementById('result').textContent = '❌ Billable panel not available';
+            }
+        }
+
+        function clearAll() {
+            // Remove all panels
+            const notification = document.getElementById('billableai-gmail-notification');
+            if (notification) notification.remove();
+            
+            const panel = document.getElementById('billableai-panel');
+            if (panel) panel.remove();
+            
+            document.getElementById('result').className = 'result success';
+            document.getElementById('result').textContent = '✅ All panels cleared';
+            
+            console.log('🎯 BillableAI: All panels cleared');
+        }
+
+        console.log('🎯 BillableAI: Gmail billable panel test page loaded');
+    </script>
+</body>
+</html> 

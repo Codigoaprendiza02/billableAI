@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Formatting Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .message-preview {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .message-preview h4 {
+            color: #1565c0;
+            margin: 0 0 10px 0;
+        }
+        .message-preview p {
+            margin: 5px 0;
+            color: #0d47a1;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        
+        .step {
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+            margin: 10px 0;
+        }
+        
+        .step.success { border-left-color: #28a745; }
+        .step.error { border-left-color: #dc3545; }
+        .step.warning { border-left-color: #ffc107; }
+    </style>
+</head>
+<body>
+    <h1>🎯 BillableAI - Message Formatting Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>📧 Test Message Formatting</h2>
+        <p>This test verifies that message formatting and email data display are working correctly:</p>
+        
+        <div class="step">
+            <strong>Step 1:</strong> Test message formatting (bold, italic, line breaks)
+            <button onclick="testMessageFormatting()">Test Message Formatting</button>
+        </div>
+        
+        <div class="step">
+            <strong>Step 2:</strong> Test email data inclusion (to, cc, bcc)
+            <button onclick="testEmailDataInclusion()">Test Email Data Inclusion</button>
+        </div>
+        
+        <div class="step">
+            <strong>Step 3:</strong> Test complete message flow
+            <button onclick="testCompleteMessageFlow()">Test Complete Message Flow</button>
+        </div>
+        
+        <div id="formatting-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Message Preview</h2>
+        <div id="message-preview" class="message-preview" style="display: none;">
+            <h4>📧 Message Preview</h4>
+            <div id="message-content"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Manual Tests</h2>
+        <button onclick="testBackgroundScript()">Test Background Script</button>
+        <button onclick="testChromeStorage()">Test Chrome Storage</button>
+        <button onclick="clearAllData()">Clear All Data</button>
+        <button onclick="checkExtensionStatus()">Check Extension Status</button>
+        <div id="manual-test-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Data Verification</h2>
+        <button onclick="verifyStoredData()">Verify Stored Data</button>
+        <button onclick="checkAllStorageLocations()">Check All Storage Locations</button>
+        <div id="verification-log" class="log"></div>
+    </div>
+
+    <script>
+        function log(elementId, message, type = 'info') {
+            const logElement = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logElement.innerHTML += logEntry + '\n';
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(logEntry);
+        }
+
+        // Step 1: Test Message Formatting
+        function testMessageFormatting() {
+            const logId = 'formatting-log';
+            log(logId, '📧 Step 1: Testing message formatting...');
+            
+            const testMessage = `This is a test message with **bold text** and *italic text*.
+
+It should also handle line breaks properly.
+
+Email Details:
+- Subject: Test Email Subject
+- To: recipient@example.com
+- CC: cc@example.com
+- BCC: bcc@example.com
+- Time Spent: 3 minutes
+
+This message should display with proper formatting.`;
+            
+            log(logId, `✅ Test message created:`, testMessage);
+            
+            // Test formatting conversion
+            const formattedMessage = testMessage
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>');
+            
+            log(logId, `✅ Formatted message:`, formattedMessage);
+            
+            // Update preview
+            updateMessagePreview(formattedMessage);
+            
+            log(logId, '✅ Step 1 completed - Message formatting tested');
+        }
+
+        // Step 2: Test Email Data Inclusion
+        function testEmailDataInclusion() {
+            const logId = 'formatting-log';
+            log(logId, '📧 Step 2: Testing email data inclusion...');
+            
+            const mockEmailData = {
+                subject: 'Test Email Subject - Data Inclusion Test',
+                to: 'recipient@example.com',
+                cc: 'cc@example.com',
+                bcc: 'bcc@example.com',
+                body: 'This is a test email body for testing data inclusion.',
+                content: 'This is the content field for testing.',
+                timestamp: new Date().toISOString()
+            };
+            
+            const mockTimeSpent = 180000; // 3 minutes
+            
+            log(logId, `✅ Email data created:`, mockEmailData);
+            log(logId, `✅ Time spent: ${mockTimeSpent}ms (${Math.round(mockTimeSpent / 60000)} minutes)`);
+            
+            // Test message generation with email data
+            const testMessage = `Generate billable summary for this email:
+
+📧 Email Details:
+Subject: ${mockEmailData.subject}
+To: ${mockEmailData.to}
+CC: ${mockEmailData.cc}
+BCC: ${mockEmailData.bcc}
+Time Spent: ${Math.round(mockTimeSpent / 60000)} minutes
+
+Email Content:
+${mockEmailData.body}`;
+            
+            log(logId, `✅ Generated message with email data:`, testMessage);
+            
+            // Update preview
+            updateMessagePreview(testMessage);
+            
+            log(logId, '✅ Step 2 completed - Email data inclusion tested');
+        }
+
+        // Step 3: Complete Message Flow
+        function testCompleteMessageFlow() {
+            const logId = 'formatting-log';
+            log(logId, '🔄 Step 3: Testing complete message flow...');
+            
+            try {
+                // Step 3a: Create email data
+                log(logId, 'Step 3a: Creating email data...');
+                const mockEmailData = {
+                    subject: 'Complete Flow Test Email',
+                    to: 'flow@example.com',
+                    cc: 'flow-cc@example.com',
+                    bcc: 'flow-bcc@example.com',
+                    body: 'This is a test email for the complete message flow test.',
+                    content: 'This is the content field for testing.',
+                    timestamp: new Date().toISOString()
+                };
+                
+                const mockTimeSpent = 240000; // 4 minutes
+                
+                log(logId, `✅ Email data created:`, mockEmailData);
+                log(logId, `✅ Time spent: ${mockTimeSpent}ms (${Math.round(mockTimeSpent / 60000)} minutes)`);
+                
+                // Step 3b: Generate user message
+                log(logId, 'Step 3b: Generating user message...');
+                const userMessage = `Generate billable summary for this email:
+
+📧 Email Details:
+Subject: ${mockEmailData.subject}
+To: ${mockEmailData.to}
+CC: ${mockEmailData.cc}
+BCC: ${mockEmailData.bcc}
+Time Spent: ${Math.round(mockTimeSpent / 60000)} minutes
+
+Email Content:
+${mockEmailData.body}`;
+                
+                log(logId, `✅ User message generated:`, userMessage);
+                
+                // Step 3c: Simulate assistant response
+                log(logId, 'Step 3c: Simulating assistant response...');
+                const assistantResponse = `📧 Professional Billable Summary
+
+Email Details:
+- Subject: ${mockEmailData.subject}
+- To: ${mockEmailData.to}
+- CC: ${mockEmailData.cc}
+- BCC: ${mockEmailData.bcc}
+- Time Spent: ${Math.round(mockTimeSpent / 60000)} minutes
+- Content Length: ${mockEmailData.body.length} characters
+
+Professional Services Rendered:
+Email composition and client communication services including content drafting, review, and finalization.
+
+Time Breakdown:
+- Composition Time: ${Math.round(mockTimeSpent / 60000)} minutes
+- Professional Rate: Standard hourly rate
+- Billable Amount: ${Math.round(mockTimeSpent / 60000)} minutes
+
+Summary:
+This professional email communication required ${Math.round(mockTimeSpent / 60000)} minutes of dedicated time for composition, review, and finalization. The content demonstrates professional client communication standards and represents billable professional services.
+
+Total Billable Time: ${Math.round(mockTimeSpent / 60000)} minutes`;
+                
+                log(logId, `✅ Assistant response generated:`, assistantResponse);
+                
+                // Update preview with both messages
+                updateMessagePreview(`User Message:\n${userMessage}\n\nAssistant Response:\n${assistantResponse}`);
+                
+                log(logId, '✅ Step 3 completed - Complete message flow tested');
+                
+            } catch (error) {
+                log(logId, `❌ Step 3 failed: ${error.message}`);
+            }
+        }
+
+        function updateMessagePreview(message) {
+            const previewElement = document.getElementById('message-preview');
+            const contentElement = document.getElementById('message-content');
+            
+            contentElement.innerHTML = message
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>');
+            
+            previewElement.style.display = 'block';
+        }
+
+        // Manual Tests
+        async function testBackgroundScript() {
+            const logId = 'manual-test-log';
+            log(logId, '🔧 Testing background script communication...');
+            
+            try {
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'TEST_COMMUNICATION',
+                        data: { test: 'message-formatting-test' }
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, `✅ Background script responded: ${JSON.stringify(response)}`);
+            } catch (error) {
+                log(logId, `❌ Background script error: ${error.message}`);
+            }
+        }
+
+        async function testChromeStorage() {
+            const logId = 'manual-test-log';
+            log(logId, '🔧 Testing chrome.storage.local...');
+            
+            try {
+                // Test write
+                await chrome.storage.local.set({ 
+                    'test_data': { 
+                        message: 'Test data', 
+                        timestamp: Date.now() 
+                    } 
+                });
+                log(logId, '✅ Data written to chrome.storage.local');
+                
+                // Test read
+                const result = await chrome.storage.local.get(['test_data']);
+                log(logId, `✅ Data read from chrome.storage.local: ${JSON.stringify(result)}`);
+                
+                // Clean up
+                await chrome.storage.local.remove(['test_data']);
+                log(logId, '✅ Test data cleaned up');
+                
+            } catch (error) {
+                log(logId, `❌ Chrome storage error: ${error.message}`);
+            }
+        }
+
+        async function clearAllData() {
+            const logId = 'manual-test-log';
+            log(logId, '🧹 Clearing all stored data...');
+            
+            try {
+                // Clear chrome.storage.local
+                await chrome.storage.local.clear();
+                log(logId, '✅ Chrome storage cleared');
+                
+                // Clear localStorage
+                localStorage.clear();
+                log(logId, '✅ LocalStorage cleared');
+                
+                // Clear via background script
+                await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'CLEAR_EMAIL_DATA'
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, '✅ All data cleared successfully');
+                
+            } catch (error) {
+                log(logId, `❌ Error clearing data: ${error.message}`);
+            }
+        }
+
+        async function checkExtensionStatus() {
+            const logId = 'manual-test-log';
+            log(logId, '🔍 Checking extension status...');
+            
+            try {
+                // Check if extension is installed and accessible
+                const manifest = chrome.runtime.getManifest();
+                log(logId, `✅ Extension manifest: ${manifest.name} v${manifest.version}`);
+                
+                // Check permissions
+                const permissions = await chrome.permissions.getAll();
+                log(logId, `✅ Permissions: ${JSON.stringify(permissions)}`);
+                
+                // Check storage
+                const storage = await chrome.storage.local.get(null);
+                log(logId, `✅ Storage keys: ${Object.keys(storage).join(', ')}`);
+                
+            } catch (error) {
+                log(logId, `❌ Extension status check failed: ${error.message}`);
+            }
+        }
+
+        // Data Verification
+        async function verifyStoredData() {
+            const logId = 'verification-log';
+            log(logId, '📊 Verifying stored data...');
+            
+            try {
+                // Check chrome.storage.local
+                const result = await chrome.storage.local.get(['billableAI_emailSummary']);
+                log(logId, `✅ Chrome storage data: ${JSON.stringify(result)}`);
+                
+                // Check localStorage
+                const localData = localStorage.getItem('billableAI_emailSummary');
+                log(logId, `✅ LocalStorage data: ${localData}`);
+                
+                // Check via background script
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'GET_EMAIL_DATA'
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, `✅ Background script data: ${JSON.stringify(response)}`);
+                
+            } catch (error) {
+                log(logId, `❌ Verification failed: ${error.message}`);
+            }
+        }
+
+        async function checkAllStorageLocations() {
+            const logId = 'verification-log';
+            log(logId, '📊 Checking all storage locations...');
+            
+            try {
+                // Chrome storage
+                const chromeData = await chrome.storage.local.get(null);
+                log(logId, `✅ Chrome storage keys: ${Object.keys(chromeData).join(', ')}`);
+                
+                // LocalStorage
+                const localKeys = Object.keys(localStorage);
+                log(logId, `✅ LocalStorage keys: ${localKeys.join(', ')}`);
+                
+                // SessionStorage
+                const sessionKeys = Object.keys(sessionStorage);
+                log(logId, `✅ SessionStorage keys: ${sessionKeys.join(', ')}`);
+                
+                // Check for BillableAI specific data
+                const billableKeys = [...localKeys, ...sessionKeys].filter(key => key.includes('billable'));
+                log(logId, `✅ BillableAI related keys: ${billableKeys.join(', ')}`);
+                
+            } catch (error) {
+                log(logId, `❌ Storage check failed: ${error.message}`);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🎯 BillableAI: Message Formatting Fix Test initialized');
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Display Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .email-data-display {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .email-data-display h4 {
+            color: #1565c0;
+            margin: 0 0 10px 0;
+        }
+        .email-data-display p {
+            margin: 5px 0;
+            color: #0d47a1;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🎯 BillableAI - Email Display Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>📧 Test Email Data Display</h2>
+        <p>This test simulates the email data that should be displayed in the Assistant:</p>
+        
+        <button onclick="simulateEmailData()">Simulate Email Data</button>
+        <button onclick="clearEmailData()">Clear Email Data</button>
+        <button onclick="testAssistantDisplay()">Test Assistant Display</button>
+        
+        <div id="email-display-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Email Data Display Preview</h2>
+        <div id="email-data-preview" class="email-data-display" style="display: none;">
+            <h4>📧 Email Data Available</h4>
+            <div id="email-data-content"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Test Background Script Communication</h2>
+        <button onclick="testBackgroundScript()">Test Background Script</button>
+        <button onclick="testDataStorage()">Test Data Storage</button>
+        <button onclick="testDataRetrieval()">Test Data Retrieval</button>
+        <div id="background-test-log" class="log"></div>
+    </div>
+
+    <script>
+        function log(elementId, message, type = 'info') {
+            const logElement = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logElement.innerHTML += logEntry + '\n';
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(logEntry);
+        }
+
+        // Simulate email data
+        function simulateEmailData() {
+            const logId = 'email-display-log';
+            log(logId, '📧 Simulating email data...');
+            
+            const mockEmailData = {
+                subject: 'Test Email Subject - Display Test',
+                to: 'recipient@example.com',
+                cc: 'cc@example.com',
+                bcc: 'bcc@example.com',
+                body: 'This is a test email body for testing the display functionality. It contains multiple lines and should be displayed properly in the Assistant interface.',
+                content: 'This is the content field for testing.',
+                timestamp: new Date().toISOString()
+            };
+            
+            const mockTimeSpent = 180000; // 3 minutes
+            
+            log(logId, `✅ Email data created:`, mockEmailData);
+            log(logId, `✅ Time spent: ${mockTimeSpent}ms (${Math.round(mockTimeSpent / 60000)} minutes)`);
+            
+            // Store for testing
+            window.testEmailData = mockEmailData;
+            window.testTimeSpent = mockTimeSpent;
+            
+            // Update display preview
+            updateEmailDataPreview(mockEmailData, mockTimeSpent);
+            
+            log(logId, '✅ Email data simulation completed');
+        }
+
+        function updateEmailDataPreview(emailData, timeSpent) {
+            const previewElement = document.getElementById('email-data-preview');
+            const contentElement = document.getElementById('email-data-content');
+            
+            contentElement.innerHTML = `
+                <p><strong>Subject:</strong> ${emailData.subject || 'No subject'}</p>
+                <p><strong>To:</strong> ${emailData.to || 'No recipient'}</p>
+                ${emailData.cc ? `<p><strong>CC:</strong> ${emailData.cc}</p>` : ''}
+                ${emailData.bcc ? `<p><strong>BCC:</strong> ${emailData.bcc}</p>` : ''}
+                <p><strong>Content:</strong> ${(emailData.body || emailData.content || '').substring(0, 100)}...</p>
+                ${timeSpent > 0 ? `<p><strong>Time Spent:</strong> ${Math.round(timeSpent / 60000)} minutes</p>` : ''}
+            `;
+            
+            previewElement.style.display = 'block';
+        }
+
+        function clearEmailData() {
+            const logId = 'email-display-log';
+            log(logId, '🧹 Clearing email data...');
+            
+            window.testEmailData = null;
+            window.testTimeSpent = 0;
+            
+            document.getElementById('email-data-preview').style.display = 'none';
+            
+            log(logId, '✅ Email data cleared');
+        }
+
+        function testAssistantDisplay() {
+            const logId = 'email-display-log';
+            log(logId, '🤖 Testing Assistant display functionality...');
+            
+            if (!window.testEmailData) {
+                log(logId, '❌ No email data available. Run "Simulate Email Data" first.');
+                return;
+            }
+            
+            log(logId, '✅ Email data is available for Assistant display');
+            log(logId, `✅ Subject: ${window.testEmailData.subject}`);
+            log(logId, `✅ To: ${window.testEmailData.to}`);
+            log(logId, `✅ CC: ${window.testEmailData.cc || 'None'}`);
+            log(logId, `✅ BCC: ${window.testEmailData.bcc || 'None'}`);
+            log(logId, `✅ Time: ${Math.round(window.testTimeSpent / 60000)} minutes`);
+            log(logId, `✅ Content length: ${window.testEmailData.body?.length || 0} characters`);
+            
+            log(logId, '✅ Assistant should now display this email data');
+        }
+
+        // Background script tests
+        async function testBackgroundScript() {
+            const logId = 'background-test-log';
+            log(logId, '🔧 Testing background script communication...');
+            
+            try {
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'TEST_COMMUNICATION',
+                        data: { test: 'email-display-test' }
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, `✅ Background script responded: ${JSON.stringify(response)}`);
+            } catch (error) {
+                log(logId, `❌ Background script error: ${error.message}`);
+            }
+        }
+
+        async function testDataStorage() {
+            const logId = 'background-test-log';
+            log(logId, '💾 Testing email data storage...');
+            
+            if (!window.testEmailData) {
+                log(logId, '❌ No email data available. Run "Simulate Email Data" first.');
+                return;
+            }
+            
+            try {
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'EMAIL_DATA_STORED',
+                        data: {
+                            emailData: window.testEmailData,
+                            timeSpent: window.testTimeSpent,
+                            autoProcess: true,
+                            timestamp: Date.now()
+                        }
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, `✅ Email data stored via background script: ${JSON.stringify(response)}`);
+                
+                // Verify storage
+                const result = await chrome.storage.local.get(['billableAI_emailSummary']);
+                log(logId, `✅ Chrome storage verification: ${JSON.stringify(result)}`);
+                
+            } catch (error) {
+                log(logId, `❌ Email data storage error: ${error.message}`);
+            }
+        }
+
+        async function testDataRetrieval() {
+            const logId = 'background-test-log';
+            log(logId, '🔍 Testing email data retrieval...');
+            
+            try {
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({
+                        type: 'GET_EMAIL_DATA'
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                log(logId, `✅ Email data retrieved: ${JSON.stringify(response)}`);
+                
+                if (response && response.success && response.data) {
+                    log(logId, `✅ Found email data:`, response.data);
+                    log(logId, `✅ Subject: ${response.data.emailData?.subject}`);
+                    log(logId, `✅ To: ${response.data.emailData?.to}`);
+                    log(logId, `✅ Time: ${response.data.timeSpent}ms`);
+                } else {
+                    log(logId, `❌ No email data found in response`);
+                }
+                
+            } catch (error) {
+                log(logId, `❌ Email data retrieval error: ${error.message}`);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🎯 BillableAI: Email Display Fix Test initialized');
+        });
+    </script>
+</body>
+</html> 

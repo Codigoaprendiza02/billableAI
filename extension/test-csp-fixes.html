@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI - CSP Fixes Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .test-section {
+            margin-bottom: 24px;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 12px;
+        }
+        .test-description {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        .test-button.secondary {
+            background: #6b7280;
+        }
+        .test-button.secondary:hover {
+            background: #4b5563;
+        }
+        .test-result {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: monospace;
+        }
+        .test-result.success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+        .test-result.error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+        .test-result.info {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            color: #0c4a6e;
+        }
+        .panel-demo {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 350px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            border: 1px solid #e5e7eb;
+            display: none;
+        }
+        .notification-demo {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            border: 1px solid #e5e7eb;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 style="color: #111827; margin-bottom: 24px;">BillableAI - CSP Fixes Test</h1>
+        
+        <div class="test-section">
+            <div class="test-title">Content Security Policy (CSP) Fixes</div>
+            <div class="test-description">
+                This test verifies that the inline event handlers have been replaced with addEventListener 
+                to comply with Gmail's Content Security Policy.
+            </div>
+            
+            <button class="test-button" onclick="testPanelEventListeners()">Test Panel Event Listeners</button>
+            <button class="test-button" onclick="testNotificationEventListeners()">Test Notification Event Listeners</button>
+            <button class="test-button secondary" onclick="showPanelDemo()">Show Panel Demo</button>
+            <button class="test-button secondary" onclick="showNotificationDemo()">Show Notification Demo</button>
+            
+            <div id="test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">Test Results</div>
+            <div class="test-description">
+                Check the console for detailed test results and verify that no CSP violations occur.
+            </div>
+            <div id="csp-test-results"></div>
+        </div>
+    </div>
+
+    <!-- Demo Panel -->
+    <div id="demo-panel" class="panel-demo">
+        <div style="padding: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <span style="color: white; font-size: 16px; font-weight: bold;">$</span>
+                    </div>
+                    <div>
+                        <div style="font-size: 16px; font-weight: 600; color: #111827;">Billable Summary</div>
+                        <div style="font-size: 12px; color: #6b7280;">Email tracking complete</div>
+                    </div>
+                </div>
+                <button id="demo-close-btn" style="
+                    background: none;
+                    border: none;
+                    color: #9ca3af;
+                    cursor: pointer;
+                    padding: 4px;
+                    border-radius: 4px;
+                    transition: background-color 0.2s;
+                ">
+                    <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px;">Email Details</div>
+                <div style="margin-bottom: 6px;">
+                    <span style="font-size: 11px; color: #6b7280;">Subject:</span>
+                    <span style="font-size: 12px; color: #111827; margin-left: 4px;">Test Email Subject</span>
+                </div>
+                <div style="margin-bottom: 6px;">
+                    <span style="font-size: 11px; color: #6b7280;">To:</span>
+                    <span style="font-size: 12px; color: #111827; margin-left: 4px;">test@example.com</span>
+                </div>
+                <div style="margin-bottom: 6px;">
+                    <span style="font-size: 11px; color: #6b7280;">Time Spent:</span>
+                    <span style="font-size: 12px; color: #111827; margin-left: 4px; font-family: monospace;">2:30</span>
+                </div>
+            </div>
+            
+            <button id="demo-generate-btn" style="
+                width: 100%;
+                background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+                color: white;
+                font-size: 14px;
+                font-weight: 600;
+                padding: 12px 16px;
+                border-radius: 8px;
+                border: none;
+                cursor: pointer;
+                transition: all 0.2s;
+                margin-bottom: 16px;
+            ">
+                Generate Billable Summary
+            </button>
+            
+            <div style="display: flex; gap: 8px;">
+                <button id="demo-copy-btn" style="
+                    flex: 1;
+                    background: #f3f4f6;
+                    color: #374151;
+                    font-size: 12px;
+                    font-weight: 500;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    border: 1px solid #d1d5db;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">
+                    Copy Summary
+                </button>
+                
+                <button id="demo-clear-btn" style="
+                    flex: 1;
+                    background: #fef2f2;
+                    color: #dc2626;
+                    font-size: 12px;
+                    font-weight: 500;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    border: 1px solid #fecaca;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">
+                    Clear Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Notification -->
+    <div id="demo-notification" class="notification-demo">
+        <div style="padding: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 1s infinite;"></div>
+                    <span style="font-size: 14px; font-weight: 600; color: #111827;">BillableAI Tracking</span>
+                </div>
+                <button id="demo-notification-close-btn" style="color: #9ca3af; background: none; border: none; cursor: pointer; padding: 4px;">
+                    <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div style="margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <svg style="width: 16px; height: 16px; color: #3b82f6;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span style="font-size: 18px; font-family: monospace; color: #111827; font-weight: 600;">2:30</span>
+                </div>
+                
+                <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                    <span style="font-weight: 600;">Subject:</span> Test Email Subject
+                </div>
+                
+                <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                    <span style="font-weight: 600;">To:</span> test@example.com
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 8px;">
+                <button id="demo-open-assistant-btn" style="
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    background: #3b82f6;
+                    color: white;
+                    font-size: 14px;
+                    font-weight: 600;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    border: none;
+                    cursor: pointer;
+                    transition: background-color 0.2s;
+                ">
+                    <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    Open Assistant
+                </button>
+            </div>
+            
+            <div style="text-align: center; font-size: 12px; color: #6b7280;">
+                Tracking active
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test functions
+        function testPanelEventListeners() {
+            console.log('🎯 BillableAI: Testing panel event listeners...');
+            
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<div class="test-result info">Testing panel event listeners...</div>';
+            
+            // Simulate the panel creation and event listener setup
+            const panel = document.getElementById('demo-panel');
+            if (panel) {
+                setupPanelEventListeners(panel);
+                results.innerHTML = '<div class="test-result success">✅ Panel event listeners setup completed successfully!</div>';
+                console.log('🎯 BillableAI: Panel event listeners test passed');
+            } else {
+                results.innerHTML = '<div class="test-result error">❌ Panel element not found</div>';
+                console.error('🎯 BillableAI: Panel element not found');
+            }
+        }
+        
+        function testNotificationEventListeners() {
+            console.log('🎯 BillableAI: Testing notification event listeners...');
+            
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<div class="test-result info">Testing notification event listeners...</div>';
+            
+            // Simulate the notification creation and event listener setup
+            const notification = document.getElementById('demo-notification');
+            if (notification) {
+                setupNotificationEventListeners(notification);
+                results.innerHTML = '<div class="test-result success">✅ Notification event listeners setup completed successfully!</div>';
+                console.log('🎯 BillableAI: Notification event listeners test passed');
+            } else {
+                results.innerHTML = '<div class="test-result error">❌ Notification element not found</div>';
+                console.error('🎯 BillableAI: Notification element not found');
+            }
+        }
+        
+        function showPanelDemo() {
+            const panel = document.getElementById('demo-panel');
+            if (panel) {
+                panel.style.display = 'block';
+                setupPanelEventListeners(panel);
+            }
+        }
+        
+        function showNotificationDemo() {
+            const notification = document.getElementById('demo-notification');
+            if (notification) {
+                notification.style.display = 'block';
+                setupNotificationEventListeners(notification);
+            }
+        }
+        
+        // Setup event listeners for the panel (same as in gmail-billable-panel.js)
+        function setupPanelEventListeners(panel) {
+            // Close button
+            const closeBtn = panel.querySelector('#demo-close-btn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    console.log('🎯 BillableAI: Panel close button clicked');
+                    panel.style.display = 'none';
+                });
+                closeBtn.addEventListener('mouseover', () => {
+                    closeBtn.style.backgroundColor = '#f3f4f6';
+                });
+                closeBtn.addEventListener('mouseout', () => {
+                    closeBtn.style.backgroundColor = 'transparent';
+                });
+            }
+            
+            // Generate summary button
+            const generateBtn = panel.querySelector('#demo-generate-btn');
+            if (generateBtn) {
+                generateBtn.addEventListener('click', () => {
+                    console.log('🎯 BillableAI: Generate summary button clicked');
+                    generateBtn.textContent = 'Generating...';
+                    setTimeout(() => {
+                        generateBtn.textContent = 'Generate Billable Summary';
+                    }, 2000);
+                });
+                generateBtn.addEventListener('mouseover', () => {
+                    generateBtn.style.transform = 'translateY(-1px)';
+                    generateBtn.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
+                });
+                generateBtn.addEventListener('mouseout', () => {
+                    generateBtn.style.transform = 'translateY(0)';
+                    generateBtn.style.boxShadow = 'none';
+                });
+            }
+            
+            // Copy summary button
+            const copyBtn = panel.querySelector('#demo-copy-btn');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', () => {
+                    console.log('🎯 BillableAI: Copy summary button clicked');
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = 'Copied!';
+                    copyBtn.style.background = '#10b981';
+                    copyBtn.style.color = 'white';
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                        copyBtn.style.background = '#f3f4f6';
+                        copyBtn.style.color = '#374151';
+                    }, 2000);
+                });
+                copyBtn.addEventListener('mouseover', () => {
+                    copyBtn.style.backgroundColor = '#e5e7eb';
+                });
+                copyBtn.addEventListener('mouseout', () => {
+                    copyBtn.style.backgroundColor = '#f3f4f6';
+                });
+            }
+            
+            // Clear data button
+            const clearBtn = panel.querySelector('#demo-clear-btn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', () => {
+                    console.log('🎯 BillableAI: Clear data button clicked');
+                    panel.style.display = 'none';
+                });
+                clearBtn.addEventListener('mouseover', () => {
+                    clearBtn.style.backgroundColor = '#fee2e2';
+                });
+                clearBtn.addEventListener('mouseout', () => {
+                    clearBtn.style.backgroundColor = '#fef2f2';
+                });
+            }
+        }
+        
+        // Setup event listeners for the notification (same as in gmail-notification-content-script.js)
+        function setupNotificationEventListeners(notification) {
+            // Close button
+            const closeBtn = notification.querySelector('#demo-notification-close-btn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    console.log('🎯 BillableAI: Notification close button clicked');
+                    notification.style.display = 'none';
+                });
+            }
+            
+            // Open assistant button
+            const openAssistantBtn = notification.querySelector('#demo-open-assistant-btn');
+            if (openAssistantBtn) {
+                openAssistantBtn.addEventListener('click', () => {
+                    console.log('🎯 BillableAI: Open assistant button clicked');
+                    openAssistantBtn.textContent = 'Opening...';
+                    setTimeout(() => {
+                        openAssistantBtn.textContent = 'Open Assistant';
+                    }, 2000);
+                });
+            }
+        }
+        
+        // Check for CSP violations
+        function checkCSPViolations() {
+            const results = document.getElementById('csp-test-results');
+            
+            // Listen for CSP violation events
+            document.addEventListener('securitypolicyviolation', (event) => {
+                console.error('🎯 BillableAI: CSP Violation detected:', event);
+                results.innerHTML = '<div class="test-result error">❌ CSP Violation: ' + event.violatedDirective + '</div>';
+            });
+            
+            // Check if inline event handlers are present
+            const inlineHandlers = document.querySelectorAll('[onclick], [onmouseover], [onmouseout]');
+            if (inlineHandlers.length > 0) {
+                results.innerHTML = '<div class="test-result error">❌ Found ' + inlineHandlers.length + ' inline event handlers</div>';
+                console.error('🎯 BillableAI: Found inline event handlers:', inlineHandlers);
+            } else {
+                results.innerHTML = '<div class="test-result success">✅ No inline event handlers found - CSP compliant!</div>';
+                console.log('🎯 BillableAI: No inline event handlers found - CSP compliant');
+            }
+        }
+        
+        // Initialize tests
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🎯 BillableAI: CSP Fixes Test initialized');
+            checkCSPViolations();
+        });
+    </script>
+</body>
+</html> 

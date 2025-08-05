@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI - Simplified Notification Test</title>
+    <style>
+        body {
+            font-family: 'Google Sans', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .test-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .notification-preview {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success { background: #d1fae5; color: #065f46; }
+        .info { background: #dbeafe; color: #1e40af; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #374151; margin-bottom: 30px;">
+            🎯 BillableAI - Simplified Notification Test
+        </h1>
+
+        <div class="test-section">
+            <div class="test-title">Simplified Notification Features:</div>
+            <ul style="color: #6b7280; line-height: 1.6;">
+                <li>✅ Small, compact design (200px max width)</li>
+                <li>✅ Real-time timer display (MM:SS format)</li>
+                <li>✅ Simple "Tracking email time" message</li>
+                <li>✅ Close button (×)</li>
+                <li>✅ No "Open Assistant" button (removed)</li>
+                <li>✅ Minimal interference with Gmail</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test Controls:</div>
+            <button class="test-button" onclick="startTracking()">Start Tracking</button>
+            <button class="test-button" onclick="stopTracking()">Stop Tracking</button>
+            <button class="test-button" onclick="showNotification()">Show Notification</button>
+            <button class="test-button" onclick="hideNotification()">Hide Notification</button>
+            <button class="test-button" onclick="simulateTyping()">Simulate Typing</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Current Status:</div>
+            <div id="status" class="status info">Ready to test</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Expected Behavior:</div>
+            <div style="color: #6b7280; line-height: 1.6;">
+                <p><strong>1. Start Tracking:</strong> Shows small notification with timer starting at 0:00</p>
+                <p><strong>2. Simulate Typing:</strong> Timer updates in real-time</p>
+                <p><strong>3. Stop Tracking:</strong> Hides notification and shows "summary generated" message</p>
+                <p><strong>4. Design:</strong> Compact, non-intrusive, minimal UI elements</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-container" class="notification-preview" style="display: none;"></div>
+
+    <script>
+        // Mock the simplified notification state
+        window.billableAINotificationState = {
+            isVisible: false,
+            isTracking: false,
+            startTime: null,
+            totalTime: 0,
+            lastActivityTime: null,
+            timerInterval: null
+        };
+
+        function updateStatus(message, type = 'info') {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+
+        function updateNotificationTimer() {
+            if (!window.billableAINotificationState.isTracking) return;
+            
+            const elapsedTime = window.billableAINotificationState.totalTime;
+            const minutes = Math.floor(elapsedTime / 60000);
+            const seconds = Math.floor((elapsedTime % 60000) / 1000);
+            const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            const container = document.getElementById('notification-container');
+            if (container && window.billableAINotificationState.isVisible) {
+                const timerElement = container.querySelector('div[style*="font-weight: 600"]');
+                if (timerElement) {
+                    timerElement.textContent = `⏱️ ${timeString}`;
+                }
+            }
+        }
+
+        function updateNotificationComponent() {
+            const container = document.getElementById('notification-container');
+            if (!container) return;
+            
+            if (window.billableAINotificationState.isVisible) {
+                const elapsedTime = window.billableAINotificationState.totalTime;
+                const minutes = Math.floor(elapsedTime / 60000);
+                const seconds = Math.floor((elapsedTime % 60000) / 1000);
+                const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                container.style.display = 'block';
+                container.innerHTML = `
+                    <div style="
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        padding: 12px 16px;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+                        max-width: 200px;
+                        font-size: 12px;
+                        line-height: 1.3;
+                        font-family: 'Google Sans', Arial, sans-serif;
+                    ">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="font-weight: 600; font-size: 14px;">⏱️ ${timeString}</div>
+                                <div style="opacity: 0.8; font-size: 11px;">Tracking email time</div>
+                            </div>
+                            <button id="billableai-notification-close-btn" style="
+                                background: rgba(255, 255, 255, 0.2);
+                                border: none;
+                                color: white;
+                                border-radius: 50%;
+                                width: 20px;
+                                height: 20px;
+                                cursor: pointer;
+                                font-size: 10px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                margin-left: 8px;
+                            ">×</button>
+                        </div>
+                    </div>
+                `;
+                
+                // Add close button event listener
+                const closeBtn = container.querySelector('#billableai-notification-close-btn');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        window.billableAINotificationState.isVisible = false;
+                        updateNotificationComponent();
+                        updateStatus('Notification closed by user', 'info');
+                    });
+                }
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        function startTracking() {
+            window.billableAINotificationState.isTracking = true;
+            window.billableAINotificationState.startTime = Date.now();
+            window.billableAINotificationState.lastActivityTime = Date.now();
+            window.billableAINotificationState.totalTime = 0;
+            
+            // Start timer update interval
+            window.billableAINotificationState.timerInterval = setInterval(() => {
+                if (window.billableAINotificationState.isTracking) {
+                    window.billableAINotificationState.totalTime += 1000; // Add 1 second
+                    updateNotificationTimer();
+                }
+            }, 1000);
+            
+            showNotification();
+            updateStatus('Tracking started - timer running', 'success');
+        }
+
+        function stopTracking() {
+            window.billableAINotificationState.isTracking = false;
+            
+            // Clear timer interval
+            if (window.billableAINotificationState.timerInterval) {
+                clearInterval(window.billableAINotificationState.timerInterval);
+                window.billableAINotificationState.timerInterval = null;
+            }
+            
+            hideNotification();
+            showSummaryGeneratedMessage();
+            updateStatus('Tracking stopped - summary generated', 'success');
+        }
+
+        function showNotification() {
+            window.billableAINotificationState.isVisible = true;
+            updateNotificationComponent();
+            updateStatus('Notification shown', 'info');
+        }
+
+        function hideNotification() {
+            window.billableAINotificationState.isVisible = false;
+            updateNotificationComponent();
+            updateStatus('Notification hidden', 'info');
+        }
+
+        function simulateTyping() {
+            if (window.billableAINotificationState.isTracking) {
+                window.billableAINotificationState.lastActivityTime = Date.now();
+                updateNotificationTimer();
+                updateStatus('Typing simulated - timer updated', 'info');
+            } else {
+                updateStatus('Please start tracking first', 'info');
+            }
+        }
+
+        function showSummaryGeneratedMessage() {
+            const container = document.getElementById('notification-container');
+            if (!container) return;
+            
+            container.style.display = 'block';
+            container.innerHTML = `
+                <div style="
+                    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+                    color: white;
+                    padding: 12px 16px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+                    max-width: 200px;
+                    font-size: 12px;
+                    line-height: 1.3;
+                    font-family: 'Google Sans', Arial, sans-serif;
+                ">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="font-weight: 600; font-size: 14px;">✅ Summary Generated</div>
+                        </div>
+                        <button id="billableai-summary-close-btn" style="
+                            background: rgba(255, 255, 255, 0.2);
+                            border: none;
+                            color: white;
+                            border-radius: 50%;
+                            width: 20px;
+                            height: 20px;
+                            cursor: pointer;
+                            font-size: 10px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin-left: 8px;
+                        ">×</button>
+                    </div>
+                </div>
+            `;
+            
+            // Add close button event listener
+            const closeBtn = container.querySelector('#billableai-summary-close-btn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    container.style.display = 'none';
+                    updateStatus('Summary message closed', 'info');
+                });
+            }
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                container.style.display = 'none';
+                updateStatus('Summary message auto-hidden', 'info');
+            }, 5000);
+        }
+
+        // Initialize
+        console.log('🎯 BillableAI: Simplified notification test initialized');
+        updateStatus('Test environment ready - click "Start Tracking" to begin', 'info');
+    </script>
+</body>
+</html> 

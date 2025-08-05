@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer Logic Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .test-button.warning {
+            background: #f44336;
+        }
+        .test-button.info {
+            background: #FF9800;
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        .timer-display {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .typing-area {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            color: white;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <h1>⏱️ Timer Logic Test</h1>
+    
+    <div class="test-section">
+        <h2>Timer Test (Pause/Resume Logic)</h2>
+        <button class="test-button" onclick="startTimer()">Start Timer</button>
+        <button class="test-button info" onclick="pauseTimer()">Pause Timer</button>
+        <button class="test-button" onclick="resumeTimer()">Resume Timer</button>
+        <button class="test-button warning" onclick="stopTimer()">Stop Timer</button>
+        <div class="timer-display" id="timer-display">00:00 (STOPPED)</div>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="typing-area">
+        <h3>Typing Test Area</h3>
+        <p>Type in this area to test automatic pause/resume:</p>
+        <textarea id="typing-area" placeholder="Start typing here to test automatic pause/resume behavior..."></textarea>
+    </div>
+
+    <script>
+        function logResult(message, type = 'info') {
+            const container = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Timer state (same logic as in tracking script)
+        const timerState = {
+            isTracking: false,
+            sessionStartTime: null,
+            isPaused: false,
+            accumulatedTime: 0
+        };
+
+        let timerInterval = null;
+        let typingTimeout = null;
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('timer-display');
+            let elapsed = timerState.accumulatedTime || 0;
+            
+            if (timerState.isTracking && !timerState.isPaused && timerState.sessionStartTime) {
+                elapsed += Date.now() - timerState.sessionStartTime;
+            }
+            
+            // Ensure elapsed time is never negative
+            if (elapsed < 0) elapsed = 0;
+            
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            const statusText = timerState.isPaused ? ' (PAUSED)' : timerState.isTracking ? ' (ACTIVE)' : ' (STOPPED)';
+            
+            display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}${statusText}`;
+        }
+
+        function startTimer() {
+            logResult('Starting timer...', 'info');
+            
+            timerState.isTracking = true;
+            timerState.sessionStartTime = Date.now();
+            timerState.isPaused = false;
+            timerState.accumulatedTime = 0;
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            timerInterval = setInterval(updateTimerDisplay, 1000);
+            updateTimerDisplay();
+            
+            logResult('Timer started successfully', 'success');
+        }
+
+        function pauseTimer() {
+            if (!timerState.isTracking) {
+                logResult('No active timer to pause', 'error');
+                return;
+            }
+            
+            logResult('Pausing timer...', 'info');
+            
+            // Accumulate time spent in current session
+            if (timerState.sessionStartTime) {
+                const sessionTime = Date.now() - timerState.sessionStartTime;
+                timerState.accumulatedTime += sessionTime;
+                logResult(`Accumulated time updated: ${(timerState.accumulatedTime / 1000).toFixed(1)}s`, 'info');
+            }
+            
+            timerState.isPaused = true;
+            
+            updateTimerDisplay();
+            logResult(`Timer paused. Accumulated time: ${(timerState.accumulatedTime / 1000).toFixed(1)}s`, 'success');
+        }
+
+        function resumeTimer() {
+            if (!timerState.isTracking || !timerState.isPaused) {
+                logResult('No paused timer to resume', 'error');
+                return;
+            }
+            
+            logResult('Resuming timer...', 'info');
+            
+            timerState.isPaused = false;
+            timerState.sessionStartTime = Date.now();
+            
+            updateTimerDisplay();
+            logResult('Timer resumed successfully', 'success');
+        }
+
+        function stopTimer() {
+            if (!timerState.isTracking) {
+                logResult('No active timer to stop', 'error');
+                return;
+            }
+            
+            logResult('Stopping timer...', 'info');
+            
+            // Calculate final time
+            let totalTime = timerState.accumulatedTime;
+            if (!timerState.isPaused && timerState.sessionStartTime) {
+                const sessionTime = Date.now() - timerState.sessionStartTime;
+                totalTime += sessionTime;
+            }
+            
+            timerState.isTracking = false;
+            timerState.accumulatedTime = totalTime;
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            
+            updateTimerDisplay();
+            logResult(`Timer stopped. Total time: ${(totalTime / 1000).toFixed(1)}s`, 'success');
+        }
+
+        // Setup typing detection (same logic as in tracking script)
+        function setupTypingDetection() {
+            const typingArea = document.getElementById('typing-area');
+            let isPaused = false;
+            
+            const handleTyping = () => {
+                // Clear existing timeout
+                if (typingTimeout) {
+                    clearTimeout(typingTimeout);
+                }
+                
+                // If was paused, resume tracking
+                if (isPaused) {
+                    logResult('Typing resumed, continuing tracking', 'info');
+                    isPaused = false;
+                    resumeTimer();
+                }
+                
+                // Set timeout to pause tracking after 5 seconds of inactivity
+                typingTimeout = setTimeout(() => {
+                    if (timerState.isTracking) {
+                        logResult('Typing stopped, pausing tracking', 'info');
+                        isPaused = true;
+                        pauseTimer();
+                    }
+                }, 5000);
+            };
+            
+            // Add event listeners
+            typingArea.addEventListener('input', handleTyping);
+            typingArea.addEventListener('keydown', handleTyping);
+            typingArea.addEventListener('paste', handleTyping);
+            
+            logResult('Typing detection setup complete', 'success');
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            logResult('🚀 Timer logic test page loaded', 'info');
+            logResult('Test: Start timer, type for 22 seconds, stop typing for 5 seconds, then resume typing', 'info');
+            logResult('Expected: Timer should pause at 0:22, then continue from 0:22 when you resume typing', 'info');
+            
+            // Auto-start timer when user starts typing
+            const typingArea = document.getElementById('typing-area');
+            typingArea.addEventListener('focus', () => {
+                if (!timerState.isTracking) {
+                    startTimer();
+                    setupTypingDetection();
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

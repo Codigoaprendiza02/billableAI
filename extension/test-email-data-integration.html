@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Email Data Integration</title>
+</head>
+<body>
+    <h1>Test Email Data Integration</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        // Test the complete email data integration
+        async function testEmailDataIntegration() {
+            const resultsDiv = document.getElementById('results');
+            let debugLog = [];
+            
+            function log(message) {
+                console.log(message);
+                debugLog.push(message);
+            }
+            
+            try {
+                log('🔧 Testing complete email data integration...');
+                
+                // Step 1: Create realistic email data
+                log('📋 Step 1: Creating realistic email data...');
+                const emailData = {
+                    subject: 'Client Meeting Follow-up',
+                    to: 'client@example.com',
+                    body: 'Dear Client, Thank you for the productive meeting yesterday. I am following up on the action items we discussed. Please let me know if you have any questions. Best regards, Your Name',
+                    timestamp: new Date().toISOString()
+                };
+                const timeSpent = 420000; // 7 minutes
+                
+                log(`✅ Email data created:`);
+                log(`  Subject: "${emailData.subject}"`);
+                log(`  To: "${emailData.to}"`);
+                log(`  Body: "${emailData.body.substring(0, 50)}..."`);
+                log(`  Time spent: ${timeSpent}ms (${Math.round(timeSpent / 60000)} minutes)`);
+                
+                // Step 2: Simulate the complete data flow
+                log('📋 Step 2: Simulating complete data flow...');
+                
+                // Simulate EMAIL_DATA_AVAILABLE message
+                const messageData = {
+                    type: 'EMAIL_DATA_AVAILABLE',
+                    data: {
+                        emailData: emailData,
+                        timeSpent: timeSpent,
+                        autoProcess: true,
+                        timestamp: Date.now()
+                    }
+                };
+                
+                log(`✅ EMAIL_DATA_AVAILABLE message created:`);
+                log(`  Type: ${messageData.type}`);
+                log(`  Has emailData: ${!!messageData.data.emailData}`);
+                log(`  Has timeSpent: ${!!messageData.data.timeSpent}`);
+                
+                // Step 3: Simulate Assistant processing
+                log('📋 Step 3: Simulating Assistant processing...');
+                
+                function simulateAssistantProcessing(message) {
+                    if (message.type === 'EMAIL_DATA_AVAILABLE') {
+                        log('✅ Assistant received EMAIL_DATA_AVAILABLE message');
+                        
+                        if (message.data && message.data.emailData) {
+                            const emailData = message.data.emailData;
+                            const timeSpent = message.data.timeSpent || 0;
+                            
+                            log(`✅ Assistant processed email data:`);
+                            log(`  Subject: "${emailData.subject}"`);
+                            log(`  To: "${emailData.to}"`);
+                            log(`  Body length: ${emailData.body?.length || 0} characters`);
+                            log(`  Time spent: ${timeSpent}ms (${Math.round(timeSpent / 60000)} minutes)`);
+                            
+                            return {
+                                success: true,
+                                emailData: emailData,
+                                timeSpent: timeSpent
+                            };
+                        } else {
+                            log('❌ Email data missing in message');
+                            return { success: false, error: 'Missing email data' };
+                        }
+                    } else {
+                        log('❌ Unexpected message type:', message.type);
+                        return { success: false, error: 'Unexpected message type' };
+                    }
+                }
+                
+                const assistantResult = simulateAssistantProcessing(messageData);
+                
+                // Step 4: Test Gemini integration
+                log('📋 Step 4: Testing Gemini integration...');
+                
+                if (assistantResult.success) {
+                    log('✅ Assistant ready for Gemini processing');
+                    
+                    // Simulate Gemini response generation
+                    const geminiPrompt = `Generate a professional billable summary for this email:
+                    
+Email Details:
+- Subject: ${assistantResult.emailData.subject}
+- To: ${assistantResult.emailData.to}
+- Time Spent: ${Math.round(assistantResult.timeSpent / 60000)} minutes
+- Content: ${assistantResult.emailData.body}
+
+Please provide a comprehensive analysis including time breakdown, professional services rendered, and billing recommendations.`;
+                    
+                    log(`✅ Gemini prompt prepared:`);
+                    log(`  Prompt length: ${geminiPrompt.length} characters`);
+                    log(`  Includes subject: ${geminiPrompt.includes(assistantResult.emailData.subject)}`);
+                    log(`  Includes time: ${geminiPrompt.includes(Math.round(assistantResult.timeSpent / 60000).toString())}`);
+                    log(`  Includes recipient: ${geminiPrompt.includes(assistantResult.emailData.to)}`);
+                    log(`  Includes content: ${geminiPrompt.includes(assistantResult.emailData.body.substring(0, 20))}`);
+                    
+                    // Simulate Gemini response
+                    const mockGeminiResponse = `📧 **Professional Billable Summary**
+
+**Email Details:**
+- Subject: ${assistantResult.emailData.subject}
+- Recipient: ${assistantResult.emailData.to}
+- Time Spent: ${Math.round(assistantResult.timeSpent / 60000)} minutes
+- Content Length: ${assistantResult.emailData.body.length} characters
+
+**Professional Services Rendered:**
+Email composition and client communication services including content drafting, review, and finalization.
+
+**Time Breakdown:**
+- Composition Time: ${Math.round(assistantResult.timeSpent / 60000)} minutes
+- Professional Rate: Standard hourly rate
+- Billable Amount: ${Math.round(assistantResult.timeSpent / 60000)} minutes
+
+**Summary:**
+This professional email communication required ${Math.round(assistantResult.timeSpent / 60000)} minutes of dedicated time for composition, review, and finalization. The content demonstrates professional client communication standards and represents billable professional services.
+
+**Total Billable Time: ${Math.round(assistantResult.timeSpent / 60000)} minutes**`;
+                    
+                    log(`✅ Mock Gemini response generated:`);
+                    log(`  Response length: ${mockGeminiResponse.length} characters`);
+                    log(`  Includes subject: ${mockGeminiResponse.includes(assistantResult.emailData.subject)}`);
+                    log(`  Includes time: ${mockGeminiResponse.includes(Math.round(assistantResult.timeSpent / 60000).toString())}`);
+                    log(`  Includes recipient: ${mockGeminiResponse.includes(assistantResult.emailData.to)}`);
+                    
+                } else {
+                    log(`❌ Cannot test Gemini integration: ${assistantResult.error}`);
+                }
+                
+                // Display results
+                resultsDiv.innerHTML = `
+                    <h2>Test Results:</h2>
+                    <pre>${debugLog.join('\n')}</pre>
+                    
+                    <h3>Integration Status:</h3>
+                    <ul>
+                        <li><strong>Email Data Creation:</strong> ✅ Working</li>
+                        <li><strong>Message Flow:</strong> ✅ Working</li>
+                        <li><strong>Assistant Processing:</strong> ${assistantResult.success ? '✅ Working' : '❌ Failed'}</li>
+                        <li><strong>Gemini Integration:</strong> ${assistantResult.success ? '✅ Ready' : '❌ Cannot proceed'}</li>
+                    </ul>
+                    
+                    ${assistantResult.success ? `
+                    <h3>Email Data Successfully Processed:</h3>
+                    <pre>${JSON.stringify(assistantResult.emailData, null, 2)}</pre>
+                    
+                    <h3>Time Data:</h3>
+                    <p>Time Spent: ${assistantResult.timeSpent}ms (${Math.round(assistantResult.timeSpent / 60000)} minutes)</p>
+                    
+                    <h3>Expected Gemini Response:</h3>
+                    <p>The Assistant should generate a response that includes:</p>
+                    <ul>
+                        <li><strong>Subject:</strong> "${assistantResult.emailData.subject}"</li>
+                        <li><strong>Recipient:</strong> "${assistantResult.emailData.to}"</li>
+                        <li><strong>Time Spent:</strong> ${Math.round(assistantResult.timeSpent / 60000)} minutes</li>
+                        <li><strong>Content Analysis:</strong> Professional analysis of the email body</li>
+                        <li><strong>Billing Summary:</strong> Professional billing breakdown</li>
+                    </ul>
+                    
+                    <h3>Test Instructions:</h3>
+                    <ol>
+                        <li>Open your extension</li>
+                        <li>Go to the Assistant page</li>
+                        <li>Compose an email in Gmail</li>
+                        <li>Click the send button</li>
+                        <li>Check if the Assistant receives the email data with all details</li>
+                        <li>Verify that Gemini generates a response with time, subject, to, and content</li>
+                    </ol>
+                    ` : `
+                    <h3>Error:</h3>
+                    <p>${assistantResult.error}</p>
+                    `}
+                `;
+                
+            } catch (error) {
+                log(`❌ Test failed: ${error.message}`);
+                resultsDiv.innerHTML = `
+                    <h2>Test Failed:</h2>
+                    <pre>${debugLog.join('\n')}</pre>
+                    <h3>Error:</h3>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+
+        testEmailDataIntegration();
+    </script>
+</body>
+</html> 

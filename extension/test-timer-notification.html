@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI - Timer Notification Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f7fafc;
+            color: #2d3748;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        .test-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 5px;
+            transition: all 0.2s;
+        }
+        .test-button:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+        .test-button.success {
+            background: #38a169;
+        }
+        .test-button.success:hover {
+            background: #2f855a;
+        }
+        .test-button.danger {
+            background: #e53e3e;
+        }
+        .test-button.danger:hover {
+            background: #c53030;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .status.info {
+            background: #bee3f8;
+            color: #2b6cb0;
+            border: 1px solid #90cdf4;
+        }
+        .status.success {
+            background: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+        .status.error {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+        .result-box {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+            white-space: pre-wrap;
+        }
+        .step-list {
+            background: #f7fafc;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .step-list ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .step-list li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .step-list strong {
+            color: #2d3748;
+        }
+        .gmail-simulator {
+            background: #f8f9fa;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .compose-button {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .compose-window {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            display: none;
+        }
+        .subject-field {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .body-field {
+            width: 100%;
+            min-height: 100px;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 BillableAI</h1>
+            <p>Timer Notification Test</p>
+        </div>
+        <div class="content">
+            <div class="test-section">
+                <div class="test-title">🔍 Test Overview</div>
+                <div style="color: #4a5568; line-height: 1.6;">
+                    <p><strong>Purpose:</strong> Test the timer notification functionality in a controlled environment.</p>
+                    <p><strong>Issue:</strong> Timer notification not showing up while composing emails in Gmail.</p>
+                    <p><strong>Solution:</strong> Debug the notification system step by step.</p>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">🧪 Test Controls</div>
+                <div style="margin: 20px 0;">
+                    <button class="test-button" onclick="testNotificationSystem()">Test Notification System</button>
+                    <button class="test-button success" onclick="simulateGmailCompose()">Simulate Gmail Compose</button>
+                    <button class="test-button" onclick="testTimerUpdate()">Test Timer Update</button>
+                    <button class="test-button danger" onclick="clearResults()">Clear Results</button>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">📊 Test Status</div>
+                <div id="status" class="status info">Ready to test timer notification system</div>
+                <div id="results" class="result-box" style="display: none;"></div>
+            </div>
+
+            <div class="gmail-simulator">
+                <div class="test-title">📧 Gmail Simulator</div>
+                <p>Use this simulator to test the timer notification in a Gmail-like environment:</p>
+                <button class="compose-button" onclick="openComposeWindow()">Compose</button>
+                <div id="compose-window" class="compose-window">
+                    <input type="text" class="subject-field" placeholder="Subject" id="subject-field">
+                    <textarea class="body-field" placeholder="Write your email here..." id="body-field"></textarea>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">📋 Test Steps</div>
+                <div class="step-list">
+                    <ol>
+                        <li><strong>Test Notification System:</strong> Verify the notification system is working</li>
+                        <li><strong>Simulate Gmail Compose:</strong> Test with Gmail-like DOM structure</li>
+                        <li><strong>Test Timer Update:</strong> Verify timer updates correctly</li>
+                        <li><strong>Check Console Logs:</strong> Look for debugging information</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">✅ Expected Results</div>
+                <div style="color: #4a5568; line-height: 1.6;">
+                    <p><strong>✅ Notification Appears:</strong> Timer notification should show in top-right corner</p>
+                    <p><strong>✅ Timer Updates:</strong> Timer should update every second while typing</p>
+                    <p><strong>✅ Console Logs:</strong> Should see debugging logs in console</p>
+                    <p><strong>✅ Event Listeners:</strong> Should detect typing in subject and body fields</p>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">🐛 Common Issues</div>
+                <div style="color: #4a5568; line-height: 1.6;">
+                    <p><strong>❌ Notification not showing:</strong> Check if container is created and visible</p>
+                    <p><strong>❌ Timer not updating:</strong> Check if event listeners are attached</p>
+                    <p><strong>❌ No console logs:</strong> Check if script is loaded properly</p>
+                    <p><strong>❌ DOM not detected:</strong> Check if selectors match Gmail's structure</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        function addResult(message) {
+            testResults.push(`[${new Date().toLocaleTimeString()}] ${message}`);
+            const results = document.getElementById('results');
+            results.textContent = testResults.join('\n');
+            results.style.display = 'block';
+        }
+
+        function testNotificationSystem() {
+            updateStatus('Testing notification system...', 'info');
+            addResult('Testing notification system...');
+            
+            // Check if the notification system is available
+            if (typeof window.billableAINotificationState !== 'undefined') {
+                addResult('✅ Notification state is available');
+                addResult(`Is tracking: ${window.billableAINotificationState.isTracking}`);
+                addResult(`Is visible: ${window.billableAINotificationState.isVisible}`);
+                addResult(`Total time: ${window.billableAINotificationState.totalTime}ms`);
+            } else {
+                addResult('❌ Notification state not available');
+                updateStatus('Notification system not loaded', 'error');
+                return;
+            }
+
+            // Check if debug functions are available
+            if (typeof window.billableAIDebug !== 'undefined') {
+                addResult('✅ Debug functions are available');
+                addResult('Available debug functions: ' + Object.keys(window.billableAIDebug).join(', '));
+            } else {
+                addResult('❌ Debug functions not available');
+            }
+
+            // Check if notification container exists
+            const container = document.getElementById('billableai-notification-container');
+            if (container) {
+                addResult('✅ Notification container exists');
+                addResult(`Container display: ${container.style.display}`);
+                addResult(`Container innerHTML length: ${container.innerHTML.length}`);
+            } else {
+                addResult('❌ Notification container not found');
+            }
+
+            updateStatus('Notification system test completed', 'success');
+        }
+
+        function simulateGmailCompose() {
+            updateStatus('Simulating Gmail compose...', 'info');
+            addResult('Simulating Gmail compose...');
+            
+            // Create a Gmail-like compose window
+            const composeWindow = document.createElement('div');
+            composeWindow.className = 'Am Al editable';
+            composeWindow.setAttribute('role', 'dialog');
+            composeWindow.innerHTML = `
+                <input name="subjectbox" placeholder="Subject" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                <div contenteditable="true" style="min-height: 100px; padding: 8px; border: 1px solid #ccc;"></div>
+            `;
+            
+            document.body.appendChild(composeWindow);
+            addResult('✅ Gmail-like compose window created');
+            
+            // Try to trigger the tracking
+            if (typeof startTracking === 'function') {
+                startTracking(composeWindow);
+                addResult('✅ startTracking function called');
+            } else {
+                addResult('❌ startTracking function not available');
+            }
+            
+            updateStatus('Gmail compose simulation completed', 'success');
+        }
+
+        function testTimerUpdate() {
+            updateStatus('Testing timer update...', 'info');
+            addResult('Testing timer update...');
+            
+            // Simulate typing activity
+            const subjectField = document.querySelector('input[name="subjectbox"]');
+            const bodyField = document.querySelector('[contenteditable="true"]');
+            
+            if (subjectField) {
+                subjectField.value = 'Test Subject';
+                subjectField.dispatchEvent(new Event('input'));
+                addResult('✅ Subject field typing simulated');
+            } else {
+                addResult('❌ Subject field not found');
+            }
+            
+            if (bodyField) {
+                bodyField.textContent = 'Test email body content';
+                bodyField.dispatchEvent(new Event('input'));
+                addResult('✅ Body field typing simulated');
+            } else {
+                addResult('❌ Body field not found');
+            }
+            
+            // Check if timer is updating
+            setTimeout(() => {
+                if (window.billableAINotificationState && window.billableAINotificationState.isTracking) {
+                    addResult(`✅ Timer is tracking: ${window.billableAINotificationState.totalTime}ms`);
+                } else {
+                    addResult('❌ Timer is not tracking');
+                }
+            }, 2000);
+            
+            updateStatus('Timer update test completed', 'success');
+        }
+
+        function openComposeWindow() {
+            const composeWindow = document.getElementById('compose-window');
+            composeWindow.style.display = 'block';
+            
+            // Simulate the compose button click
+            if (typeof handleComposeClick === 'function') {
+                handleComposeClick();
+                addResult('✅ Compose button click simulated');
+            } else {
+                addResult('❌ handleComposeClick function not available');
+            }
+        }
+
+        function clearResults() {
+            testResults = [];
+            const results = document.getElementById('results');
+            results.style.display = 'none';
+            updateStatus('Results cleared', 'info');
+        }
+
+        // Initialize test tools
+        window.billableAITest = {
+            testNotificationSystem,
+            simulateGmailCompose,
+            testTimerUpdate,
+            clearResults
+        };
+
+        updateStatus('Timer notification test tool ready. Use buttons above to test.', 'info');
+    </script>
+</body>
+</html> 

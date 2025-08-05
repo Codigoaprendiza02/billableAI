@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI Performance Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .metric {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .email-compose {
+            border: 2px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        .email-compose input, .email-compose textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 BillableAI Performance Test</h1>
+    
+    <div class="test-section">
+        <h2>Performance Metrics</h2>
+        <div class="performance-metrics">
+            <div class="metric">
+                <div class="metric-value" id="fps">0</div>
+                <div class="metric-label">FPS</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="memory">0</div>
+                <div class="metric-label">Memory (MB)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="reflows">0</div>
+                <div class="metric-label">Reflows</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="timer-updates">0</div>
+                <div class="metric-label">Timer Updates</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Timer Test</h2>
+        <p>Type in the field below to test timer responsiveness:</p>
+        
+        <div class="email-compose">
+            <input type="text" placeholder="To: Recipients" role="textbox" aria-label="To">
+            <input type="text" placeholder="Subject" role="textbox" aria-label="Subject">
+            <textarea placeholder="Message body..." role="textbox" contenteditable="true" aria-label="Message body"></textarea>
+        </div>
+        
+        <button class="test-button" onclick="testStartTracking()">Start Tracking</button>
+        <button class="test-button" onclick="testStopTracking()">Stop Tracking</button>
+        <button class="test-button" onclick="testPerformance()">Test Performance</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Status</h2>
+        <div id="status-display" class="status">
+            Performance test ready...
+        </div>
+    </div>
+
+    <script>
+        let frameCount = 0;
+        let lastTime = performance.now();
+        let reflowCount = 0;
+        let timerUpdateCount = 0;
+        let performanceObserver;
+
+        // FPS counter
+        function updateFPS() {
+            frameCount++;
+            const currentTime = performance.now();
+            
+            if (currentTime - lastTime >= 1000) {
+                document.getElementById('fps').textContent = frameCount;
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+            
+            requestAnimationFrame(updateFPS);
+        }
+
+        // Memory usage
+        function updateMemory() {
+            if (performance.memory) {
+                const memoryMB = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+                document.getElementById('memory').textContent = memoryMB;
+            }
+        }
+
+        // Performance observer for reflows
+        function setupPerformanceObserver() {
+            if (window.PerformanceObserver) {
+                try {
+                    performanceObserver = new PerformanceObserver((list) => {
+                        for (const entry of list.getEntries()) {
+                            if (entry.entryType === 'measure') {
+                                reflowCount++;
+                                document.getElementById('reflows').textContent = reflowCount;
+                            }
+                        }
+                    });
+                    performanceObserver.observe({ entryTypes: ['measure'] });
+                } catch (e) {
+                    console.log('PerformanceObserver not supported');
+                }
+            }
+        }
+
+        // Test functions
+        function testStartTracking() {
+            if (window.billableAI) {
+                window.billableAI.startTracking();
+                updateStatus('Started tracking - watch the timer updates');
+            } else {
+                updateStatus('BillableAI not available');
+            }
+        }
+
+        function testStopTracking() {
+            if (window.billableAI) {
+                window.billableAI.stopTracking();
+                updateStatus('Stopped tracking');
+            } else {
+                updateStatus('BillableAI not available');
+            }
+        }
+
+        function testPerformance() {
+            updateStatus('Running performance test...');
+            
+            // Simulate heavy typing
+            const textarea = document.querySelector('textarea');
+            if (textarea) {
+                let i = 0;
+                const interval = setInterval(() => {
+                    textarea.value += 'Test typing performance. ';
+                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                    i++;
+                    
+                    if (i >= 50) {
+                        clearInterval(interval);
+                        updateStatus('Performance test completed. Check metrics above.');
+                    }
+                }, 50);
+            }
+        }
+
+        function updateStatus(message) {
+            const statusDisplay = document.getElementById('status-display');
+            statusDisplay.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+        }
+
+        // Monitor timer updates
+        function monitorTimerUpdates() {
+            const originalTextContent = Object.getOwnPropertyDescriptor(Element.prototype, 'textContent');
+            let updateCount = 0;
+            
+            Object.defineProperty(Element.prototype, 'textContent', {
+                set: function(value) {
+                    if (this.id === 'billableai-indicator' && value.includes('Tracking:')) {
+                        updateCount++;
+                        document.getElementById('timer-updates').textContent = updateCount;
+                    }
+                    originalTextContent.set.call(this, value);
+                },
+                get: function() {
+                    return originalTextContent.get.call(this);
+                }
+            });
+        }
+
+        // Initialize
+        updateFPS();
+        setInterval(updateMemory, 1000);
+        setupPerformanceObserver();
+        monitorTimerUpdates();
+
+        // Check if BillableAI is available
+        setInterval(() => {
+            if (window.billableAI) {
+                updateStatus('BillableAI extension loaded - performance monitoring active');
+            } else {
+                updateStatus('BillableAI extension not detected');
+            }
+        }, 2000);
+
+        updateStatus('Performance test initialized');
+    </script>
+</body>
+</html> 

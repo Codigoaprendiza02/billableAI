@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Status Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: rgba(34, 197, 94, 0.3); border: 1px solid #22c55e; }
+        .error { background: rgba(239, 68, 68, 0.3); border: 1px solid #ef4444; }
+        .info { background: rgba(59, 130, 246, 0.3); border: 1px solid #3b82f6; }
+        #log {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Extension Status Test</h1>
+    
+    <div class="status info">
+        <h2>Extension Detection</h2>
+        <div id="extension-status">Checking...</div>
+    </div>
+    
+    <div class="status info">
+        <h2>Content Script Detection</h2>
+        <div id="content-script-status">Checking...</div>
+    </div>
+    
+    <div class="status info">
+        <h2>Console Log</h2>
+        <div id="log"></div>
+    </div>
+    
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+        
+        function checkExtension() {
+            log('🔍 Checking extension availability...');
+            
+            // Check if chrome.runtime is available
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                log('✅ chrome.runtime is available');
+                document.getElementById('extension-status').innerHTML = '✅ Extension is loaded!';
+                document.getElementById('extension-status').className = 'success';
+                
+                // Try to get extension info
+                try {
+                    chrome.runtime.getManifest((manifest) => {
+                        log(`📋 Extension name: ${manifest.name}`);
+                        log(`📋 Extension version: ${manifest.version}`);
+                    });
+                } catch (error) {
+                    log(`⚠️ Could not get manifest: ${error.message}`);
+                }
+            } else {
+                log('❌ chrome.runtime is NOT available');
+                document.getElementById('extension-status').innerHTML = '❌ Extension not loaded';
+                document.getElementById('extension-status').className = 'error';
+            }
+        }
+        
+        function checkContentScript() {
+            log('🔍 Checking content script...');
+            
+            // Check if window.billableAI exists
+            if (window.billableAI) {
+                log('✅ window.billableAI object found');
+                document.getElementById('content-script-status').innerHTML = '✅ Content script is injected!';
+                document.getElementById('content-script-status').className = 'success';
+                
+                // Test available functions
+                if (typeof window.billableAI.testGmailApi === 'function') {
+                    log('✅ testGmailApi function available');
+                }
+                if (typeof window.billableAI.generateTestSummary === 'function') {
+                    log('✅ generateTestSummary function available');
+                }
+            } else {
+                log('❌ window.billableAI object NOT found');
+                document.getElementById('content-script-status').innerHTML = '❌ Content script not injected';
+                document.getElementById('content-script-status').className = 'error';
+            }
+        }
+        
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            log('🚀 Page loaded, starting tests...');
+            log('📍 Current URL: ' + window.location.href);
+            log('📍 Protocol: ' + window.location.protocol);
+            
+            setTimeout(checkExtension, 1000);
+            setTimeout(checkContentScript, 2000);
+        });
+    </script>
+</body>
+</html> 

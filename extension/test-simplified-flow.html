@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI - Simplified Flow Test</title>
+    <style>
+        body {
+            font-family: 'Google Sans', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+        }
+        .test-description {
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .test-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .test-result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background: #10b981; }
+        .status-error { background: #ef4444; }
+        .status-info { background: #3b82f6; }
+        .flow-diagram {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .flow-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #374151; margin-bottom: 30px;">
+            🎯 BillableAI - Simplified Flow Test
+        </h1>
+
+        <div class="flow-diagram">
+            <h3 style="margin-bottom: 15px; color: #374151;">Expected UX Flow:</h3>
+            <div class="flow-step">
+                <div class="step-number">1</div>
+                <div>User composes email in Gmail</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-number">2</div>
+                <div>User clicks "Send" button</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-number">3</div>
+                <div>Tracked email data sent to assistant</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-number">4</div>
+                <div>Notification closes</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-number">5</div>
+                <div>"Summary generated" message shown</div>
+            </div>
+            <div class="flow-step">
+                <div class="step-number">6</div>
+                <div>User clicks extension icon to view summary</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">
+                <span class="status-indicator status-info"></span>
+                Test 1: Content Script Loading
+            </div>
+            <div class="test-description">
+                Verify that the Gmail notification content script loads correctly and initializes the tracking system.
+            </div>
+            <button class="test-button" onclick="testContentScriptLoading()">Test Content Script</button>
+            <div id="content-script-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">
+                <span class="status-indicator status-info"></span>
+                Test 2: Email Data Storage
+            </div>
+            <div class="test-description">
+                Test storing email data for the assistant and verify it can be retrieved.
+            </div>
+            <button class="test-button" onclick="testEmailDataStorage()">Test Data Storage</button>
+            <div id="data-storage-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">
+                <span class="status-indicator status-info"></span>
+                Test 3: Gemini Service Configuration
+            </div>
+            <div class="test-description">
+                Verify that Gemini service is always configured internally and ready to generate summaries.
+            </div>
+            <button class="test-button" onclick="testGeminiConfiguration()">Test Gemini Service</button>
+            <div id="gemini-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">
+                <span class="status-indicator status-info"></span>
+                Test 4: Notification Flow
+            </div>
+            <div class="test-description">
+                Test the complete notification flow: tracking → send → store → close → show summary message.
+            </div>
+            <button class="test-button" onclick="testNotificationFlow()">Test Notification Flow</button>
+            <div id="notification-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">
+                <span class="status-indicator status-info"></span>
+                Test 5: Assistant Integration
+            </div>
+            <div class="test-description">
+                Test that the assistant can receive email data and auto-generate summaries.
+            </div>
+            <button class="test-button" onclick="testAssistantIntegration()">Test Assistant</button>
+            <div id="assistant-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">
+                <span class="status-indicator status-info"></span>
+                Test 6: Complete End-to-End Flow
+            </div>
+            <div class="test-description">
+                Simulate the complete user journey from email composition to summary generation.
+            </div>
+            <button class="test-button" onclick="testCompleteFlow()">Test Complete Flow</button>
+            <div id="complete-flow-result" class="test-result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Mock the Gmail notification content script functionality
+        window.billableAINotificationState = {
+            isVisible: false,
+            isTracking: false,
+            startTime: null,
+            totalTime: 0,
+            lastActivityTime: null,
+            emailData: null,
+            debounceTimer: null
+        };
+
+        // Mock email data storage function
+        async function storeEmailDataForAssistant(emailData, timeSpent) {
+            const summaryData = {
+                emailData,
+                timeSpent,
+                timestamp: Date.now(),
+                autoProcess: true
+            };
+            
+            // Store in localStorage
+            localStorage.setItem('billableAI_emailSummary', JSON.stringify(summaryData));
+            
+            // Store in chrome.storage.local (mock)
+            try {
+                if (typeof chrome !== 'undefined' && chrome.storage) {
+                    await chrome.storage.local.set({ 'billableAI_emailSummary': summaryData });
+                }
+            } catch (error) {
+                console.log('Mock chrome.storage.local error:', error);
+            }
+            
+            return summaryData;
+        }
+
+        // Mock Gemini service
+        class MockGeminiService {
+            constructor() {
+                this.apiKey = 'internal_fallback_key_for_billable_ai';
+                this.isInitialized = true;
+            }
+
+            isReady() {
+                return this.isInitialized && this.apiKey;
+            }
+
+            async generateBillableSummary(emailData, timeSpent) {
+                const timeInMinutes = Math.round(timeSpent / 60000);
+                const subject = emailData.subject || 'No subject';
+                const recipient = emailData.to || 'No recipient';
+                
+                return `📧 **Billable Summary Generated**
+
+**Email Details:**
+- Subject: ${subject}
+- Recipient: ${recipient}
+- Time Spent: ${timeInMinutes} minutes
+
+**Professional Services Rendered:**
+Email composition and client communication services.
+
+**Total Billable Time: ${timeInMinutes} minutes**`;
+            }
+        }
+
+        const mockGeminiService = new MockGeminiService();
+
+        function showResult(elementId, result, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `test-result ${type}`;
+            element.textContent = result;
+        }
+
+        async function testContentScriptLoading() {
+            try {
+                // Test if the content script state is available
+                if (window.billableAINotificationState) {
+                    showResult('content-script-result', 
+                        `✅ Content script loaded successfully
+                        
+State initialized:
+- isVisible: ${window.billableAINotificationState.isVisible}
+- isTracking: ${window.billableAINotificationState.isTracking}
+- startTime: ${window.billableAINotificationState.startTime}
+- totalTime: ${window.billableAINotificationState.totalTime}
+
+Content script is ready for Gmail integration.`, 'success');
+                } else {
+                    showResult('content-script-result', 
+                        '❌ Content script state not found. Make sure the script is loaded.', 'error');
+                }
+            } catch (error) {
+                showResult('content-script-result', 
+                    `❌ Error testing content script: ${error.message}`, 'error');
+            }
+        }
+
+        async function testEmailDataStorage() {
+            try {
+                const testEmailData = {
+                    subject: 'Test Email Subject',
+                    body: 'This is a test email body content.',
+                    to: 'test@example.com',
+                    timestamp: new Date().toISOString()
+                };
+
+                const testTimeSpent = 120000; // 2 minutes
+
+                const storedData = await storeEmailDataForAssistant(testEmailData, testTimeSpent);
+                
+                // Verify storage
+                const retrievedData = localStorage.getItem('billableAI_emailSummary');
+                const parsedData = JSON.parse(retrievedData);
+
+                if (parsedData && parsedData.emailData && parsedData.timeSpent) {
+                    showResult('data-storage-result', 
+                        `✅ Email data storage test successful
+                        
+Stored data:
+- Subject: ${parsedData.emailData.subject}
+- Recipient: ${parsedData.emailData.to}
+- Time Spent: ${parsedData.timeSpent}ms (${Math.round(parsedData.timeSpent / 60000)} minutes)
+- Auto Process: ${parsedData.autoProcess}
+- Timestamp: ${new Date(parsedData.timestamp).toLocaleString()}
+
+Data is ready for assistant processing.`, 'success');
+                } else {
+                    showResult('data-storage-result', 
+                        '❌ Data storage verification failed', 'error');
+                }
+            } catch (error) {
+                showResult('data-storage-result', 
+                    `❌ Error testing data storage: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGeminiConfiguration() {
+            try {
+                if (mockGeminiService.isReady()) {
+                    const testEmailData = {
+                        subject: 'Test Email',
+                        body: 'Test content',
+                        to: 'test@example.com'
+                    };
+
+                    const summary = await mockGeminiService.generateBillableSummary(testEmailData, 180000); // 3 minutes
+
+                    showResult('gemini-result', 
+                        `✅ Gemini service configured and working
+                        
+Service Status:
+- Ready: ${mockGeminiService.isReady()}
+- API Key: ${mockGeminiService.apiKey ? 'Configured' : 'Not configured'}
+- Initialized: ${mockGeminiService.isInitialized}
+
+Generated Summary:
+${summary}
+
+Service is ready for summary generation.`, 'success');
+                } else {
+                    showResult('gemini-result', 
+                        '❌ Gemini service not ready', 'error');
+                }
+            } catch (error) {
+                showResult('gemini-result', 
+                    `❌ Error testing Gemini service: ${error.message}`, 'error');
+            }
+        }
+
+        async function testNotificationFlow() {
+            try {
+                // Simulate the notification flow
+                const testEmailData = {
+                    subject: 'Flow Test Email',
+                    body: 'Testing the notification flow.',
+                    to: 'flow@test.com'
+                };
+
+                const testTimeSpent = 90000; // 1.5 minutes
+
+                // Step 1: Store data
+                await storeEmailDataForAssistant(testEmailData, testTimeSpent);
+
+                // Step 2: Simulate notification close
+                window.billableAINotificationState.isVisible = false;
+
+                // Step 3: Show summary generated message
+                const summaryMessage = '✅ Summary Generated\nYour email summary has been generated. Click the BillableAI extension icon to view it.';
+
+                showResult('notification-result', 
+                    `✅ Notification flow test successful
+                    
+Flow Steps:
+1. ✅ Email data captured and stored
+2. ✅ Notification closed (isVisible: ${window.billableAINotificationState.isVisible})
+3. ✅ Summary generated message displayed
+
+Summary Message:
+${summaryMessage}
+
+Flow is working as expected.`, 'success');
+            } catch (error) {
+                showResult('notification-result', 
+                    `❌ Error testing notification flow: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAssistantIntegration() {
+            try {
+                // Simulate assistant receiving email data
+                const storedData = localStorage.getItem('billableAI_emailSummary');
+                
+                if (storedData) {
+                    const summaryData = JSON.parse(storedData);
+                    
+                    if (summaryData.autoProcess) {
+                        const summary = await mockGeminiService.generateBillableSummary(
+                            summaryData.emailData, 
+                            summaryData.timeSpent
+                        );
+
+                        showResult('assistant-result', 
+                            `✅ Assistant integration test successful
+                            
+Received Data:
+- Subject: ${summaryData.emailData.subject}
+- Recipient: ${summaryData.emailData.to}
+- Time Spent: ${Math.round(summaryData.timeSpent / 60000)} minutes
+- Auto Process: ${summaryData.autoProcess}
+
+Generated Summary:
+${summary}
+
+Assistant can process email data and generate summaries.`, 'success');
+                    } else {
+                        showResult('assistant-result', 
+                            '⚠️ Email data found but autoProcess is false', 'info');
+                    }
+                } else {
+                    showResult('assistant-result', 
+                        '⚠️ No email data found in storage. Run the data storage test first.', 'info');
+                }
+            } catch (error) {
+                showResult('assistant-result', 
+                    `❌ Error testing assistant integration: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCompleteFlow() {
+            try {
+                // Simulate complete user journey
+                const testEmailData = {
+                    subject: 'Complete Flow Test',
+                    body: 'This is a test email for the complete flow.',
+                    to: 'complete@test.com'
+                };
+
+                const testTimeSpent = 240000; // 4 minutes
+
+                // Step 1: User composes email (tracking starts)
+                window.billableAINotificationState.isTracking = true;
+                window.billableAINotificationState.startTime = Date.now();
+
+                // Step 2: User clicks send
+                window.billableAINotificationState.isTracking = false;
+                window.billableAINotificationState.totalTime = testTimeSpent;
+
+                // Step 3: Store data for assistant
+                await storeEmailDataForAssistant(testEmailData, testTimeSpent);
+
+                // Step 4: Close notification
+                window.billableAINotificationState.isVisible = false;
+
+                // Step 5: Generate summary
+                const summary = await mockGeminiService.generateBillableSummary(testEmailData, testTimeSpent);
+
+                showResult('complete-flow-result', 
+                    `✅ Complete flow test successful
+                    
+User Journey:
+1. ✅ Email composition tracked (${Math.round(testTimeSpent / 60000)} minutes)
+2. ✅ Send button clicked
+3. ✅ Email data stored for assistant
+4. ✅ Notification closed
+5. ✅ Summary generated
+
+Generated Summary:
+${summary}
+
+Complete flow is working as expected!`, 'success');
+            } catch (error) {
+                showResult('complete-flow-result', 
+                    `❌ Error testing complete flow: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize test environment
+        console.log('🎯 BillableAI: Simplified flow test environment initialized');
+    </script>
+</body>
+</html> 

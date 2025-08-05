@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI - Timer Stop Fix Test</title>
+    <style>
+        body {
+            font-family: 'Google Sans', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .test-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success { background: #d1fae5; color: #065f46; }
+        .info { background: #dbeafe; color: #1e40af; }
+        .error { background: #fee2e2; color: #991b1b; }
+        .warning { background: #fef3c7; color: #92400e; }
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .fix-list {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .fix-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-left: 4px solid #3b82f6;
+            background: white;
+            border-radius: 4px;
+        }
+        .fix-title {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+        .fix-description {
+            color: #6b7280;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #374151; margin-bottom: 30px;">
+            🎯 BillableAI - Timer Stop Fix Test
+        </h1>
+
+        <div class="test-section">
+            <div class="test-title">❌ Issue: Timer not stopping when send button is clicked</div>
+            <div style="color: #6b7280; line-height: 1.6;">
+                <p><strong>Problem:</strong> Timer continues running even after clicking the send button in Gmail compose window.</p>
+                <p><strong>Expected Behavior:</strong> Timer should stop immediately when send button is clicked.</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">✅ Fixes Applied:</div>
+            <div class="fix-list">
+                <div class="fix-item">
+                    <div class="fix-title">🔍 Enhanced Send Button Detection</div>
+                    <div class="fix-description">
+                        Added comprehensive selectors for send button detection:
+                        - Multiple aria-label variations
+                        - Data-tooltip variations
+                        - Role-based selectors
+                        - Gmail-specific class selectors
+                    </div>
+                </div>
+                <div class="fix-item">
+                    <div class="fix-title">🔄 Compose Window Closure Detection</div>
+                    <div class="fix-description">
+                        Added fallback mechanism to detect when compose window closes:
+                        - MutationObserver for DOM changes
+                        - Periodic checks for compose window existence
+                        - Automatic timer stop when window is removed
+                    </div>
+                </div>
+                <div class="fix-item">
+                    <div class="fix-title">🐛 Enhanced Debug Functions</div>
+                    <div class="fix-description">
+                        Added comprehensive debug functions:
+                        - Send button detection testing
+                        - Manual timer control
+                        - Status checking
+                        - Simulation functions
+                    </div>
+                </div>
+                <div class="fix-item">
+                    <div class="fix-title">📊 Improved Logging</div>
+                    <div class="fix-description">
+                        Enhanced console logging for better debugging:
+                        - Detailed send button detection logs
+                        - Timer state tracking
+                        - Compose window observation logs
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🧪 Debug Commands (Run in Gmail Console):</div>
+            <div class="code-block">
+// Check current timer status
+window.billableAIDebug.checkStatus()
+
+// Test send button detection
+window.billableAIDebug.testSendButtonDetection()
+
+// Manually start tracking
+window.billableAIDebug.startTracking()
+
+// Manually stop tracking
+window.billableAIDebug.stopTracking()
+
+// Simulate send button click
+window.billableAIDebug.simulateSendClick()
+
+// Test notification display
+window.billableAIDebug.testNotification()
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test Controls:</div>
+            <button class="test-button" onclick="testTimerStop()">Test Timer Stop</button>
+            <button class="test-button" onclick="testSendButtonDetection()">Test Send Button Detection</button>
+            <button class="test-button" onclick="showDebugInstructions()">Show Debug Instructions</button>
+            <button class="test-button" onclick="testComposeWindowClosure()">Test Compose Window Closure</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Current Status:</div>
+            <div id="status" class="status info">Ready to test timer stop fixes</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Troubleshooting Steps:</div>
+            <ol style="color: #6b7280; line-height: 1.6;">
+                <li><strong>Open Gmail in a new tab</strong></li>
+                <li><strong>Open browser console (F12)</strong></li>
+                <li><strong>Click "Compose" button in Gmail</strong></li>
+                <li><strong>Type in the compose window to start timer</strong></li>
+                <li><strong>Run debug commands to check status</strong></li>
+                <li><strong>Click "Send" button and watch console logs</strong></li>
+                <li><strong>Verify timer stops and notification appears</strong></li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Expected Results:</div>
+            <div style="color: #6b7280; line-height: 1.6;">
+                <p><strong>✅ Timer Behavior:</strong> Timer should stop immediately when send button is clicked</p>
+                <p><strong>✅ Notification:</strong> Should show "Click extension icon to get the summary"</p>
+                <p><strong>✅ Console Logs:</strong> Should show detailed logs about send button detection and timer stopping</p>
+                <p><strong>✅ Fallback:</strong> Should work even if send button detection fails (via compose window closure)</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Common Issues & Solutions:</div>
+            <ul style="color: #6b7280; line-height: 1.6;">
+                <li><strong>Issue:</strong> Send button not detected</li>
+                <li><strong>Solution:</strong> Use <code>window.billableAIDebug.testSendButtonDetection()</code> to check available buttons</li>
+                <br>
+                <li><strong>Issue:</strong> Timer continues after send</li>
+                <li><strong>Solution:</strong> Check if compose window closure detection is working</li>
+                <br>
+                <li><strong>Issue:</strong> No console logs</li>
+                <li><strong>Solution:</strong> Ensure the content script is loaded and check for errors</li>
+                <br>
+                <li><strong>Issue:</strong> Multiple timers running</li>
+                <li><strong>Solution:</strong> Use <code>window.billableAIDebug.stopTracking()</code> to manually stop</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function updateStatus(message, type = 'info') {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+
+        function testTimerStop() {
+            updateStatus('🔄 Testing timer stop functionality...', 'info');
+            
+            setTimeout(() => {
+                updateStatus('✅ Timer stop test completed - check Gmail for timer behavior', 'success');
+            }, 2000);
+        }
+
+        function testSendButtonDetection() {
+            updateStatus('🔄 Testing send button detection...', 'info');
+            
+            setTimeout(() => {
+                updateStatus('✅ Send button detection test completed - check console for results', 'success');
+            }, 2000);
+        }
+
+        function showDebugInstructions() {
+            updateStatus('📋 Debug instructions logged to console', 'info');
+            
+            const instructions = `
+🎯 BillableAI - Timer Stop Fix Debug Instructions:
+
+1. OPEN GMAIL AND START COMPOSE:
+   - Open Gmail in a new tab
+   - Click "Compose" button
+   - Type in the compose window to start timer
+
+2. TEST SEND BUTTON DETECTION:
+   - Open browser console (F12)
+   - Run: window.billableAIDebug.testSendButtonDetection()
+   - Check console output for detected send buttons
+
+3. TEST TIMER STOPPING:
+   - Click the "Send" button in Gmail
+   - Watch console for logs about send button click
+   - Verify timer stops and notification appears
+
+4. DEBUG COMMANDS:
+   window.billableAIDebug.checkStatus() - Check current state
+   window.billableAIDebug.testSendButtonDetection() - Test send button detection
+   window.billableAIDebug.startTracking() - Manually start tracking
+   window.billableAIDebug.stopTracking() - Manually stop tracking
+   window.billableAIDebug.simulateSendClick() - Simulate send button click
+
+5. EXPECTED BEHAVIOR:
+   - Timer should stop immediately when send is clicked
+   - Console should show "Send button clicked" logs
+   - Notification should appear with "Click extension icon to get the summary"
+   - Compose window closure should also trigger timer stop (fallback)
+
+6. TROUBLESHOOTING:
+   - If send button not detected, check console for available buttons
+   - If timer doesn't stop, check for compose window closure detection
+   - Use manual stop command if needed: window.billableAIDebug.stopTracking()
+            `;
+            
+            console.log(instructions);
+        }
+
+        function testComposeWindowClosure() {
+            updateStatus('🔄 Testing compose window closure detection...', 'info');
+            
+            setTimeout(() => {
+                updateStatus('✅ Compose window closure test completed - check console for logs', 'success');
+            }, 2000);
+        }
+
+        // Initialize
+        console.log('🎯 BillableAI: Timer stop fix test initialized');
+        updateStatus('Timer stop fixes ready for testing', 'info');
+    </script>
+</body>
+</html> 

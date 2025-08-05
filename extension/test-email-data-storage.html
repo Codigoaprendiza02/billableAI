@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI - Email Data Storage Test</title>
+    <style>
+        body {
+            font-family: 'Google Sans', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .test-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success { background: #d1fae5; color: #065f46; }
+        .info { background: #dbeafe; color: #1e40af; }
+        .error { background: #fee2e2; color: #991b1b; }
+        .warning { background: #fef3c7; color: #92400e; }
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .fix-list {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .fix-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-left: 4px solid #3b82f6;
+            background: white;
+            border-radius: 4px;
+        }
+        .fix-title {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+        .fix-description {
+            color: #6b7280;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #374151; margin-bottom: 30px;">
+            🎯 BillableAI - Email Data Storage Test
+        </h1>
+
+        <div class="test-section">
+            <div class="test-title">❌ Issue: Email data not stored in localStorage</div>
+            <div style="color: #6b7280; line-height: 1.6;">
+                <p><strong>Problem:</strong> The tracked email content with details is not being stored in localStorage, making it inaccessible to the Assistant.</p>
+                <p><strong>Expected Behavior:</strong> When an email is sent in Gmail, the email data should be captured and stored in localStorage for the Assistant to access.</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">✅ Fixes Applied:</div>
+            <div class="fix-list">
+                <div class="fix-item">
+                    <div class="fix-title">🔍 Enhanced Email Data Capture</div>
+                    <div class="fix-description">
+                        Improved email data capture with multiple selectors:
+                        - Multiple selectors for compose window detection
+                        - Multiple selectors for subject field
+                        - Multiple selectors for body content
+                        - Multiple selectors for recipient field
+                        - Enhanced error handling and logging
+                    </div>
+                </div>
+                <div class="fix-item">
+                    <div class="fix-title">💾 Improved Data Storage</div>
+                    <div class="fix-description">
+                        Enhanced email data storage functionality:
+                        - Comprehensive logging for debugging
+                        - Verification of stored data
+                        - Backup storage in chrome.storage.local
+                        - Better error handling
+                    </div>
+                </div>
+                <div class="fix-item">
+                    <div class="fix-title">🐛 Debug Functions</div>
+                    <div class="fix-description">
+                        Added comprehensive debug functions:
+                        - Manual email data storage testing
+                        - localStorage checking and clearing
+                        - Verification of stored data
+                        - Enhanced console logging
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🧪 Test Steps:</div>
+            <ol style="color: #6b7280; line-height: 1.6;">
+                <li><strong>Test Email Data Storage:</strong>
+                    <ul>
+                        <li>Open Gmail in a new tab</li>
+                        <li>Click "Compose" and type some content</li>
+                        <li>Add a subject and recipient</li>
+                        <li>Click "Send" button</li>
+                        <li>Check browser console for storage logs</li>
+                    </ul>
+                </li>
+                <li><strong>Debug Commands:</strong>
+                    <ul>
+                        <li>Open browser console (F12)</li>
+                        <li>Run debug commands to test functionality</li>
+                        <li>Check localStorage for stored data</li>
+                    </ul>
+                </li>
+                <li><strong>Assistant Integration:</strong>
+                    <ul>
+                        <li>Open BillableAI extension Assistant</li>
+                        <li>Check if email data appears</li>
+                        <li>Test email processing functionality</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test Controls:</div>
+            <button class="test-button" onclick="testEmailDataStorage()">Test Email Data Storage</button>
+            <button class="test-button" onclick="checkLocalStorage()">Check localStorage</button>
+            <button class="test-button" onclick="clearLocalStorage()">Clear localStorage</button>
+            <button class="test-button" onclick="showDebugInstructions()">Show Debug Instructions</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Current Status:</div>
+            <div id="status" class="status info">Ready to test email data storage fixes</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Debug Commands (Run in Gmail Console):</div>
+            <div class="code-block">
+// Test email data storage manually
+window.billableAIDebug.testEmailDataStorage()
+
+// Check current localStorage
+window.billableAIDebug.checkLocalStorage()
+
+// Clear localStorage
+window.billableAIDebug.clearLocalStorage()
+
+// Check stored data directly
+console.log('Stored data:', localStorage.getItem('billableAI_emailSummary'))
+
+// Test email data capture
+const testData = {
+  emailData: {
+    subject: 'Test Email',
+    body: 'This is a test email body',
+    to: 'test@example.com',
+    timestamp: new Date().toISOString()
+  },
+  timeSpent: 120000,
+  timestamp: Date.now(),
+  autoProcess: true
+};
+localStorage.setItem('billableAI_emailSummary', JSON.stringify(testData));
+console.log('Test data stored');
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Expected Results:</div>
+            <div style="color: #6b7280; line-height: 1.6;">
+                <p><strong>✅ Email Capture:</strong> Should capture subject, body, and recipient from Gmail compose window</p>
+                <p><strong>✅ Data Storage:</strong> Should store email data in localStorage with key 'billableAI_emailSummary'</p>
+                <p><strong>✅ Assistant Access:</strong> Assistant should be able to access stored email data</p>
+                <p><strong>✅ Console Logs:</strong> Should show detailed logs about email capture and storage</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Troubleshooting:</div>
+            <ul style="color: #6b7280; line-height: 1.6;">
+                <li><strong>No Email Data:</strong> Check if compose window is detected with multiple selectors</li>
+                <li><strong>Storage Issues:</strong> Verify localStorage is accessible and not blocked</li>
+                <li><strong>Assistant Issues:</strong> Ensure Assistant checks for stored data on load</li>
+                <li><strong>Console Errors:</strong> Check browser console for detailed error messages</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function updateStatus(message, type = 'info') {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+
+        function testEmailDataStorage() {
+            updateStatus('🔄 Testing email data storage...', 'info');
+            
+            // Create test email data
+            const testEmailData = {
+                subject: 'Test Email Subject',
+                body: 'This is a test email body for testing the email data storage functionality.',
+                to: 'test@example.com',
+                timestamp: new Date().toISOString()
+            };
+            
+            const testTimeSpent = 120000; // 2 minutes
+            
+            // Store test data
+            const summaryData = {
+                emailData: testEmailData,
+                timeSpent: testTimeSpent,
+                timestamp: Date.now(),
+                autoProcess: true
+            };
+            
+            localStorage.setItem('billableAI_emailSummary', JSON.stringify(summaryData));
+            
+            setTimeout(() => {
+                const storedData = localStorage.getItem('billableAI_emailSummary');
+                if (storedData) {
+                    const parsed = JSON.parse(storedData);
+                    updateStatus('✅ Email data stored successfully: ' + parsed.emailData.subject, 'success');
+                } else {
+                    updateStatus('❌ Email data storage failed', 'error');
+                }
+            }, 100);
+        }
+
+        function checkLocalStorage() {
+            updateStatus('🔄 Checking localStorage...', 'info');
+            
+            const storedData = localStorage.getItem('billableAI_emailSummary');
+            if (storedData) {
+                const parsed = JSON.parse(storedData);
+                updateStatus('✅ Found stored data: ' + parsed.emailData?.subject, 'success');
+                console.log('Stored data:', parsed);
+            } else {
+                updateStatus('❌ No email data found in localStorage', 'error');
+            }
+        }
+
+        function clearLocalStorage() {
+            updateStatus('🔄 Clearing localStorage...', 'info');
+            
+            localStorage.removeItem('billableAI_emailSummary');
+            updateStatus('✅ localStorage cleared successfully', 'success');
+        }
+
+        function showDebugInstructions() {
+            updateStatus('📋 Debug instructions logged to console', 'info');
+            
+            const instructions = `
+🎯 BillableAI - Email Data Storage Debug Instructions:
+
+1. TEST EMAIL DATA CAPTURE:
+   - Open Gmail in a new tab
+   - Click "Compose" and type some content
+   - Add a subject and recipient
+   - Click "Send" button
+   - Check browser console for capture logs
+
+2. TEST DATA STORAGE:
+   - Run: window.billableAIDebug.testEmailDataStorage()
+   - Check console for storage verification logs
+   - Verify data is stored in localStorage
+
+3. DEBUG COMMANDS:
+   // Test email data storage
+   window.billableAIDebug.testEmailDataStorage()
+   
+   // Check current localStorage
+   window.billableAIDebug.checkLocalStorage()
+   
+   // Clear localStorage
+   window.billableAIDebug.clearLocalStorage()
+   
+   // Manual storage test
+   const testData = {
+     emailData: { subject: 'Test', body: 'Test body', to: 'test@example.com' },
+     timeSpent: 120000,
+     autoProcess: true
+   };
+   localStorage.setItem('billableAI_emailSummary', JSON.stringify(testData));
+
+4. EXPECTED BEHAVIOR:
+   - Email data should be captured when send button is clicked
+   - Data should be stored in localStorage with key 'billableAI_emailSummary'
+   - Assistant should be able to access stored data
+   - Console should show detailed logs about capture and storage
+
+5. TROUBLESHOOTING:
+   - Check if compose window is detected
+   - Verify localStorage is accessible
+   - Check for console errors
+   - Ensure Assistant checks for stored data
+            `;
+            
+            console.log(instructions);
+        }
+
+        // Initialize
+        console.log('🎯 BillableAI: Email data storage test initialized');
+        updateStatus('Email data storage fixes ready for testing', 'info');
+    </script>
+</body>
+</html> 

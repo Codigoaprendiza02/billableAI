@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #fbbf24;
+        }
+        .button {
+            background: #fbbf24;
+            color: #1f2937;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        .button:hover {
+            background: #f59e0b;
+            transform: translateY(-2px);
+        }
+        .button:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .success { background: rgba(34, 197, 94, 0.2); border-left: 4px solid #22c55e; }
+        .error { background: rgba(239, 68, 68, 0.2); border-left: 4px solid #ef4444; }
+        .info { background: rgba(59, 130, 246, 0.2); border-left: 4px solid #3b82f6; }
+        .warning { background: rgba(251, 191, 36, 0.2); border-left: 4px solid #fbbf24; }
+        .log {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        .password-requirements {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .requirement {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .requirement.met {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+        .requirement.not-met {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 User Registration Test</h1>
+        <p>Test user registration functionality and identify issues.</p>
+
+        <div class="section">
+            <h2>📝 Registration Form</h2>
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" placeholder="Enter username (3-30 chars, letters, numbers, underscores only)" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" placeholder="Enter valid email address" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" placeholder="Enter full name (2-50 chars)" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" placeholder="Enter password (min 15 chars)" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="profession">Profession:</label>
+                    <input type="text" id="profession" name="profession" placeholder="Enter profession (optional)" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="gender">Gender:</label>
+                    <select id="gender" name="gender" style="width: 100%; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 5px; background: rgba(255, 255, 255, 0.1); color: white; font-size: 16px;">
+                        <option value="">Select gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="button">Register User</button>
+            </form>
+        </div>
+
+        <div class="section">
+            <h2>🔍 Password Requirements</h2>
+            <div class="password-requirements" id="passwordRequirements">
+                <div class="requirement not-met" id="req-length">• At least 15 characters</div>
+                <div class="requirement not-met" id="req-lowercase">• One lowercase letter (a-z)</div>
+                <div class="requirement not-met" id="req-uppercase">• One uppercase letter (A-Z)</div>
+                <div class="requirement not-met" id="req-number">• One number (0-9)</div>
+                <div class="requirement not-met" id="req-special">• One special character (!@#$%^&*()_-+={}[]|\\:;"'<>?,./)</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Status</h2>
+            <div id="status" class="status info">
+                Ready to test user registration
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📝 Log</h2>
+            <div id="log" class="log"></div>
+        </div>
+
+        <div class="section">
+            <h2>🧪 Quick Tests</h2>
+            <button class="button" onclick="testValidUser()">Test Valid User</button>
+            <button class="button" onclick="testInvalidUser()">Test Invalid User</button>
+            <button class="button" onclick="testBackendConnection()">Test Backend Connection</button>
+            <button class="button" onclick="clearLog()">Clear Log</button>
+        </div>
+    </div>
+
+    <script>
+        // Simple logging function
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logEntry.style.color = type === 'error' ? '#ef4444' : type === 'success' ? '#22c55e' : type === 'warning' ? '#fbbf24' : '#ffffff';
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        // Update status display
+        function updateStatus(message, type = 'info') {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+
+        // Check password requirements
+        function checkPasswordRequirements(password) {
+            const requirements = {
+                length: password.length >= 15,
+                lowercase: /[a-z]/.test(password),
+                uppercase: /[A-Z]/.test(password),
+                number: /[0-9]/.test(password),
+                special: /[!@#$%^&*()_\-+={}\[\]|\\:;"'<>?,./]/.test(password)
+            };
+
+            // Update UI
+            document.getElementById('req-length').className = `requirement ${requirements.length ? 'met' : 'not-met'}`;
+            document.getElementById('req-lowercase').className = `requirement ${requirements.lowercase ? 'met' : 'not-met'}`;
+            document.getElementById('req-uppercase').className = `requirement ${requirements.uppercase ? 'met' : 'not-met'}`;
+            document.getElementById('req-number').className = `requirement ${requirements.number ? 'met' : 'not-met'}`;
+            document.getElementById('req-special').className = `requirement ${requirements.special ? 'met' : 'not-met'}`;
+
+            return requirements;
+        }
+
+        // Register user
+        async function registerUser(userData) {
+            try {
+                log('🔗 Attempting user registration...', 'info');
+                updateStatus('Registering user...', 'info');
+
+                const response = await fetch('http://localhost:3001/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                log(`📥 Response status: ${response.status}`, 'info');
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    log(`❌ Registration failed: ${JSON.stringify(errorData)}`, 'error');
+                    updateStatus('Registration failed', 'error');
+                    return { success: false, error: errorData };
+                }
+
+                const result = await response.json();
+                log('✅ Registration successful!', 'success');
+                log(`User ID: ${result.user.id}`, 'success');
+                log(`Username: ${result.user.username}`, 'success');
+                log(`Email: ${result.user.email}`, 'success');
+                updateStatus('Registration successful!', 'success');
+                return { success: true, data: result };
+            } catch (error) {
+                log(`❌ Registration error: ${error.message}`, 'error');
+                updateStatus('Registration error', 'error');
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Test valid user registration
+        async function testValidUser() {
+            const userData = {
+                username: 'testuser_' + Date.now(),
+                email: 'test' + Date.now() + '@example.com',
+                name: 'Test User',
+                password: 'StrongPassword123!',
+                profession: 'Lawyer',
+                gender: 'Male'
+            };
+
+            log('🧪 Testing valid user registration...', 'info');
+            log(`User data: ${JSON.stringify(userData, null, 2)}`, 'info');
+            
+            const result = await registerUser(userData);
+            if (result.success) {
+                log('✅ Valid user registration test passed', 'success');
+            } else {
+                log('❌ Valid user registration test failed', 'error');
+            }
+        }
+
+        // Test invalid user registration
+        async function testInvalidUser() {
+            const userData = {
+                username: 'ab', // Too short
+                email: 'invalid-email',
+                name: 'A', // Too short
+                password: 'weak',
+                profession: 'Lawyer',
+                gender: 'Invalid'
+            };
+
+            log('🧪 Testing invalid user registration...', 'info');
+            log(`User data: ${JSON.stringify(userData, null, 2)}`, 'info');
+            
+            const result = await registerUser(userData);
+            if (!result.success) {
+                log('✅ Invalid user registration test passed (correctly failed)', 'success');
+            } else {
+                log('❌ Invalid user registration test failed (should have failed)', 'error');
+            }
+        }
+
+        // Test backend connection
+        async function testBackendConnection() {
+            try {
+                log('🔗 Testing backend connection...', 'info');
+                updateStatus('Testing backend connection...', 'info');
+
+                const response = await fetch('http://localhost:3001/api/extension/health');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('✅ Backend connection successful', 'success');
+                    log(`Status: ${data.status}`, 'success');
+                    log(`Message: ${data.message}`, 'success');
+                    updateStatus('Backend connection successful', 'success');
+                } else {
+                    log(`❌ Backend connection failed: ${response.status}`, 'error');
+                    updateStatus('Backend connection failed', 'error');
+                }
+            } catch (error) {
+                log(`❌ Backend connection error: ${error.message}`, 'error');
+                updateStatus('Backend connection error', 'error');
+            }
+        }
+
+        // Clear log
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            log('Log cleared', 'info');
+        }
+
+        // Form submission handler
+        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const userData = {
+                username: formData.get('username'),
+                email: formData.get('email'),
+                name: formData.get('name'),
+                password: formData.get('password'),
+                profession: formData.get('profession') || 'Lawyer',
+                gender: formData.get('gender') || 'Others'
+            };
+
+            log('📝 Form submission received', 'info');
+            log(`User data: ${JSON.stringify(userData, null, 2)}`, 'info');
+            
+            const result = await registerUser(userData);
+            if (result.success) {
+                log('✅ Form registration successful', 'success');
+            } else {
+                log('❌ Form registration failed', 'error');
+            }
+        });
+
+        // Password input handler
+        document.getElementById('password').addEventListener('input', (e) => {
+            const password = e.target.value;
+            checkPasswordRequirements(password);
+        });
+
+        // Initial log
+        log('🚀 User registration test page loaded', 'success');
+        log('Make sure the backend server is running on http://localhost:3001', 'info');
+    </script>
+</body>
+</html> 

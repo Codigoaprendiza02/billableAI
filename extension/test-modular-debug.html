@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI Modular Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .module-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .module-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .module-card.loaded {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .module-card.error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 BillableAI Modular Debug Test</h1>
+    
+    <div class="container">
+        <h2>📋 Test Overview</h2>
+        <p>This page tests the modular tracking system to identify where extension loading issues occur.</p>
+        <p><strong>Current URL:</strong> <span id="current-url"></span></p>
+        <p><strong>Protocol:</strong> <span id="current-protocol"></span></p>
+    </div>
+
+    <div class="container">
+        <h2>1. Extension Loading Test</h2>
+        <div id="extension-status" class="status info">Checking...</div>
+        <button onclick="checkExtension()">Check Extension</button>
+        <button onclick="reloadExtension()">Reload Extension</button>
+    </div>
+
+    <div class="container">
+        <h2>2. Content Script Injection Test</h2>
+        <div id="content-script-status" class="status info">Checking...</div>
+        <button onclick="checkContentScript()">Check Content Script</button>
+        <button onclick="testManualInjection()">Test Manual Injection</button>
+    </div>
+
+    <div class="container">
+        <h2>3. Module Loading Test</h2>
+        <div id="module-status" class="status info">Checking modules...</div>
+        <div class="module-status" id="module-grid"></div>
+        <button onclick="checkModules()">Check All Modules</button>
+        <button onclick="loadModulesManually()">Load Modules Manually</button>
+    </div>
+
+    <div class="container">
+        <h2>4. Function Availability Test</h2>
+        <div id="function-status" class="status info">Ready to test</div>
+        <button onclick="testFunctions()">Test Functions</button>
+        <button onclick="testGmailAPI()">Test Gmail API</button>
+        <button onclick="testGeminiAPI()">Test Gemini API</button>
+    </div>
+
+    <div class="container">
+        <h2>5. State Management Test</h2>
+        <div id="state-status" class="status info">Ready to test</div>
+        <button onclick="testStateManagement()">Test State Management</button>
+        <button onclick="testLocalStorage()">Test LocalStorage</button>
+        <button onclick="clearAllData()">Clear All Data</button>
+    </div>
+
+    <div class="container">
+        <h2>6. Performance Test</h2>
+        <div id="performance-status" class="status info">Ready to test</div>
+        <button onclick="testPerformance()">Test Performance</button>
+        <button onclick="testMemoryUsage()">Test Memory Usage</button>
+    </div>
+
+    <div class="container">
+        <h2>7. Console Log</h2>
+        <div class="log" id="log"></div>
+        <button onclick="clearLog()">Clear Log</button>
+        <button onclick="exportLog()">Export Log</button>
+    </div>
+
+    <script>
+        let logMessages = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logMessages.push(logEntry);
+            
+            const logElement = document.getElementById('log');
+            logElement.textContent = logMessages.join('\n');
+            logElement.scrollTop = logElement.scrollHeight;
+            
+            console.log(`🎯 BillableAI Debug: ${message}`);
+        }
+
+        function clearLog() {
+            logMessages = [];
+            document.getElementById('log').textContent = '';
+        }
+
+        function exportLog() {
+            const logText = logMessages.join('\n');
+            const blob = new Blob([logText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'billableai-debug-log.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function updateStatus(elementId, message, className) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${className}`;
+        }
+
+        function checkExtension() {
+            log('🔍 Checking extension availability...');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                log('✅ chrome.runtime is available');
+                updateStatus('extension-status', '✅ Extension is loaded!', 'success');
+                
+                try {
+                    chrome.runtime.getManifest((manifest) => {
+                        log(`📋 Extension name: ${manifest.name}`);
+                        log(`📋 Extension version: ${manifest.version}`);
+                        log(`📋 Extension ID: ${chrome.runtime.id}`);
+                    });
+                } catch (error) {
+                    log(`⚠️ Could not get manifest: ${error.message}`);
+                }
+            } else {
+                log('❌ chrome.runtime is NOT available');
+                updateStatus('extension-status', '❌ Extension not loaded', 'error');
+            }
+        }
+
+        function reloadExtension() {
+            log('🔄 Attempting to reload extension...');
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                chrome.runtime.reload();
+                log('🔄 Extension reload initiated');
+            } else {
+                log('❌ Cannot reload - extension not available');
+            }
+        }
+
+        function checkContentScript() {
+            log('🔍 Checking content script...');
+            
+            if (window.billableAI) {
+                log('✅ window.billableAI object found');
+                updateStatus('content-script-status', '✅ Content script is injected!', 'success');
+                
+                // Check for specific functions
+                const functions = ['startTracking', 'stopTracking', 'getStatus', 'testGmailApi', 'generateTestSummary'];
+                functions.forEach(func => {
+                    if (typeof window.billableAI[func] === 'function') {
+                        log(`✅ ${func} function available`);
+                    } else {
+                        log(`❌ ${func} function NOT available`);
+                    }
+                });
+            } else {
+                log('❌ window.billableAI object NOT found');
+                updateStatus('content-script-status', '❌ Content script not injected', 'error');
+            }
+        }
+
+        function testManualInjection() {
+            log('🔧 Testing manual content script injection...');
+            
+            try {
+                if (typeof chrome !== 'undefined' && chrome.runtime) {
+                    chrome.scripting.executeScript({
+                        target: { tabId: chrome.tabs.TAB_ID_NONE },
+                        files: ['tracking-script-modular.js']
+                    }, (results) => {
+                        if (chrome.runtime.lastError) {
+                            log(`❌ Manual injection failed: ${chrome.runtime.lastError.message}`);
+                        } else {
+                            log('✅ Manual injection successful');
+                        }
+                    });
+                } else {
+                    log('❌ Cannot inject - chrome.runtime not available');
+                }
+            } catch (error) {
+                log(`❌ Manual injection error: ${error.message}`);
+            }
+        }
+
+        function checkModules() {
+            log('🔍 Checking module availability...');
+            
+            const modules = [
+                { name: 'Core', object: 'billableAICore' },
+                { name: 'Gmail API', object: 'billableAIGmailAPI' },
+                { name: 'Gemini', object: 'billableAIGemini' },
+                { name: 'Events', object: 'billableAIEvents' },
+                { name: 'Detection', object: 'billableAIDetection' },
+                { name: 'State', object: 'billableAIState' }
+            ];
+            
+            const moduleGrid = document.getElementById('module-grid');
+            moduleGrid.innerHTML = '';
+            
+            modules.forEach(module => {
+                const isLoaded = window[module.object] !== undefined;
+                const card = document.createElement('div');
+                card.className = `module-card ${isLoaded ? 'loaded' : 'error'}`;
+                card.innerHTML = `
+                    <strong>${module.name}</strong><br>
+                    Status: ${isLoaded ? '✅ Loaded' : '❌ Not Loaded'}<br>
+                    Object: ${module.object}
+                `;
+                moduleGrid.appendChild(card);
+                
+                log(`${isLoaded ? '✅' : '❌'} ${module.name} module: ${isLoaded ? 'loaded' : 'not loaded'}`);
+            });
+            
+            updateStatus('module-status', 'Module check completed', 'info');
+        }
+
+        function loadModulesManually() {
+            log('🔧 Attempting to load modules manually...');
+            
+            const modules = [
+                'tracking-core.js',
+                'tracking-gmail-api.js',
+                'tracking-gemini.js',
+                'tracking-events.js',
+                'tracking-detection.js'
+            ];
+            
+            modules.forEach((module, index) => {
+                setTimeout(() => {
+                    log(`📦 Loading module: ${module}`);
+                    const script = document.createElement('script');
+                    script.src = chrome.runtime.getURL(module);
+                    script.onload = () => log(`✅ ${module} loaded successfully`);
+                    script.onerror = () => log(`❌ Failed to load ${module}`);
+                    document.head.appendChild(script);
+                }, index * 1000);
+            });
+        }
+
+        function testFunctions() {
+            log('🔍 Testing function availability...');
+            
+            if (!window.billableAI) {
+                log('❌ window.billableAI not available');
+                updateStatus('function-status', '❌ Functions not available', 'error');
+                return;
+            }
+            
+            const functions = [
+                'startTracking',
+                'stopTracking',
+                'pauseTracking',
+                'resumeTracking',
+                'getStatus',
+                'testGmailApi',
+                'generateTestSummary',
+                'getDraftsCount'
+            ];
+            
+            let availableCount = 0;
+            functions.forEach(func => {
+                if (typeof window.billableAI[func] === 'function') {
+                    log(`✅ ${func} function available`);
+                    availableCount++;
+                } else {
+                    log(`❌ ${func} function NOT available`);
+                }
+            });
+            
+            if (availableCount === functions.length) {
+                updateStatus('function-status', `✅ All ${availableCount} functions available`, 'success');
+            } else {
+                updateStatus('function-status', `⚠️ ${availableCount}/${functions.length} functions available`, 'warning');
+            }
+        }
+
+        async function testGmailAPI() {
+            log('🔍 Testing Gmail API...');
+            
+            if (window.billableAI && window.billableAI.testGmailApi) {
+                try {
+                    const result = await window.billableAI.testGmailApi();
+                    log(`Gmail API test result: ${result}`);
+                } catch (error) {
+                    log(`❌ Gmail API test error: ${error.message}`);
+                }
+            } else {
+                log('❌ Gmail API test function not available');
+            }
+        }
+
+        async function testGeminiAPI() {
+            log('🔍 Testing Gemini API...');
+            
+            if (window.billableAI && window.billableAI.generateTestSummary) {
+                try {
+                    const testData = {
+                        to: 'test@example.com',
+                        subject: 'Test Email',
+                        content: 'This is a test email for API testing.'
+                    };
+                    const result = await window.billableAI.generateTestSummary(testData, 60000);
+                    log(`Gemini API test result: ${result}`);
+                } catch (error) {
+                    log(`❌ Gemini API test error: ${error.message}`);
+                }
+            } else {
+                log('❌ Gemini API test function not available');
+            }
+        }
+
+        function testStateManagement() {
+            log('🔍 Testing state management...');
+            
+            if (window.billableAIState) {
+                log('✅ billableAIState object available');
+                log(`State: ${JSON.stringify(window.billableAIState, null, 2)}`);
+                updateStatus('state-status', '✅ State management working', 'success');
+            } else {
+                log('❌ billableAIState object not available');
+                updateStatus('state-status', '❌ State management not working', 'error');
+            }
+        }
+
+        function testLocalStorage() {
+            log('🔍 Testing localStorage...');
+            
+            try {
+                const testKey = 'billableai_test';
+                const testValue = { test: true, timestamp: Date.now() };
+                
+                localStorage.setItem(testKey, JSON.stringify(testValue));
+                const retrieved = JSON.parse(localStorage.getItem(testKey));
+                localStorage.removeItem(testKey);
+                
+                if (retrieved && retrieved.test) {
+                    log('✅ localStorage working correctly');
+                    updateStatus('state-status', '✅ localStorage working', 'success');
+                } else {
+                    log('❌ localStorage not working correctly');
+                    updateStatus('state-status', '❌ localStorage not working', 'error');
+                }
+            } catch (error) {
+                log(`❌ localStorage error: ${error.message}`);
+                updateStatus('state-status', '❌ localStorage error', 'error');
+            }
+        }
+
+        function clearAllData() {
+            log('🧹 Clearing all BillableAI data...');
+            
+            try {
+                const keys = Object.keys(localStorage).filter(key => key.startsWith('billableai_'));
+                keys.forEach(key => {
+                    localStorage.removeItem(key);
+                    log(`🗑️ Removed: ${key}`);
+                });
+                log(`✅ Cleared ${keys.length} items`);
+            } catch (error) {
+                log(`❌ Error clearing data: ${error.message}`);
+            }
+        }
+
+        function testPerformance() {
+            log('🔍 Testing performance...');
+            
+            const startTime = performance.now();
+            
+            // Test DOM queries
+            const elements = document.querySelectorAll('*');
+            log(`DOM elements: ${elements.length}`);
+            
+            // Test memory usage
+            if (performance.memory) {
+                log(`Memory used: ${Math.round(performance.memory.usedJSHeapSize / 1024 / 1024)}MB`);
+                log(`Memory total: ${Math.round(performance.memory.totalJSHeapSize / 1024 / 1024)}MB`);
+            }
+            
+            const endTime = performance.now();
+            log(`Performance test completed in ${(endTime - startTime).toFixed(2)}ms`);
+        }
+
+        function testMemoryUsage() {
+            log('🔍 Testing memory usage...');
+            
+            if (performance.memory) {
+                const memory = performance.memory;
+                log(`Used JS Heap Size: ${Math.round(memory.usedJSHeapSize / 1024 / 1024)}MB`);
+                log(`Total JS Heap Size: ${Math.round(memory.totalJSHeapSize / 1024 / 1024)}MB`);
+                log(`JS Heap Size Limit: ${Math.round(memory.jsHeapSizeLimit / 1024 / 1024)}MB`);
+            } else {
+                log('⚠️ Performance memory API not available');
+            }
+        }
+
+        // Initialize tests
+        window.addEventListener('load', () => {
+            log('🚀 Page loaded, starting tests...');
+            
+            document.getElementById('current-url').textContent = window.location.href;
+            document.getElementById('current-protocol').textContent = window.location.protocol;
+            
+            setTimeout(checkExtension, 1000);
+            setTimeout(checkContentScript, 2000);
+            setTimeout(checkModules, 3000);
+        });
+    </script>
+</body>
+</html> 

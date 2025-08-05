@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        button { margin: 5px; padding: 10px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 BillableAI Authentication Debug Test</h1>
+    
+    <div class="debug-section">
+        <h2>1. Storage Check</h2>
+        <button onclick="checkStorage()">Check All Storage</button>
+        <button onclick="clearAllStorage()">Clear All Storage</button>
+        <div id="storage-results"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>2. Chrome Storage Test</h2>
+        <button onclick="testChromeStorage()">Test Chrome Storage</button>
+        <div id="chrome-storage-results"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>3. Authentication Test</h2>
+        <button onclick="testLogin()">Test Login</button>
+        <button onclick="testLogout()">Test Logout</button>
+        <div id="auth-results"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>4. Extension Context Test</h2>
+        <button onclick="testExtensionContext()">Test Extension Context</button>
+        <div id="extension-results"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            console.log(`[${timestamp}] ${message}`);
+            return `[${timestamp}] ${message}`;
+        }
+
+        function displayResults(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            element.innerHTML = `<div class="${className}">${content}</div>`;
+        }
+
+        async function checkStorage() {
+            let results = [];
+            
+            try {
+                // Check localStorage
+                const authToken = localStorage.getItem('authToken');
+                const user = localStorage.getItem('user');
+                results.push(`localStorage authToken: ${authToken ? 'EXISTS' : 'NOT FOUND'}`);
+                results.push(`localStorage user: ${user ? 'EXISTS' : 'NOT FOUND'}`);
+                
+                if (user) {
+                    try {
+                        const userData = JSON.parse(user);
+                        results.push(`localStorage user data: ${JSON.stringify(userData, null, 2)}`);
+                    } catch (e) {
+                        results.push(`localStorage user parse error: ${e.message}`);
+                    }
+                }
+
+                // Check Chrome storage
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    try {
+                        const result = await chrome.storage.local.get([
+                            'billableai_auth_token',
+                            'billableai_user_data',
+                            'billableai_auth_expiry'
+                        ]);
+                        
+                        results.push(`Chrome storage authToken: ${result.billableai_auth_token ? 'EXISTS' : 'NOT FOUND'}`);
+                        results.push(`Chrome storage user: ${result.billableai_user_data ? 'EXISTS' : 'NOT FOUND'}`);
+                        results.push(`Chrome storage expiry: ${result.billableai_auth_expiry || 'NOT FOUND'}`);
+                        
+                        if (result.billableai_user_data) {
+                            try {
+                                const userData = JSON.parse(result.billableai_user_data);
+                                results.push(`Chrome storage user data: ${JSON.stringify(userData, null, 2)}`);
+                            } catch (e) {
+                                results.push(`Chrome storage user parse error: ${e.message}`);
+                            }
+                        }
+                    } catch (e) {
+                        results.push(`Chrome storage error: ${e.message}`);
+                    }
+                } else {
+                    results.push('Chrome storage not available');
+                }
+
+                // Check all localStorage keys
+                const allKeys = Object.keys(localStorage);
+                const billableKeys = allKeys.filter(key => key.includes('billable'));
+                results.push(`All localStorage keys: ${allKeys.join(', ')}`);
+                results.push(`Billable localStorage keys: ${billableKeys.join(', ')}`);
+
+            } catch (error) {
+                results.push(`Error checking storage: ${error.message}`);
+            }
+
+            displayResults('storage-results', results.join('<br>'));
+        }
+
+        async function clearAllStorage() {
+            try {
+                // Clear localStorage
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+                localStorage.removeItem('billableai_auth_token');
+                localStorage.removeItem('billableai_user_data');
+                localStorage.removeItem('billableai_auth_expiry');
+
+                // Clear Chrome storage
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    await chrome.storage.local.remove([
+                        'billableai_auth_token',
+                        'billableai_user_data',
+                        'billableai_auth_expiry'
+                    ]);
+                }
+
+                displayResults('storage-results', 'All storage cleared successfully', 'success');
+            } catch (error) {
+                displayResults('storage-results', `Error clearing storage: ${error.message}`, 'error');
+            }
+        }
+
+        async function testChromeStorage() {
+            let results = [];
+            
+            try {
+                if (typeof chrome !== 'undefined') {
+                    results.push('✅ Chrome object exists');
+                    
+                    if (chrome.storage) {
+                        results.push('✅ Chrome storage exists');
+                        
+                        if (chrome.storage.local) {
+                            results.push('✅ Chrome storage.local exists');
+                            
+                            // Test write
+                            await chrome.storage.local.set({
+                                'test_key': 'test_value',
+                                'test_timestamp': Date.now()
+                            });
+                            results.push('✅ Chrome storage write successful');
+                            
+                            // Test read
+                            const result = await chrome.storage.local.get(['test_key', 'test_timestamp']);
+                            results.push(`✅ Chrome storage read successful: ${JSON.stringify(result)}`);
+                            
+                            // Clean up
+                            await chrome.storage.local.remove(['test_key', 'test_timestamp']);
+                            results.push('✅ Chrome storage cleanup successful');
+                            
+                        } else {
+                            results.push('❌ Chrome storage.local not available');
+                        }
+                    } else {
+                        results.push('❌ Chrome storage not available');
+                    }
+                } else {
+                    results.push('❌ Chrome object not available');
+                }
+            } catch (error) {
+                results.push(`❌ Chrome storage test error: ${error.message}`);
+            }
+
+            displayResults('chrome-storage-results', results.join('<br>'));
+        }
+
+        async function testLogin() {
+            let results = [];
+            
+            try {
+                // Simulate login data
+                const testToken = 'test_token_' + Date.now();
+                const testUser = {
+                    id: 'test_user_123',
+                    username: 'testuser',
+                    email: 'test@example.com',
+                    name: 'Test User',
+                    profession: 'Lawyer'
+                };
+
+                // Store in localStorage
+                localStorage.setItem('authToken', testToken);
+                localStorage.setItem('user', JSON.stringify(testUser));
+                results.push('✅ Stored auth data in localStorage');
+
+                // Store in Chrome storage
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    await chrome.storage.local.set({
+                        'billableai_auth_token': testToken,
+                        'billableai_user_data': JSON.stringify(testUser),
+                        'billableai_auth_expiry': new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                    });
+                    results.push('✅ Stored auth data in Chrome storage');
+                }
+
+                results.push('✅ Login test completed');
+            } catch (error) {
+                results.push(`❌ Login test error: ${error.message}`);
+            }
+
+            displayResults('auth-results', results.join('<br>'));
+        }
+
+        async function testLogout() {
+            let results = [];
+            
+            try {
+                // Clear localStorage
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+                results.push('✅ Cleared localStorage');
+
+                // Clear Chrome storage
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    await chrome.storage.local.remove([
+                        'billableai_auth_token',
+                        'billableai_user_data',
+                        'billableai_auth_expiry'
+                    ]);
+                    results.push('✅ Cleared Chrome storage');
+                }
+
+                results.push('✅ Logout test completed');
+            } catch (error) {
+                results.push(`❌ Logout test error: ${error.message}`);
+            }
+
+            displayResults('auth-results', results.join('<br>'));
+        }
+
+        async function testExtensionContext() {
+            let results = [];
+            
+            try {
+                // Check if we're in extension context
+                if (typeof chrome !== 'undefined') {
+                    results.push('✅ In extension context');
+                    
+                    if (chrome.runtime) {
+                        results.push('✅ Chrome runtime available');
+                        
+                        if (chrome.runtime.id) {
+                            results.push(`✅ Extension ID: ${chrome.runtime.id}`);
+                        } else {
+                            results.push('❌ Extension ID not available');
+                        }
+                    } else {
+                        results.push('❌ Chrome runtime not available');
+                    }
+                } else {
+                    results.push('❌ Not in extension context');
+                }
+
+                // Check if we can access extension APIs
+                if (typeof chrome !== 'undefined' && chrome.storage) {
+                    results.push('✅ Can access Chrome storage API');
+                } else {
+                    results.push('❌ Cannot access Chrome storage API');
+                }
+
+            } catch (error) {
+                results.push(`❌ Extension context test error: ${error.message}`);
+            }
+
+            displayResults('extension-results', results.join('<br>'));
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            log('Page loaded, running initial tests...');
+            setTimeout(() => {
+                checkStorage();
+                testChromeStorage();
+                testExtensionContext();
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 

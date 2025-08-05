@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI Extension Test (Local Server)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: rgba(34, 197, 94, 0.3); border: 1px solid #22c55e; }
+        .error { background: rgba(239, 68, 68, 0.3); border: 1px solid #ef4444; }
+        .info { background: rgba(59, 130, 246, 0.3); border: 1px solid #3b82f6; }
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        #log {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .note {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid #ffc107;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 BillableAI Extension Test (Local Server)</h1>
+    
+    <div class="note">
+        <strong>📝 Note:</strong> This page should be served via localhost (not file://) for proper extension access.
+        <br>Use: <code>python -m http.server 8000</code> or <code>npx serve .</code> in the extension folder.
+    </div>
+    
+    <div class="test-section">
+        <h2>1. Extension Loading Test</h2>
+        <div id="extension-status" class="status info">Checking...</div>
+        <button onclick="checkExtension()">Check Extension</button>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Content Script Test</h2>
+        <div id="content-script-status" class="status info">Checking...</div>
+        <button onclick="checkContentScript()">Check Content Script</button>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Manual Injection Test</h2>
+        <div id="manual-injection-status" class="status info">Ready to test</div>
+        <button onclick="testManualInjection()">Test Manual Injection</button>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Console Log</h2>
+        <div id="log"></div>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function checkExtension() {
+            log('🔍 Checking if extension is loaded...');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                log('✅ chrome.runtime is available');
+                document.getElementById('extension-status').innerHTML = '✅ Extension is loaded!';
+                document.getElementById('extension-status').className = 'status success';
+                
+                // Try to get extension info
+                try {
+                    chrome.runtime.getManifest((manifest) => {
+                        log(`📋 Extension name: ${manifest.name}`);
+                        log(`📋 Extension version: ${manifest.version}`);
+                    });
+                } catch (error) {
+                    log(`⚠️ Could not get manifest: ${error.message}`);
+                }
+            } else {
+                log('❌ chrome.runtime is NOT available');
+                document.getElementById('extension-status').innerHTML = '❌ Extension not loaded';
+                document.getElementById('extension-status').className = 'status error';
+            }
+        }
+
+        function checkContentScript() {
+            log('🔍 Checking if content script is injected...');
+            
+            if (window.billableAI) {
+                log('✅ window.billableAI object found');
+                document.getElementById('content-script-status').innerHTML = '✅ Content script is injected!';
+                document.getElementById('content-script-status').className = 'status success';
+                
+                // Test available functions
+                if (typeof window.billableAI.testGmailApi === 'function') {
+                    log('✅ testGmailApi function available');
+                }
+                if (typeof window.billableAI.generateTestSummary === 'function') {
+                    log('✅ generateTestSummary function available');
+                }
+            } else {
+                log('❌ window.billableAI object NOT found');
+                document.getElementById('content-script-status').innerHTML = '❌ Content script not injected';
+                document.getElementById('content-script-status').className = 'status error';
+            }
+        }
+
+        function testManualInjection() {
+            log('🔍 Testing manual script injection...');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                try {
+                    chrome.runtime.sendMessage({ type: 'INJECT_CONTENT_SCRIPT' }, (response) => {
+                        if (response && response.success) {
+                            log('✅ Manual injection successful');
+                            document.getElementById('manual-injection-status').innerHTML = '✅ Manual injection worked!';
+                            document.getElementById('manual-injection-status').className = 'status success';
+                            
+                            // Wait a moment and check if content script is now available
+                            setTimeout(() => {
+                                if (window.billableAI) {
+                                    log('✅ Content script now available after manual injection');
+                                } else {
+                                    log('⚠️ Content script still not available after manual injection');
+                                }
+                            }, 1000);
+                        } else {
+                            log('❌ Manual injection failed');
+                            document.getElementById('manual-injection-status').innerHTML = '❌ Manual injection failed';
+                            document.getElementById('manual-injection-status').className = 'status error';
+                        }
+                    });
+                } catch (error) {
+                    log(`❌ Manual injection error: ${error.message}`);
+                    document.getElementById('manual-injection-status').innerHTML = '❌ Manual injection error';
+                    document.getElementById('manual-injection-status').className = 'status error';
+                }
+            } else {
+                log('❌ Cannot test manual injection - extension not loaded');
+                document.getElementById('manual-injection-status').innerHTML = '❌ Extension not loaded';
+                document.getElementById('manual-injection-status').className = 'status error';
+            }
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            log('🚀 Page loaded, starting tests...');
+            log('📍 Current URL: ' + window.location.href);
+            log('📍 Protocol: ' + window.location.protocol);
+            setTimeout(checkExtension, 1000);
+            setTimeout(checkContentScript, 2000);
+        });
+    </script>
+</body>
+</html> 

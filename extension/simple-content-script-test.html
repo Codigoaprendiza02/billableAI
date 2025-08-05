@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Content Script Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Simple Content Script Test</h1>
+    
+    <div class="container">
+        <h2>📋 Test Results</h2>
+        <div id="results" class="status info">Testing...</div>
+        <button onclick="runTest()">Run Test</button>
+    </div>
+
+    <div class="container">
+        <h2>📝 Console Log</h2>
+        <div class="log" id="log"></div>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <script>
+        let logMessages = [];
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logMessages.push(logEntry);
+            
+            const logElement = document.getElementById('log');
+            logElement.textContent = logMessages.join('\n');
+            logElement.scrollTop = logElement.scrollHeight;
+            
+            console.log(`🎯 Simple Test: ${message}`);
+        }
+
+        function clearLog() {
+            logMessages = [];
+            document.getElementById('log').textContent = '';
+        }
+
+        function updateResults(message, className) {
+            const element = document.getElementById('results');
+            element.textContent = message;
+            element.className = `status ${className}`;
+        }
+
+        function runTest() {
+            log('🚀 Starting simple content script test...');
+            log('📍 URL: ' + window.location.href);
+            
+            // Test 1: Check if chrome.runtime is available
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                log('✅ chrome.runtime is available');
+            } else {
+                log('❌ chrome.runtime is NOT available');
+            }
+            
+            // Test 2: Check if window.billableAI exists
+            if (window.billableAI) {
+                log('✅ window.billableAI object found');
+                log(`📋 Available functions: ${Object.keys(window.billableAI).join(', ')}`);
+                
+                // Test 3: Try to call a function
+                try {
+                    const status = window.billableAI.getStatus();
+                    log('✅ getStatus() function works');
+                    log(`📋 Status: ${JSON.stringify(status)}`);
+                    updateResults('✅ Content script is working!', 'success');
+                } catch (error) {
+                    log(`❌ getStatus() failed: ${error.message}`);
+                    updateResults('⚠️ Content script found but function failed', 'warning');
+                }
+            } else {
+                log('❌ window.billableAI object not found');
+                updateResults('❌ Content script not injected', 'error');
+            }
+            
+            // Test 4: Check for any console errors
+            log('🔍 Checking for console errors...');
+            log('📋 Look at the browser console for any error messages');
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            log('🚀 Simple test page loaded');
+            setTimeout(runTest, 1000);
+        });
+    </script>
+</body>
+</html> 

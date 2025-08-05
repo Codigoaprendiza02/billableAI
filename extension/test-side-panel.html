@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI Side Panel Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #fbbf24;
+        }
+        
+        .description {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            color: #e5e7eb;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature h3 {
+            color: #fbbf24;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .feature p {
+            color: #d1d5db;
+            line-height: 1.6;
+        }
+        
+        .instructions {
+            background: rgba(59, 130, 246, 0.2);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 40px;
+            border: 2px solid #3b82f6;
+        }
+        
+        .instructions h2 {
+            color: #60a5fa;
+            margin-bottom: 20px;
+        }
+        
+        .instructions ol {
+            color: #e5e7eb;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .highlight {
+            background: rgba(16, 185, 129, 0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .keyboard-shortcut {
+            background: rgba(139, 92, 246, 0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: #a855f7;
+            font-weight: bold;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚖️ BillableAI Side Panel Test</h1>
+        <p class="description">
+            Test the BillableAI extension side panel functionality. The extension should appear as a panel on the right side of the screen, similar to the Gemini extension.
+        </p>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>🎯 Smart Email Detection</h3>
+                <p>Automatically detects billable emails using AI-powered keyword analysis. Identifies legal, business, and time-sensitive communications.</p>
+            </div>
+            
+            <div class="feature">
+                <h3>⏱️ Time Tracking</h3>
+                <p>Track time spent on email composition with real-time updates. Automatically generates billing summaries for billable activities.</p>
+            </div>
+            
+            <div class="feature">
+                <h3>🤖 AI Summaries</h3>
+                <p>Generate professional billing summaries using Google Gemini AI. Includes time spent, activity type, and billable categorization.</p>
+            </div>
+            
+            <div class="feature">
+                <h3>📊 Work History</h3>
+                <p>View your complete work history with detailed analytics. Track billable hours, email summaries, and productivity metrics.</p>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h2>🚀 How to Test the Side Panel</h2>
+            <ol>
+                <li><span class="highlight">Install the Extension</span>: Load the extension in Chrome's developer mode</li>
+                <li><span class="highlight">Toggle Panel</span>: Click the extension icon or use <span class="keyboard-shortcut">Ctrl+Shift+B</span></li>
+                <li><span class="highlight">Test Features</span>: Try the different buttons in the side panel</li>
+                <li><span class="highlight">Time Tracking</span>: Start and stop time tracking to see real-time updates</li>
+                <li><span class="highlight">Email Composition</span>: Test the email composer with billable content</li>
+            </ol>
+        </div>
+        
+        <div class="instructions">
+            <h2>🎨 Side Panel Features</h2>
+            <ol>
+                <li><strong>Position</strong>: Fixed on the right side of the screen</li>
+                <li><strong>Toggle Button</strong>: Small button on the right edge to show/hide</li>
+                <li><strong>Non-Intrusive</strong>: Doesn't interfere with website functionality</li>
+                <li><strong>Responsive</strong>: Adapts to different screen sizes</li>
+                <li><strong>Keyboard Shortcut</strong>: <span class="keyboard-shortcut">Ctrl+Shift+B</span> to toggle</li>
+            </ol>
+        </div>
+        
+        <div class="instructions">
+            <h2>🔧 Technical Implementation</h2>
+            <ol>
+                <li><strong>Content Script</strong>: Injects panel into all web pages</li>
+                <li><strong>Background Script</strong>: Handles extension logic and storage</li>
+                <li><strong>CSS Styling</strong>: Ensures proper positioning and styling</li>
+                <li><strong>Message Passing</strong>: Communication between content and background scripts</li>
+                <li><strong>Storage API</strong>: Persists time tracking and settings data</li>
+            </ol>
+        </div>
+    </div>
+    
+    <script>
+        // Add some interactive elements
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add click effects to features
+            const features = document.querySelectorAll('.feature');
+            features.forEach(feature => {
+                feature.addEventListener('click', () => {
+                    feature.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        feature.style.transform = 'translateY(-5px)';
+                    }, 150);
+                });
+            });
+            
+            // Add keyboard shortcut listener
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.shiftKey && e.key === 'B') {
+                    e.preventDefault();
+                    alert('BillableAI Panel Toggle Shortcut Pressed! (Ctrl+Shift+B)');
+                }
+            });
+            
+            // Add some dynamic content
+            setInterval(() => {
+                const now = new Date();
+                document.title = `BillableAI Test - ${now.toLocaleTimeString()}`;
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI - All Websites Test</title>
+    <style>
+        /* Simulate different website layouts */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f5f5;
+        }
+        
+        /* Header - like a typical website */
+        .header {
+            background: #333;
+            color: white;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        /* Navigation */
+        .nav {
+            background: #444;
+            padding: 10px 20px;
+            border-bottom: 1px solid #555;
+        }
+        
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 20px;
+            padding: 5px 10px;
+        }
+        
+        .nav a:hover {
+            background: #555;
+            border-radius: 3px;
+        }
+        
+        /* Main content area */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            min-height: 80vh;
+        }
+        
+        /* Sidebar - like many websites have */
+        .sidebar {
+            float: left;
+            width: 250px;
+            background: #f0f0f0;
+            padding: 20px;
+            margin-right: 20px;
+            border-radius: 5px;
+        }
+        
+        .content {
+            margin-left: 270px;
+            padding: 20px;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        /* Test sections */
+        .test-section {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .test-section h3 {
+            color: #1976d2;
+            margin-top: 0;
+        }
+        
+        .success {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .warning {
+            background: rgba(255, 152, 0, 0.1);
+            color: #f57c00;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .keyboard-shortcut {
+            background: #673ab7;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .sidebar {
+                float: none;
+                width: auto;
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+            
+            .content {
+                margin-left: 0;
+            }
+        }
+        
+        /* Content that should be preserved */
+        .preserved-content {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 5px;
+            border: 2px solid #ff9800;
+            margin: 15px 0;
+        }
+        
+        .preserved-content h4 {
+            color: #e65100;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>🌐 BillableAI - All Websites Test</h1>
+    </div>
+    
+    <!-- Navigation -->
+    <div class="nav">
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#services">Services</a>
+        <a href="#contact">Contact</a>
+        <a href="#blog">Blog</a>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h3>📋 Quick Links</h3>
+            <ul>
+                <li><a href="#test1">Test Section 1</a></li>
+                <li><a href="#test2">Test Section 2</a></li>
+                <li><a href="#test3">Test Section 3</a></li>
+                <li><a href="#test4">Test Section 4</a></li>
+            </ul>
+            
+            <h3>📊 Statistics</h3>
+            <p>This sidebar should remain visible when the BillableAI panel opens.</p>
+            <div style="background: #e8f5e8; padding: 10px; border-radius: 4px;">
+                <strong>Active Users:</strong> 1,234<br>
+                <strong>Page Views:</strong> 5,678<br>
+                <strong>Bounce Rate:</strong> 23%
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="content">
+            <h2>🧪 Testing BillableAI Extension</h2>
+            <p>This page simulates a typical website layout to test how the BillableAI extension behaves on different types of websites.</p>
+            
+            <div class="test-section">
+                <h3>✅ Expected Behavior</h3>
+                <ul>
+                    <li><span class="success">Panel should NOT open automatically</span></li>
+                    <li><span class="success">Click the blue toggle button (⚖️) on the right edge</span></li>
+                    <li><span class="success">Content should shift left, not be cut off</span></li>
+                    <li><span class="success">Sidebar and all content should remain visible</span></li>
+                    <li><span class="success">Panel should close when you click the X or toggle button</span></li>
+                    <li><span class="success">Keyboard shortcut <span class="keyboard-shortcut">Ctrl+Shift+B</span> should work</span></li>
+                </ul>
+            </div>
+            
+            <div class="preserved-content">
+                <h4>🎯 This Content Must Stay Visible</h4>
+                <p>When you open the BillableAI panel, this content should shift to the left but remain fully visible. It should NOT be cut off or hidden behind the panel.</p>
+                <p><strong>Test:</strong> Open the panel and verify this text is still readable!</p>
+            </div>
+            
+            <div class="test-section">
+                <h3>📱 Responsive Layout Test</h3>
+                <p>This page has a sidebar and main content area. The BillableAI extension should work properly with this layout:</p>
+                <ul>
+                    <li>Sidebar should remain visible and accessible</li>
+                    <li>Main content should shift left appropriately</li>
+                    <li>No content should be hidden or cut off</li>
+                    <li>Layout should remain functional</li>
+                </ul>
+            </div>
+            
+            <div class="preserved-content">
+                <h4>📊 Another Important Content Area</h4>
+                <p>This is another section that must remain visible when the panel is open. The extension should handle multiple content areas properly.</p>
+                <p>Try opening and closing the panel multiple times to test consistency.</p>
+            </div>
+            
+            <div class="test-section">
+                <h3>🔧 Technical Test Points</h3>
+                <ol>
+                    <li><strong>Manual Opening:</strong> Panel should only open when you click the toggle button</li>
+                    <li><strong>Content Preservation:</strong> All website content should remain visible</li>
+                    <li><strong>Smooth Animation:</strong> Content should shift smoothly, not jump</li>
+                    <li><strong>Proper Cleanup:</strong> Content should return to original position when panel closes</li>
+                    <li><strong>Cross-Site Compatibility:</strong> Should work on different website layouts</li>
+                </ol>
+            </div>
+            
+            <div class="preserved-content">
+                <h4>🎨 Layout Preservation Test</h4>
+                <p>This content area tests whether the extension properly preserves website layouts. The sidebar should stay on the left, and this content should shift appropriately.</p>
+                <p><strong>Key Test:</strong> Open the panel and verify the overall page layout is maintained!</p>
+            </div>
+            
+            <div class="test-section">
+                <h3>📋 Test Checklist</h3>
+                <ul>
+                    <li>✅ Panel does NOT open automatically</li>
+                    <li>✅ Toggle button is visible on right edge</li>
+                    <li>✅ Clicking toggle opens panel</li>
+                    <li>✅ Content shifts left (not cut off)</li>
+                    <li>✅ Sidebar remains visible and functional</li>
+                    <li>✅ Panel closes with X button</li>
+                    <li>✅ Panel closes with toggle button</li>
+                    <li>✅ Keyboard shortcut works</li>
+                    <li>✅ Content returns to original position</li>
+                    <li>✅ No content is lost or hidden</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2024 BillableAI Test Website. This footer should also remain visible when the panel is open.</p>
+    </div>
+    
+    <script>
+        // Add some interactive elements
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('BillableAI All Websites Test Page Loaded');
+            
+            // Add click effects to test sections
+            const testSections = document.querySelectorAll('.test-section');
+            testSections.forEach(section => {
+                section.addEventListener('click', () => {
+                    section.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        section.style.transform = 'scale(1)';
+                    }, 150);
+                });
+            });
+            
+            // Monitor for BillableAI elements
+            setInterval(() => {
+                const panel = document.getElementById('billableai-panel');
+                const toggle = document.getElementById('billableai-toggle');
+                
+                if (panel && toggle) {
+                    console.log('✅ BillableAI elements found and working');
+                    
+                    // Check if panel is visible
+                    if (panel.style.transform === 'translateX(0px)') {
+                        console.log('📊 Panel is currently open');
+                    } else {
+                        console.log('📊 Panel is currently closed');
+                    }
+                } else {
+                    console.log('❌ BillableAI elements not found');
+                }
+            }, 3000);
+            
+            // Add navigation functionality
+            const navLinks = document.querySelectorAll('.nav a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    alert('Navigation link clicked: ' + link.textContent);
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

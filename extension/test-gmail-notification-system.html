@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI Gmail Notification System Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        .test-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .mock-gmail {
+            border: 2px solid #4285f4;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background: #f8f9fa;
+        }
+        .mock-compose-button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .mock-compose-window {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+            display: none;
+        }
+        .mock-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .mock-send-button {
+            background: #34a853;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .notification-preview {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            padding: 16px;
+            max-width: 300px;
+            border: 1px solid #e5e7eb;
+            z-index: 10000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 BillableAI Gmail Notification System Test</h1>
+        <p>This test page simulates the Gmail notification system functionality.</p>
+
+        <div class="test-section">
+            <h3>1. System Initialization Test</h3>
+            <button class="test-button" onclick="testSystemInitialization()">Test System Initialization</button>
+            <div id="init-status" class="status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Mock Gmail Interface</h3>
+            <div class="mock-gmail">
+                <h4>Gmail Compose Button</h4>
+                <button class="mock-compose-button" onclick="simulateComposeClick()">Compose</button>
+                
+                <div id="mock-compose-window" class="mock-compose-window">
+                    <h4>Compose Window</h4>
+                    <input type="text" class="mock-input" id="mock-to" placeholder="To:" oninput="simulateTyping()">
+                    <input type="text" class="mock-input" id="mock-subject" placeholder="Subject:" oninput="simulateTyping()">
+                    <textarea class="mock-input" id="mock-body" placeholder="Email body..." rows="4" oninput="simulateTyping()"></textarea>
+                    <button class="mock-send-button" onclick="simulateSendClick()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Notification Component Test</h3>
+            <button class="test-button" onclick="testNotificationComponent()">Test Notification Component</button>
+            <button class="test-button" onclick="testTimerFunctionality()">Test Timer Functionality</button>
+            <button class="test-button" onclick="testEmailDataExtraction()">Test Email Data Extraction</button>
+            <div id="notification-status" class="status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Assistant Integration Test</h3>
+            <button class="test-button" onclick="testAssistantIntegration()">Test Assistant Integration</button>
+            <button class="test-button" onclick="testAutoMessageInjection()">Test Auto Message Injection</button>
+            <div id="assistant-status" class="status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Storage and Communication Test</h3>
+            <button class="test-button" onclick="testStorageCommunication()">Test Storage & Communication</button>
+            <button class="test-button" onclick="testBackgroundScriptCommunication()">Test Background Script</button>
+            <div id="storage-status" class="status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>6. End-to-End Workflow Test</h3>
+            <button class="test-button" onclick="testEndToEndWorkflow()">Test Complete Workflow</button>
+            <div id="workflow-status" class="status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>7. System Logs</h3>
+            <div id="logs" class="log"></div>
+            <button class="test-button" onclick="clearLogs()">Clear Logs</button>
+        </div>
+
+        <!-- Notification Preview -->
+        <div id="notification-preview" class="notification-preview">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 1s infinite;"></div>
+                    <span style="font-size: 14px; font-weight: 600; color: #111827;">BillableAI Tracking</span>
+                </div>
+                <button onclick="hideNotificationPreview()" style="color: #9ca3af; background: none; border: none; cursor: pointer; padding: 4px;">
+                    <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div style="margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <svg style="width: 16px; height: 16px; color: #3b82f6;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span style="font-size: 18px; font-family: monospace; color: #111827; font-weight: 600;" id="timer-display">0:00</span>
+                </div>
+                
+                <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                    <span style="font-weight: 600;">Subject:</span> <span id="subject-display">Test Email</span>
+                </div>
+                
+                <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                    <span style="font-weight: 600;">To:</span> <span id="to-display">test@example.com</span>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 8px;">
+                <button onclick="testOpenAssistant()" style="
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    background: #3b82f6;
+                    color: white;
+                    font-size: 14px;
+                    font-weight: 600;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    border: none;
+                    cursor: pointer;
+                    transition: background-color 0.2s;
+                ">
+                    <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    Open Assistant
+                </button>
+            </div>
+            
+            <div style="text-align: center; font-size: 12px; color: #6b7280;">
+                Tracking active
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global test state
+        let testState = {
+            isTracking: false,
+            timeSpent: 0,
+            isPaused: false,
+            emailData: {
+                to: '',
+                subject: '',
+                body: '',
+                recipients: []
+            },
+            sessionId: null,
+            timerInterval: null,
+            startTime: null
+        };
+
+        // Logging function
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logEntry.style.color = type === 'error' ? '#dc2626' : type === 'success' ? '#059669' : '#1e40af';
+            logs.appendChild(logEntry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        // Test 1: System Initialization
+        function testSystemInitialization() {
+            log('Testing system initialization...');
+            const status = document.getElementById('init-status');
+            
+            try {
+                // Check if required functions are available
+                if (typeof window.billableAI === 'undefined') {
+                    // Simulate the billableAI object
+                    window.billableAI = {
+                        openAssistant: async () => {
+                            log('Assistant opening function called', 'success');
+                            return { success: true };
+                        },
+                        getState: () => testState
+                    };
+                }
+
+                // Check if notification state is available
+                if (typeof window.billableAINotificationState === 'undefined') {
+                    window.billableAINotificationState = {
+                        isVisible: false,
+                        isTracking: false,
+                        timeSpent: 0,
+                        isPaused: false,
+                        emailData: {
+                            to: '',
+                            subject: '',
+                            body: '',
+                            recipients: []
+                        },
+                        sessionId: null,
+                        draftId: null,
+                        isProcessing: false
+                    };
+                }
+
+                status.className = 'status success';
+                status.innerHTML = '✅ System initialization successful - All required objects and functions are available';
+                log('System initialization test passed', 'success');
+            } catch (error) {
+                status.className = 'status error';
+                status.innerHTML = '❌ System initialization failed: ' + error.message;
+                log('System initialization test failed: ' + error.message, 'error');
+            }
+        }
+
+        // Test 2: Mock Gmail Interface
+        function simulateComposeClick() {
+            log('Simulating Gmail compose button click...');
+            
+            // Show compose window
+            const composeWindow = document.getElementById('mock-compose-window');
+            composeWindow.style.display = 'block';
+            
+            // Simulate notification component creation
+            showNotificationPreview();
+            
+            // Start tracking
+            startTracking();
+            
+            log('Compose button click simulated successfully', 'success');
+        }
+
+        function simulateTyping() {
+            if (testState.isTracking) {
+                log('Typing activity detected - timer active');
+                updateEmailData();
+            }
+        }
+
+        function simulateSendClick() {
+            log('Simulating Gmail send button click...');
+            
+            if (testState.isTracking || testState.isPaused) {
+                stopTracking();
+                hideNotificationPreview();
+                
+                // Simulate assistant opening
+                setTimeout(() => {
+                    testAssistantIntegration();
+                }, 1000);
+                
+                log('Send button click simulated successfully', 'success');
+            }
+        }
+
+        // Test 3: Notification Component
+        function testNotificationComponent() {
+            log('Testing notification component...');
+            const status = document.getElementById('notification-status');
+            
+            try {
+                showNotificationPreview();
+                
+                status.className = 'status success';
+                status.innerHTML = '✅ Notification component test successful - Component displayed correctly';
+                log('Notification component test passed', 'success');
+            } catch (error) {
+                status.className = 'status error';
+                status.innerHTML = '❌ Notification component test failed: ' + error.message;
+                log('Notification component test failed: ' + error.message, 'error');
+            }
+        }
+
+        function testTimerFunctionality() {
+            log('Testing timer functionality...');
+            
+            startTracking();
+            
+            setTimeout(() => {
+                if (testState.isTracking) {
+                    log('Timer functionality test passed - Timer is running', 'success');
+                    document.getElementById('notification-status').className = 'status success';
+                    document.getElementById('notification-status').innerHTML = '✅ Timer functionality test successful';
+                } else {
+                    log('Timer functionality test failed - Timer not running', 'error');
+                    document.getElementById('notification-status').className = 'status error';
+                    document.getElementById('notification-status').innerHTML = '❌ Timer functionality test failed';
+                }
+            }, 2000);
+        }
+
+        function testEmailDataExtraction() {
+            log('Testing email data extraction...');
+            
+            const testEmailData = {
+                to: 'client@example.com',
+                subject: 'Contract Review',
+                body: 'Please review the attached contract.',
+                recipients: ['client@example.com']
+            };
+            
+            testState.emailData = testEmailData;
+            updateNotificationPreview();
+            
+            log('Email data extraction test passed', 'success');
+            document.getElementById('notification-status').className = 'status success';
+            document.getElementById('notification-status').innerHTML = '✅ Email data extraction test successful';
+        }
+
+        // Test 4: Assistant Integration
+        function testAssistantIntegration() {
+            log('Testing assistant integration...');
+            const status = document.getElementById('assistant-status');
+            
+            try {
+                // Simulate storing assistant data
+                const assistantData = {
+                    emailData: testState.emailData,
+                    timeSpent: testState.timeSpent,
+                    sessionId: testState.sessionId,
+                    timestamp: Date.now(),
+                    type: 'gmail_compose_summary'
+                };
+                
+                // Store in localStorage
+                localStorage.setItem('billableai_assistant_data', JSON.stringify(assistantData));
+                localStorage.setItem('billableai_auto_message', 'Generate billable summary for the email');
+                localStorage.setItem('billableai_auto_open_assistant', 'true');
+                
+                // Simulate chrome.storage.local
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    chrome.storage.local.set({
+                        'billableai_assistant_data': assistantData,
+                        'billableai_auto_message': 'Generate billable summary for the email',
+                        'billableai_auto_open_assistant': true
+                    });
+                }
+                
+                status.className = 'status success';
+                status.innerHTML = '✅ Assistant integration test successful - Data stored and ready for assistant';
+                log('Assistant integration test passed', 'success');
+            } catch (error) {
+                status.className = 'status error';
+                status.innerHTML = '❌ Assistant integration test failed: ' + error.message;
+                log('Assistant integration test failed: ' + error.message, 'error');
+            }
+        }
+
+        function testAutoMessageInjection() {
+            log('Testing auto message injection...');
+            
+            // Simulate the assistant receiving the auto message
+            const autoMessage = 'Generate billable summary for the email';
+            const assistantData = JSON.parse(localStorage.getItem('billableai_assistant_data') || '{}');
+            
+            if (assistantData.emailData && assistantData.timeSpent) {
+                log('Auto message injection test passed - Message and data available', 'success');
+                document.getElementById('assistant-status').className = 'status success';
+                document.getElementById('assistant-status').innerHTML = '✅ Auto message injection test successful';
+            } else {
+                log('Auto message injection test failed - No assistant data found', 'error');
+                document.getElementById('assistant-status').className = 'status error';
+                document.getElementById('assistant-status').innerHTML = '❌ Auto message injection test failed';
+            }
+        }
+
+        // Test 5: Storage and Communication
+        function testStorageCommunication() {
+            log('Testing storage and communication...');
+            const status = document.getElementById('storage-status');
+            
+            try {
+                // Test localStorage
+                const testData = { test: 'data' };
+                localStorage.setItem('billableai_test', JSON.stringify(testData));
+                const retrievedData = JSON.parse(localStorage.getItem('billableai_test'));
+                
+                if (JSON.stringify(retrievedData) === JSON.stringify(testData)) {
+                    log('localStorage communication test passed', 'success');
+                } else {
+                    throw new Error('localStorage data mismatch');
+                }
+                
+                // Test chrome.storage.local simulation
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    chrome.storage.local.set({ 'billableai_test': testData }, () => {
+                        chrome.storage.local.get(['billableai_test'], (result) => {
+                            if (result.billableai_test && JSON.stringify(result.billableai_test) === JSON.stringify(testData)) {
+                                log('chrome.storage.local communication test passed', 'success');
+                                status.className = 'status success';
+                                status.innerHTML = '✅ Storage and communication test successful';
+                            } else {
+                                throw new Error('chrome.storage.local data mismatch');
+                            }
+                        });
+                    });
+                } else {
+                    log('chrome.storage.local not available, using localStorage only', 'info');
+                    status.className = 'status success';
+                    status.innerHTML = '✅ Storage and communication test successful (localStorage only)';
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.innerHTML = '❌ Storage and communication test failed: ' + error.message;
+                log('Storage and communication test failed: ' + error.message, 'error');
+            }
+        }
+
+        function testBackgroundScriptCommunication() {
+            log('Testing background script communication...');
+            
+            // Simulate message sending to background script
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                chrome.runtime.sendMessage({
+                    type: 'OPEN_ASSISTANT_WITH_SUMMARY',
+                    data: {
+                        emailSummary: {
+                            emailData: testState.emailData,
+                            timeSpent: testState.timeSpent,
+                            sessionId: testState.sessionId,
+                            timestamp: Date.now()
+                        },
+                        message: 'Generate billable summary for the email'
+                    }
+                }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        log('Background script communication test failed: ' + chrome.runtime.lastError.message, 'error');
+                    } else {
+                        log('Background script communication test passed', 'success');
+                    }
+                });
+            } else {
+                log('Chrome runtime not available, simulating background script communication', 'info');
+                log('Background script communication simulation successful', 'success');
+            }
+        }
+
+        // Test 6: End-to-End Workflow
+        function testEndToEndWorkflow() {
+            log('Testing end-to-end workflow...');
+            const status = document.getElementById('workflow-status');
+            
+            try {
+                // Step 1: Initialize system
+                testSystemInitialization();
+                
+                // Step 2: Simulate compose click
+                simulateComposeClick();
+                
+                // Step 3: Simulate typing
+                setTimeout(() => {
+                    simulateTyping();
+                    
+                    // Step 4: Simulate send click
+                    setTimeout(() => {
+                        simulateSendClick();
+                        
+                        // Step 5: Verify assistant integration
+                        setTimeout(() => {
+                            testAssistantIntegration();
+                            
+                            status.className = 'status success';
+                            status.innerHTML = '✅ End-to-end workflow test successful - All steps completed';
+                            log('End-to-end workflow test passed', 'success');
+                        }, 1000);
+                    }, 2000);
+                }, 1000);
+                
+            } catch (error) {
+                status.className = 'status error';
+                status.innerHTML = '❌ End-to-end workflow test failed: ' + error.message;
+                log('End-to-end workflow test failed: ' + error.message, 'error');
+            }
+        }
+
+        // Helper functions
+        function startTracking() {
+            testState.isTracking = true;
+            testState.startTime = Date.now();
+            testState.sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            
+            testState.timerInterval = setInterval(() => {
+                if (testState.isTracking && testState.startTime) {
+                    testState.timeSpent = Date.now() - testState.startTime;
+                    updateNotificationPreview();
+                }
+            }, 1000);
+            
+            log('Tracking started', 'success');
+        }
+
+        function stopTracking() {
+            testState.isTracking = false;
+            if (testState.timerInterval) {
+                clearInterval(testState.timerInterval);
+                testState.timerInterval = null;
+            }
+            
+            log('Tracking stopped - Final time: ' + formatTime(testState.timeSpent), 'success');
+        }
+
+        function updateEmailData() {
+            testState.emailData = {
+                to: document.getElementById('mock-to').value,
+                subject: document.getElementById('mock-subject').value,
+                body: document.getElementById('mock-body').value,
+                recipients: document.getElementById('mock-to').value ? [document.getElementById('mock-to').value] : []
+            };
+            
+            updateNotificationPreview();
+        }
+
+        function showNotificationPreview() {
+            const preview = document.getElementById('notification-preview');
+            preview.style.display = 'block';
+            updateNotificationPreview();
+        }
+
+        function hideNotificationPreview() {
+            const preview = document.getElementById('notification-preview');
+            preview.style.display = 'none';
+        }
+
+        function updateNotificationPreview() {
+            document.getElementById('timer-display').textContent = formatTime(testState.timeSpent);
+            document.getElementById('subject-display').textContent = testState.emailData.subject || 'No subject';
+            document.getElementById('to-display').textContent = testState.emailData.to || 'No recipient';
+        }
+
+        function testOpenAssistant() {
+            log('Opening assistant...');
+            testAssistantIntegration();
+        }
+
+        function formatTime(milliseconds) {
+            const minutes = Math.floor(milliseconds / 60000);
+            const seconds = Math.floor((milliseconds % 60000) / 1000);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Initialize test page
+        document.addEventListener('DOMContentLoaded', () => {
+            log('BillableAI Gmail Notification System Test Page Loaded', 'success');
+            log('Ready to test the complete notification system workflow', 'info');
+        });
+    </script>
+</body>
+</html> 

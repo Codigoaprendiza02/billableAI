@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Auth Flow</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5;
+            color: #333;
+        }
+        .test-section { 
+            margin: 15px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            background: white;
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .info { color: #007bff; font-weight: bold; }
+        button { 
+            margin: 5px; 
+            padding: 10px 15px; 
+            cursor: pointer; 
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button:hover { background: #0056b3; }
+        .result { 
+            margin-top: 10px; 
+            padding: 10px; 
+            background: #f8f9fa; 
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .console { 
+            background: #000; 
+            color: #0f0; 
+            padding: 10px; 
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 11px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .step { margin: 10px 0; padding: 8px; background: #e9ecef; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Authentication Flow</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Extension Authentication Flow</h3>
+        <button onclick="testExtensionFlow()">Test Extension Flow</button>
+        <div id="extension-flow-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Test localStorage Keys</h3>
+        <button onclick="testLocalStorageKeys()">Test localStorage Keys</button>
+        <div id="localstorage-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Test Simple Auth Implementation</h3>
+        <button onclick="testSimpleAuth()">Test Simple Auth</button>
+        <div id="simple-auth-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Test Persistence Across Contexts</h3>
+        <button onclick="testPersistenceAcrossContexts()">Test Persistence</button>
+        <div id="persistence-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>5. Console Logs</h3>
+        <div id="console-logs" class="console"></div>
+    </div>
+
+    <script>
+        // Simple Auth Implementation (exact copy from simpleAuth.js)
+        const AUTH_TOKEN_KEY = 'billableai_auth_token';
+        const USER_DATA_KEY = 'billableai_user_data';
+
+        class SimpleAuth {
+            constructor() {
+                this.isAuthenticated = false;
+                this.user = null;
+                this.token = null;
+            }
+
+            init() {
+                try {
+                    console.log('🎯 SimpleAuth: Initializing authentication...');
+                    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+                    const userData = localStorage.getItem(USER_DATA_KEY);
+                    
+                    console.log('🎯 SimpleAuth: Token found:', !!token);
+                    console.log('🎯 SimpleAuth: User data found:', !!userData);
+                    
+                    if (token && userData) {
+                        this.token = token;
+                        this.user = JSON.parse(userData);
+                        this.isAuthenticated = true;
+                        console.log('🎯 SimpleAuth: Authentication restored from localStorage');
+                        console.log('🎯 SimpleAuth: User:', this.user.name);
+                        return true;
+                    } else {
+                        this.clear();
+                        console.log('🎯 SimpleAuth: No stored authentication found');
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('🎯 SimpleAuth: Error initializing auth:', error);
+                    this.clear();
+                    return false;
+                }
+            }
+
+            login(token, user) {
+                try {
+                    console.log('🎯 SimpleAuth: Logging in user:', user.name);
+                    
+                    // Store in localStorage
+                    localStorage.setItem(AUTH_TOKEN_KEY, token);
+                    localStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
+                    
+                    // Update state
+                    this.token = token;
+                    this.user = user;
+                    this.isAuthenticated = true;
+                    
+                    console.log('🎯 SimpleAuth: Login successful, data stored');
+                    console.log('🎯 SimpleAuth: Token stored:', !!token);
+                    console.log('🎯 SimpleAuth: User stored:', !!user);
+                    return true;
+                } catch (error) {
+                    console.error('🎯 SimpleAuth: Login error:', error);
+                    return false;
+                }
+            }
+
+            logout() {
+                try {
+                    localStorage.removeItem(AUTH_TOKEN_KEY);
+                    localStorage.removeItem(USER_DATA_KEY);
+                    
+                    this.token = null;
+                    this.user = null;
+                    this.isAuthenticated = false;
+                    
+                    console.log('🎯 SimpleAuth: Logout successful');
+                    return true;
+                } catch (error) {
+                    console.error('🎯 SimpleAuth: Logout error:', error);
+                    return false;
+                }
+            }
+
+            getCurrentUser() {
+                return this.user;
+            }
+
+            getToken() {
+                return this.token;
+            }
+
+            isUserAuthenticated() {
+                return this.isAuthenticated;
+            }
+
+            clear() {
+                this.token = null;
+                this.user = null;
+                this.isAuthenticated = false;
+            }
+        }
+
+        const simpleAuth = new SimpleAuth();
+
+        // Console logging
+        function logToConsole(message) {
+            const consoleDiv = document.getElementById('console-logs');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        // Override console.log to capture logs
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            logToConsole(args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            logToConsole('ERROR: ' + args.join(' '));
+        };
+
+        function displayResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            element.innerHTML = `<div class="${className}">${content}</div>`;
+        }
+
+        function testExtensionFlow() {
+            const result = [];
+            
+            try {
+                console.log('=== TESTING EXTENSION AUTHENTICATION FLOW ===');
+                
+                // Step 1: Simulate AppContext.checkAuth() on extension load
+                console.log('🎯 BillableAI: Starting simple authentication check...');
+                const authRestored = simpleAuth.init();
+                
+                if (authRestored) {
+                    result.push('✅ Step 1: Authentication restored successfully');
+                    
+                    const userData = simpleAuth.getCurrentUser();
+                    if (userData) {
+                        result.push(`✅ Step 1: User data loaded: ${userData.name}`);
+                    }
+                    
+                    if (simpleAuth.isUserAuthenticated()) {
+                        result.push('✅ Step 1: Authentication state set');
+                    }
+                    
+                    console.log('🎯 BillableAI: Authentication complete');
+                } else {
+                    result.push('❌ Step 1: Authentication restoration failed');
+                    console.log('🎯 BillableAI: No authentication found, starting fresh');
+                }
+
+                // Step 2: Simulate user login (like AppContext.login)
+                console.log('🎯 BillableAI: Login attempt for username: testuser');
+                const mockResponse = {
+                    success: true,
+                    token: 'mock_token_' + Date.now(),
+                    user: {
+                        id: 'test_user_123',
+                        username: 'testuser',
+                        email: 'test@example.com',
+                        name: 'Test User',
+                        profession: 'Lawyer'
+                    }
+                };
+                
+                console.log('🎯 BillableAI: Login response:', mockResponse);
+                console.log('🎯 BillableAI: Login successful, storing auth data...');
+                
+                const loginSuccess = simpleAuth.login(mockResponse.token, mockResponse.user);
+                
+                if (loginSuccess) {
+                    result.push('✅ Step 2: Login successful');
+                    result.push('✅ Step 2: Auth data stored');
+                } else {
+                    result.push('❌ Step 2: Login failed');
+                }
+
+                // Step 3: Simulate popup close/reopen (clear and reinitialize)
+                console.log('🎯 BillableAI: Simulating popup close/reopen...');
+                simpleAuth.clear();
+                result.push('✅ Step 3: Popup closed (state cleared)');
+                
+                // Step 4: Simulate popup reopen (AppContext.checkAuth again)
+                console.log('🎯 BillableAI: Starting simple authentication check... (popup reopen)');
+                const authRestoredAgain = simpleAuth.init();
+                
+                if (authRestoredAgain) {
+                    result.push('✅ Step 4: Authentication restored after popup reopen');
+                    
+                    const userDataAgain = simpleAuth.getCurrentUser();
+                    if (userDataAgain) {
+                        result.push(`✅ Step 4: User data restored: ${userDataAgain.name}`);
+                    }
+                    
+                    if (simpleAuth.isUserAuthenticated()) {
+                        result.push('✅ Step 4: Authentication state maintained');
+                    }
+                } else {
+                    result.push('❌ Step 4: Authentication restoration failed after popup reopen');
+                }
+
+                // Clean up
+                simpleAuth.logout();
+                result.push('✅ Cleanup completed');
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+            }
+
+            displayResult('extension-flow-result', result.join('<br>'), 'success');
+        }
+
+        function testLocalStorageKeys() {
+            const result = [];
+            
+            try {
+                console.log('=== TESTING LOCALSTORAGE KEYS ===');
+                
+                // Test storing with correct keys
+                const testToken = 'test_token_' + Date.now();
+                const testUser = {
+                    id: 'test_user_456',
+                    username: 'testuser',
+                    email: 'test@example.com',
+                    name: 'Test User',
+                    profession: 'Attorney'
+                };
+
+                localStorage.setItem(AUTH_TOKEN_KEY, testToken);
+                localStorage.setItem(USER_DATA_KEY, JSON.stringify(testUser));
+                
+                result.push('✅ Data stored with correct keys');
+                
+                // Verify storage
+                const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
+                const storedUser = localStorage.getItem(USER_DATA_KEY);
+                
+                if (storedToken === testToken && storedUser) {
+                    result.push('✅ Data verified in localStorage');
+                    
+                    const userData = JSON.parse(storedUser);
+                    if (userData.name === testUser.name) {
+                        result.push('✅ User data verified');
+                    } else {
+                        result.push('❌ User data verification failed');
+                    }
+                } else {
+                    result.push('❌ Storage verification failed');
+                }
+
+                // Check for old keys (should not exist)
+                const oldToken = localStorage.getItem('authToken');
+                const oldUser = localStorage.getItem('user');
+                
+                if (!oldToken && !oldUser) {
+                    result.push('✅ Old keys not used (correct)');
+                } else {
+                    result.push('❌ Old keys still present (incorrect)');
+                }
+
+                // Clean up
+                localStorage.removeItem(AUTH_TOKEN_KEY);
+                localStorage.removeItem(USER_DATA_KEY);
+                result.push('✅ Cleanup completed');
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+            }
+
+            displayResult('localstorage-result', result.join('<br>'), 'success');
+        }
+
+        function testSimpleAuth() {
+            const result = [];
+            
+            try {
+                console.log('=== TESTING SIMPLE AUTH IMPLEMENTATION ===');
+                
+                // Test login
+                const testToken = 'simple_auth_token_' + Date.now();
+                const testUser = {
+                    id: 'simple_auth_user_789',
+                    username: 'simpleauthuser',
+                    email: 'simpleauth@example.com',
+                    name: 'Simple Auth User',
+                    profession: 'Solicitor'
+                };
+
+                const loginSuccess = simpleAuth.login(testToken, testUser);
+                if (loginSuccess) {
+                    result.push('✅ Login successful');
+                    
+                    // Test immediate state
+                    if (simpleAuth.isUserAuthenticated()) {
+                        result.push('✅ Authentication state set');
+                    } else {
+                        result.push('❌ Authentication state not set');
+                    }
+                    
+                    const user = simpleAuth.getCurrentUser();
+                    if (user && user.name === testUser.name) {
+                        result.push('✅ User data accessible');
+                    } else {
+                        result.push('❌ User data not accessible');
+                    }
+                    
+                    const token = simpleAuth.getToken();
+                    if (token === testToken) {
+                        result.push('✅ Token accessible');
+                    } else {
+                        result.push('❌ Token not accessible');
+                    }
+                } else {
+                    result.push('❌ Login failed');
+                }
+
+                // Test logout
+                const logoutSuccess = simpleAuth.logout();
+                if (logoutSuccess) {
+                    result.push('✅ Logout successful');
+                    
+                    if (!simpleAuth.isUserAuthenticated()) {
+                        result.push('✅ Authentication state cleared');
+                    } else {
+                        result.push('❌ Authentication state not cleared');
+                    }
+                } else {
+                    result.push('❌ Logout failed');
+                }
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+            }
+
+            displayResult('simple-auth-result', result.join('<br>'), 'success');
+        }
+
+        function testPersistenceAcrossContexts() {
+            const result = [];
+            
+            try {
+                console.log('=== TESTING PERSISTENCE ACROSS CONTEXTS ===');
+                
+                // Step 1: Login in current context
+                const testToken = 'persistence_token_' + Date.now();
+                const testUser = {
+                    id: 'persistence_user_123',
+                    username: 'persistenceuser',
+                    email: 'persistence@example.com',
+                    name: 'Persistence User',
+                    profession: 'Lawyer'
+                };
+
+                simpleAuth.login(testToken, testUser);
+                result.push('✅ Step 1: Login in current context');
+                
+                // Step 2: Verify data is in localStorage
+                const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
+                const storedUser = localStorage.getItem(USER_DATA_KEY);
+                
+                if (storedToken && storedUser) {
+                    result.push('✅ Step 2: Data stored in localStorage');
+                } else {
+                    result.push('❌ Step 2: Data not stored in localStorage');
+                }
+                
+                // Step 3: Clear state (simulate context change)
+                simpleAuth.clear();
+                result.push('✅ Step 3: State cleared (context change)');
+                
+                // Step 4: Reinitialize (simulate new context)
+                const restored = simpleAuth.init();
+                if (restored) {
+                    result.push('✅ Step 4: Authentication restored in new context');
+                    
+                    if (simpleAuth.isUserAuthenticated()) {
+                        result.push('✅ Step 4: Authentication state maintained');
+                        
+                        const user = simpleAuth.getCurrentUser();
+                        if (user && user.name === testUser.name) {
+                            result.push('✅ Step 4: User data restored');
+                        } else {
+                            result.push('❌ Step 4: User data not restored');
+                        }
+                    } else {
+                        result.push('❌ Step 4: Authentication state lost');
+                    }
+                } else {
+                    result.push('❌ Step 4: Authentication restoration failed');
+                }
+                
+                // Clean up
+                simpleAuth.logout();
+                result.push('✅ Cleanup completed');
+
+            } catch (error) {
+                result.push(`❌ Error: ${error.message}`);
+            }
+
+            displayResult('persistence-result', result.join('<br>'), 'success');
+        }
+
+        // Auto-run localStorage test on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('=== PAGE LOADED ===');
+                testLocalStorageKeys();
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

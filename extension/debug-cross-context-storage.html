@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillableAI - Cross-Context Storage Debug</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f7fafc;
+            color: #2d3748;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .debug-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        .debug-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .debug-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 5px;
+            transition: all 0.2s;
+        }
+        .debug-button:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+        .debug-button.secondary {
+            background: #718096;
+        }
+        .debug-button.secondary:hover {
+            background: #4a5568;
+        }
+        .debug-button.danger {
+            background: #e53e3e;
+        }
+        .debug-button.danger:hover {
+            background: #c53030;
+        }
+        .debug-button.success {
+            background: #38a169;
+        }
+        .debug-button.success:hover {
+            background: #2f855a;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .status.info {
+            background: #bee3f8;
+            color: #2b6cb0;
+            border: 1px solid #90cdf4;
+        }
+        .status.success {
+            background: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+        .status.error {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+        .status.warning {
+            background: #fef5e7;
+            color: #c05621;
+            border: 1px solid #fbd38d;
+        }
+        .result-box {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+            white-space: pre-wrap;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        .step-list {
+            background: #f7fafc;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .step-list ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .step-list li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .step-list strong {
+            color: #2d3748;
+        }
+        .context-info {
+            background: #edf2f7;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .context-info h4 {
+            margin: 0 0 10px 0;
+            color: #2d3748;
+        }
+        .context-info ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .context-info li {
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 BillableAI</h1>
+            <p>Cross-Context Storage Debug Tool</p>
+        </div>
+        <div class="content">
+            <div class="debug-section">
+                <div class="debug-title">🔍 Issue Analysis</div>
+                <div style="color: #4a5568; line-height: 1.6;">
+                    <p><strong>Problem:</strong> Email data stored in Gmail context is not accessible by the Assistant in extension popup context.</p>
+                    <p><strong>Root Cause:</strong> Cross-context communication issue between Gmail content script and extension popup.</p>
+                    <p><strong>Solution:</strong> Use chrome.storage.local as primary storage mechanism for cross-context data sharing.</p>
+                </div>
+            </div>
+
+            <div class="debug-section">
+                <div class="debug-title">🧪 Debug Controls</div>
+                <div style="margin: 20px 0;">
+                    <button class="debug-button" onclick="simulateGmailStorage()">Simulate Gmail Storage</button>
+                    <button class="debug-button secondary" onclick="checkChromeStorage()">Check Chrome Storage</button>
+                    <button class="debug-button secondary" onclick="checkLocalStorage()">Check Local Storage</button>
+                    <button class="debug-button success" onclick="simulateAssistantAccess()">Simulate Assistant Access</button>
+                    <button class="debug-button danger" onclick="clearAllStorage()">Clear All Storage</button>
+                    <button class="debug-button" onclick="runFullTest()">Run Full Test</button>
+                </div>
+            </div>
+
+            <div class="debug-section">
+                <div class="debug-title">📊 Debug Status</div>
+                <div id="status" class="status info">Ready to debug cross-context storage</div>
+                <div id="results" class="result-box" style="display: none;"></div>
+            </div>
+
+            <div class="grid">
+                <div class="debug-section">
+                    <div class="debug-title">📋 Manual Debug Steps</div>
+                    <div class="step-list">
+                        <ol>
+                            <li><strong>Open Gmail:</strong> Go to Gmail and compose an email</li>
+                            <li><strong>Send Email:</strong> Click send button to trigger data storage</li>
+                            <li><strong>Check Gmail Console:</strong> Open DevTools for Gmail tab</li>
+                            <li><strong>Run Chrome Storage Check:</strong> Execute the chrome.storage.local check command</li>
+                            <li><strong>Open Extension:</strong> Click BillableAI extension icon</li>
+                            <li><strong>Navigate to Assistant:</strong> Go to Assistant page in extension</li>
+                            <li><strong>Check Extension Console:</strong> Open DevTools for extension popup</li>
+                            <li><strong>Run Assistant Check:</strong> Execute the chrome.storage.local check command</li>
+                            <li><strong>Compare Results:</strong> Verify data consistency between contexts</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="debug-section">
+                    <div class="debug-title">🔧 Console Commands</div>
+                    <div class="code-block">
+// Check chrome.storage.local in Gmail context
+chrome.storage.local.get(['billableAI_emailSummary'], (result) => {
+  console.log('Gmail context chrome.storage.local:', result);
+});
+
+// Check chrome.storage.local in Extension context
+chrome.storage.local.get(['billableAI_emailSummary'], (result) => {
+  console.log('Extension context chrome.storage.local:', result);
+});
+
+// Check localStorage in Gmail context
+console.log('Gmail context localStorage:', localStorage.getItem('billableAI_emailSummary'));
+
+// Check localStorage in Extension context
+console.log('Extension context localStorage:', localStorage.getItem('billableAI_emailSummary'));
+
+// Clear chrome.storage.local
+chrome.storage.local.remove(['billableAI_emailSummary'], () => {
+  console.log('chrome.storage.local cleared');
+});
+
+// Clear localStorage
+localStorage.removeItem('billableAI_emailSummary');
+console.log('localStorage cleared');
+                    </div>
+                </div>
+            </div>
+
+            <div class="debug-section">
+                <div class="debug-title">🎯 Context Information</div>
+                <div class="context-info">
+                    <h4>Gmail Context (Content Script):</h4>
+                    <ul>
+                        <li>Runs in Gmail's origin (mail.google.com)</li>
+                        <li>Has access to Gmail DOM elements</li>
+                        <li>Stores data in chrome.storage.local (shared)</li>
+                        <li>Also stores in localStorage (Gmail context only)</li>
+                    </ul>
+                    <h4>Extension Context (Popup):</h4>
+                    <ul>
+                        <li>Runs in extension's origin (chrome-extension://)</li>
+                        <li>Has access to extension APIs</li>
+                        <li>Can read from chrome.storage.local (shared)</li>
+                        <li>Has separate localStorage (extension context only)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="debug-section">
+                <div class="debug-title">✅ Expected Results</div>
+                <div style="color: #4a5568; line-height: 1.6;">
+                    <p><strong>✅ Gmail Storage:</strong> Data should be stored in chrome.storage.local with autoProcess: true</p>
+                    <p><strong>✅ Cross-Context Access:</strong> Assistant should find data in chrome.storage.local</p>
+                    <p><strong>✅ Data Structure:</strong> Should contain emailData, timeSpent, and autoProcess fields</p>
+                    <p><strong>✅ Auto Processing:</strong> Assistant should auto-process when data is found</p>
+                    <p><strong>✅ Cleanup:</strong> Data should be deleted after processing</p>
+                </div>
+            </div>
+
+            <div class="debug-section">
+                <div class="debug-title">🐛 Common Issues</div>
+                <div style="color: #4a5568; line-height: 1.6;">
+                    <p><strong>❌ Data not stored:</strong> Check if Gmail content script is running and capturing email data</p>
+                    <p><strong>❌ Data not accessible:</strong> Verify chrome.storage.local is being used as primary storage</p>
+                    <p><strong>❌ Auto-process not working:</strong> Check if autoProcess flag is set to true</p>
+                    <p><strong>❌ Context isolation:</strong> Ensure not relying on localStorage for cross-context communication</p>
+                    <p><strong>❌ Timing issues:</strong> Check if Assistant loads before data is stored</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let debugResults = [];
+
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        function addResult(message) {
+            debugResults.push(`[${new Date().toLocaleTimeString()}] ${message}`);
+            const results = document.getElementById('results');
+            results.textContent = debugResults.join('\n');
+            results.style.display = 'block';
+        }
+
+        async function simulateGmailStorage() {
+            updateStatus('Simulating Gmail email data storage...', 'info');
+            addResult('Simulating Gmail storage...');
+            
+            const emailData = {
+                subject: 'Test Email Subject',
+                body: 'This is a test email body content for debugging purposes.',
+                to: 'test@example.com',
+                cc: 'cc@example.com',
+                bcc: 'bcc@example.com'
+            };
+            
+            const timeSpent = 120; // 2 minutes
+            
+            const summaryData = {
+                emailData: emailData,
+                timeSpent: timeSpent,
+                autoProcess: true,
+                timestamp: Date.now()
+            };
+            
+            try {
+                // Store in chrome.storage.local (primary)
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    await chrome.storage.local.set({ 'billableAI_emailSummary': summaryData });
+                    addResult('✅ Data stored in chrome.storage.local successfully');
+                } else {
+                    addResult('❌ chrome.storage.local not available');
+                }
+                
+                // Store in localStorage (fallback)
+                localStorage.setItem('billableAI_emailSummary', JSON.stringify(summaryData));
+                addResult('✅ Data stored in localStorage as fallback');
+                
+                updateStatus('Gmail storage simulation completed', 'success');
+            } catch (error) {
+                addResult(`❌ Error storing data: ${error.message}`);
+                updateStatus('Gmail storage simulation failed', 'error');
+            }
+        }
+
+        async function checkChromeStorage() {
+            updateStatus('Checking chrome.storage.local...', 'info');
+            addResult('Checking chrome.storage.local...');
+            
+            try {
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    const result = await chrome.storage.local.get(['billableAI_emailSummary']);
+                    if (result.billableAI_emailSummary) {
+                        addResult('✅ Found data in chrome.storage.local:');
+                        addResult(JSON.stringify(result.billableAI_emailSummary, null, 2));
+                        updateStatus('Data found in chrome.storage.local', 'success');
+                    } else {
+                        addResult('❌ No data found in chrome.storage.local');
+                        updateStatus('No data in chrome.storage.local', 'warning');
+                    }
+                } else {
+                    addResult('❌ chrome.storage.local not available');
+                    updateStatus('chrome.storage.local not available', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Error checking chrome.storage.local: ${error.message}`);
+                updateStatus('Error checking chrome.storage.local', 'error');
+            }
+        }
+
+        function checkLocalStorage() {
+            updateStatus('Checking localStorage...', 'info');
+            addResult('Checking localStorage...');
+            
+            try {
+                const storedData = localStorage.getItem('billableAI_emailSummary');
+                if (storedData) {
+                    const parsed = JSON.parse(storedData);
+                    addResult('✅ Found data in localStorage:');
+                    addResult(JSON.stringify(parsed, null, 2));
+                    updateStatus('Data found in localStorage', 'success');
+                } else {
+                    addResult('❌ No data found in localStorage');
+                    updateStatus('No data in localStorage', 'warning');
+                }
+            } catch (error) {
+                addResult(`❌ Error checking localStorage: ${error.message}`);
+                updateStatus('Error checking localStorage', 'error');
+            }
+        }
+
+        async function simulateAssistantAccess() {
+            updateStatus('Simulating Assistant access to stored data...', 'info');
+            addResult('Simulating Assistant access...');
+            
+            try {
+                // Check chrome.storage.local first (like Assistant does)
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    const result = await chrome.storage.local.get(['billableAI_emailSummary']);
+                    if (result.billableAI_emailSummary && result.billableAI_emailSummary.autoProcess) {
+                        addResult('✅ Assistant found auto-process data in chrome.storage.local');
+                        addResult(`Email: ${result.billableAI_emailSummary.emailData.subject}`);
+                        addResult(`Time: ${result.billableAI_emailSummary.timeSpent} seconds`);
+                        updateStatus('Assistant successfully accessed data', 'success');
+                    } else {
+                        addResult('❌ Assistant did not find auto-process data in chrome.storage.local');
+                        updateStatus('Assistant could not access data', 'error');
+                    }
+                } else {
+                    addResult('❌ chrome.storage.local not available for Assistant');
+                    updateStatus('chrome.storage.local not available', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Error in Assistant access simulation: ${error.message}`);
+                updateStatus('Assistant access simulation failed', 'error');
+            }
+        }
+
+        async function clearAllStorage() {
+            updateStatus('Clearing all storage...', 'info');
+            addResult('Clearing all storage...');
+            
+            try {
+                // Clear chrome.storage.local
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    await chrome.storage.local.remove(['billableAI_emailSummary']);
+                    addResult('✅ chrome.storage.local cleared');
+                }
+                
+                // Clear localStorage
+                localStorage.removeItem('billableAI_emailSummary');
+                addResult('✅ localStorage cleared');
+                
+                updateStatus('All storage cleared successfully', 'success');
+            } catch (error) {
+                addResult(`❌ Error clearing storage: ${error.message}`);
+                updateStatus('Error clearing storage', 'error');
+            }
+        }
+
+        async function runFullTest() {
+            updateStatus('Running full cross-context test...', 'info');
+            addResult('=== FULL CROSS-CONTEXT TEST ===');
+            
+            // Step 1: Clear all storage
+            addResult('Step 1: Clearing all storage...');
+            await clearAllStorage();
+            
+            // Step 2: Simulate Gmail storage
+            addResult('Step 2: Simulating Gmail storage...');
+            await simulateGmailStorage();
+            
+            // Step 3: Check chrome.storage.local
+            addResult('Step 3: Checking chrome.storage.local...');
+            await checkChromeStorage();
+            
+            // Step 4: Simulate Assistant access
+            addResult('Step 4: Simulating Assistant access...');
+            await simulateAssistantAccess();
+            
+            addResult('=== TEST COMPLETED ===');
+            updateStatus('Full test completed', 'success');
+        }
+
+        // Initialize debug tools
+        window.billableAIDebug = {
+            simulateGmailStorage,
+            checkChromeStorage,
+            checkLocalStorage,
+            simulateAssistantAccess,
+            clearAllStorage,
+            runFullTest
+        };
+
+        updateStatus('Debug tool ready. Use buttons above or console commands.', 'info');
+    </script>
+</body>
+</html> 

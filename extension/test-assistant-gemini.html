@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Assistant Gemini Integration</title>
+</head>
+<body>
+    <h1>Test Assistant Gemini Integration</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        import GeminiService from './src/services/geminiService.js';
+
+        async function testAssistantGemini() {
+            const resultsDiv = document.getElementById('results');
+            let debugLog = [];
+            
+            function log(message) {
+                console.log(message);
+                debugLog.push(message);
+            }
+            
+            try {
+                log('🔧 Testing Assistant Gemini integration...');
+                
+                // Step 1: Create GeminiService (like AppContext does)
+                log('📋 Step 1: Creating GeminiService...');
+                const geminiService = new GeminiService();
+                log(`✅ GeminiService created: ${typeof geminiService}`);
+                
+                // Step 2: Initialize GeminiService (like AppContext does)
+                log('📋 Step 2: Initializing GeminiService...');
+                try {
+                    await geminiService.initialize();
+                    log('✅ GeminiService initialized');
+                } catch (error) {
+                    log(`❌ GeminiService initialization failed: ${error.message}`);
+                }
+                
+                // Step 3: Check if service is ready (like Assistant does)
+                log('📋 Step 3: Checking if service is ready...');
+                const isReady = geminiService.isReady();
+                log(`✅ Service ready: ${isReady}`);
+                
+                // Step 4: Test connection (like Assistant does)
+                log('📋 Step 4: Testing connection...');
+                try {
+                    const testResult = await geminiService.testConnection();
+                    log(`✅ Connection test: ${JSON.stringify(testResult)}`);
+                } catch (error) {
+                    log(`❌ Connection test failed: ${error.message}`);
+                }
+                
+                // Step 5: Try to generate summary (like Assistant does)
+                log('📋 Step 5: Testing summary generation...');
+                const testEmailData = {
+                    subject: 'Test Email',
+                    to: 'test@example.com',
+                    body: 'This is a test email for Assistant integration testing.'
+                };
+                
+                try {
+                    if (geminiService && geminiService.isReady()) {
+                        log('🎯 BillableAI: Generating response with Gemini 2.5 Pro');
+                        const response = await geminiService.generateBillableSummary(testEmailData, 300000);
+                        log(`✅ Gemini response generated! Length: ${response?.length || 0} characters`);
+                        log(`📋 Response preview: ${response?.substring(0, 100)}...`);
+                    } else {
+                        log('🎯 BillableAI: Gemini service not ready, using fallback');
+                        log('❌ This is why the Assistant is falling back!');
+                    }
+                } catch (error) {
+                    log(`❌ Error generating Gemini response: ${error.message}`);
+                }
+                
+                // Display results
+                resultsDiv.innerHTML = `
+                    <h2>Test Results:</h2>
+                    <pre>${debugLog.join('\n')}</pre>
+                `;
+                
+            } catch (error) {
+                log(`❌ Test failed: ${error.message}`);
+                resultsDiv.innerHTML = `
+                    <h2>Test Failed:</h2>
+                    <pre>${debugLog.join('\n')}</pre>
+                    <h3>Error:</h3>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+
+        testAssistantGemini();
+    </script>
+</body>
+</html> 
