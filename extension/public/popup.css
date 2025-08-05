@@ -1,0 +1,43 @@
+/* Basic styles for the popup */
+body {
+  margin: 0;
+  padding: 0;
+  width: 384px;
+  height: 600px;
+  overflow: hidden;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  background-image: linear-gradient(135deg, #000000 0%, #3432c7 60%, #7b8cff 100%);
+  color: white;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(135deg, #000000 0%, #3432c7 60%, #7b8cff 100%);
+}
+
+/* Glass card effect */
+.glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+}
+
+/* Dotted border */
+.dotted-border {
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+}
+
+/* Gradient backgrounds */
+.from-billable-dark {
+  --tw-gradient-from: #000000;
+}
+
+.via-billable-primary {
+  --tw-gradient-via: #3432c7;
+}
+
+.to-billable-light {
+  --tw-gradient-to: #7b8cff;
+} 

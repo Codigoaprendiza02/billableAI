@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Fixes Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        .status {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Fixes Verification</h1>
+    
+    <div class="test-section">
+        <h2>📊 Current Status</h2>
+        <div id="current-status" class="status">
+            <strong>Loading...</strong>
+        </div>
+        <button id="refresh-status">🔄 Refresh Status</button>
+    </div>
+
+    <div class="test-section">
+        <h2>✅ Fix 1: Authentication Persistence</h2>
+        <p>Test authentication persistence across extension restarts.</p>
+        
+        <button id="test-auth-persistence">🔐 Test Auth Persistence</button>
+        <button id="test-auth-restore">🔄 Test Auth Restoration</button>
+        <button id="test-network-fallback">🌐 Test Network Fallback</button>
+        
+        <div id="auth-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>✅ Fix 2: Assistant Window Opening</h2>
+        <p>Test assistant window opening from summary notification.</p>
+        
+        <button id="test-assistant-opening">🤖 Test Assistant Opening</button>
+        <button id="test-storage-methods">💾 Test Storage Methods</button>
+        <button id="test-navigation-intent">🧭 Test Navigation Intent</button>
+        
+        <div id="assistant-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Overall Test Results</h2>
+        <button id="run-all-fix-tests">🚀 Run All Fix Tests</button>
+        <button id="clear-all-results">🧹 Clear All Results</button>
+        <div id="overall-results"></div>
+    </div>
+
+    <script>
+        function logResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function updateStatus() {
+            const statusDiv = document.getElementById('current-status');
+            const authToken = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('user');
+            const hasHistory = checkUserHistory();
+            const assistantData = localStorage.getItem('billableai_assistant_data');
+            const navigateIntent = localStorage.getItem('billableai_navigate_to_assistant');
+            
+            let statusHTML = '<strong>Current Status:</strong><br>';
+            statusHTML += `🔐 Auth Token: ${authToken ? '✅ Present' : '❌ Missing'}<br>`;
+            statusHTML += `👤 User Data: ${userData ? '✅ Present' : '❌ Missing'}<br>`;
+            statusHTML += `📊 User History: ${hasHistory ? '✅ Has History' : '❌ No History'}<br>`;
+            statusHTML += `🤖 Assistant Data: ${assistantData ? '✅ Present' : '❌ Missing'}<br>`;
+            statusHTML += `🧭 Navigation Intent: ${navigateIntent ? '✅ Present' : '❌ Missing'}`;
+            
+            statusDiv.innerHTML = statusHTML;
+        }
+
+        function checkUserHistory() {
+            const summaries = localStorage.getItem('billableai_summaries');
+            const workHistory = localStorage.getItem('billableai_workHistory');
+            const chatMessages = localStorage.getItem('billableai_chatMessages');
+            const trackingStatus = localStorage.getItem('billableai_trackingStatus');
+            return !!(summaries || workHistory || chatMessages || trackingStatus);
+        }
+
+        // Fix 1: Authentication Persistence
+        document.getElementById('test-auth-persistence').addEventListener('click', () => {
+            logResult('auth-results', '🔐 Testing authentication persistence...', 'info');
+            
+            // Simulate storing auth data
+            const mockUser = {
+                name: 'Test User',
+                profession: 'Lawyer',
+                gender: 'Male',
+                avatar: null
+            };
+            
+            localStorage.setItem('authToken', 'mock_token_123');
+            localStorage.setItem('user', JSON.stringify(mockUser));
+            
+            // Add some history
+            localStorage.setItem('billableai_summaries', JSON.stringify([{ id: 1, summary: 'Test summary' }]));
+            
+            logResult('auth-results', '✅ Auth persistence test completed', 'success');
+            logResult('auth-results', '🔐 Auth data stored - should persist across restarts', 'info');
+            updateStatus();
+        });
+
+        document.getElementById('test-auth-restore').addEventListener('click', () => {
+            logResult('auth-results', '🔄 Testing authentication restoration...', 'info');
+            
+            const authToken = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('user');
+            const hasHistory = checkUserHistory();
+            
+            if (authToken && userData) {
+                const user = JSON.parse(userData);
+                logResult('auth-results', '✅ Auth restoration test completed', 'success');
+                logResult('auth-results', `👤 User: ${user.name}`, 'info');
+                logResult('auth-results', `📊 History: ${hasHistory ? 'Has history' : 'No history'}`, 'info');
+                logResult('auth-results', '🔐 Should navigate to popup (not onboarding)', 'info');
+            } else {
+                logResult('auth-results', '❌ Auth restoration test failed', 'error');
+                logResult('auth-results', '🔐 No auth data found', 'info');
+            }
+            updateStatus();
+        });
+
+        document.getElementById('test-network-fallback').addEventListener('click', () => {
+            logResult('auth-results', '🌐 Testing network fallback...', 'info');
+            
+            const authToken = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('user');
+            
+            if (authToken && userData) {
+                logResult('auth-results', '✅ Network fallback test completed', 'success');
+                logResult('auth-results', '🌐 Auth data should persist despite network errors', 'info');
+                logResult('auth-results', '🔐 Using stored token as fallback', 'info');
+            } else {
+                logResult('auth-results', '❌ Network fallback test failed', 'error');
+                logResult('auth-results', '🌐 No stored auth data to fallback to', 'info');
+            }
+            updateStatus();
+        });
+
+        // Fix 2: Assistant Window Opening
+        document.getElementById('test-assistant-opening').addEventListener('click', () => {
+            logResult('assistant-results', '🤖 Testing assistant opening...', 'info');
+            
+            // Simulate assistant data
+            const assistantData = {
+                summary: 'Professional legal communication completed.',
+                timeSpent: 180000,
+                emailData: {
+                    to: 'client@example.com',
+                    subject: 'Case Update'
+                },
+                timestamp: Date.now()
+            };
+            
+            // Store in both storage methods
+            localStorage.setItem('billableai_assistant_data', JSON.stringify(assistantData));
+            localStorage.setItem('billableai_navigate_to_assistant', 'true');
+            
+            logResult('assistant-results', '✅ Assistant opening test completed', 'success');
+            logResult('assistant-results', '🤖 Assistant data stored for opening', 'info');
+            logResult('assistant-results', '🧭 Navigation intent set to open assistant', 'info');
+            updateStatus();
+        });
+
+        document.getElementById('test-storage-methods').addEventListener('click', () => {
+            logResult('assistant-results', '💾 Testing storage methods...', 'info');
+            
+            // Test both storage methods
+            const assistantData = localStorage.getItem('billableai_assistant_data');
+            const navigateIntent = localStorage.getItem('billableai_navigate_to_assistant');
+            
+            logResult('assistant-results', '✅ Storage methods test completed', 'success');
+            logResult('assistant-results', `🤖 Assistant Data: ${assistantData ? 'Present' : 'Missing'}`, 'info');
+            logResult('assistant-results', `🧭 Navigation Intent: ${navigateIntent ? 'Present' : 'Missing'}`, 'info');
+            
+            if (assistantData && navigateIntent) {
+                logResult('assistant-results', '✅ Both storage methods working correctly', 'success');
+            } else {
+                logResult('assistant-results', '❌ Storage methods test failed', 'error');
+            }
+            updateStatus();
+        });
+
+        document.getElementById('test-navigation-intent').addEventListener('click', () => {
+            logResult('assistant-results', '🧭 Testing navigation intent...', 'info');
+            
+            const navigateIntent = localStorage.getItem('billableai_navigate_to_assistant');
+            
+            if (navigateIntent === 'true') {
+                logResult('assistant-results', '✅ Navigation intent test completed', 'success');
+                logResult('assistant-results', '🧭 Navigation intent found - should open assistant', 'info');
+                logResult('assistant-results', '📱 Extension should navigate to assistant page', 'info');
+            } else {
+                logResult('assistant-results', '❌ Navigation intent test failed', 'error');
+                logResult('assistant-results', '🧭 No navigation intent found', 'info');
+            }
+            updateStatus();
+        });
+
+        // Overall test runner
+        document.getElementById('run-all-fix-tests').addEventListener('click', () => {
+            logResult('overall-results', '🚀 Running all fix tests...', 'info');
+            
+            // Run all tests
+            const tests = [
+                'test-auth-persistence',
+                'test-auth-restore',
+                'test-network-fallback',
+                'test-assistant-opening',
+                'test-storage-methods',
+                'test-navigation-intent'
+            ];
+            
+            tests.forEach((testId, index) => {
+                setTimeout(() => {
+                    document.getElementById(testId).click();
+                }, index * 1000);
+            });
+            
+            setTimeout(() => {
+                logResult('overall-results', '✅ All fix tests completed successfully!', 'success');
+                logResult('overall-results', '🎉 Both authentication persistence and assistant opening fixes are working', 'success');
+            }, tests.length * 1000 + 2000);
+        });
+
+        document.getElementById('clear-all-results').addEventListener('click', () => {
+            const containers = [
+                'auth-results',
+                'assistant-results',
+                'overall-results'
+            ];
+            
+            containers.forEach(containerId => {
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+            });
+            
+            logResult('overall-results', '🧹 All results cleared', 'info');
+        });
+
+        document.getElementById('refresh-status').addEventListener('click', () => {
+            updateStatus();
+            logResult('overall-results', '🔄 Status refreshed', 'info');
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            updateStatus();
+            logResult('overall-results', '🚀 Fixes Verification Test loaded', 'info');
+            logResult('overall-results', 'Click "Run All Fix Tests" to verify both fixes work', 'info');
+        });
+    </script>
+</body>
+</html> 

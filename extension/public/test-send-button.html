@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Button Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .typing-area {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            color: white;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+        }
+        .send-button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 0;
+        }
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+    </style>
+</head>
+<body>
+    <h1>📧 Send Button Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Send Button Functionality</h2>
+        <p>This page simulates the Gmail send button click and tests the billing summary notification.</p>
+        
+        <div class="typing-area">
+            <h3>Email Content</h3>
+            <textarea id="email-content" placeholder="Type your email content here...">Dear Client,
+
+I hope this email finds you well. I wanted to follow up on our recent discussion regarding the contract review.
+
+Please let me know if you have any questions.
+
+Best regards,
+Attorney</textarea>
+        </div>
+        
+        <button id="send-button" class="send-button">📤 Send Email</button>
+        
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        function logResult(message, type = 'info') {
+            const container = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Mock the billableAIState
+        window.billableAIState = {
+            isTracking: true,
+            isPaused: false,
+            currentEmail: {
+                to: 'client@example.com',
+                subject: 'Contract Review Follow-up',
+                content: '',
+                from: 'attorney@lawfirm.com'
+            },
+            sessionId: 'test_session_123',
+            draftId: 'test_draft_456',
+            timerState: {
+                isActive: true,
+                startTime: Date.now() - 120000, // 2 minutes ago
+                pausedTime: 0,
+                lastPauseTime: null
+            }
+        };
+
+        // Mock the getCurrentElapsedTime function
+        function getCurrentElapsedTime() {
+            const state = window.billableAIState.timerState;
+            if (!state.isActive || !state.startTime) {
+                return state.pausedTime;
+            }
+            const currentTime = Date.now();
+            const activeTime = currentTime - state.startTime;
+            return state.pausedTime + activeTime;
+        }
+
+        // Mock the stopEmailTracking function
+        async function stopEmailTracking() {
+            const totalTime = getCurrentElapsedTime();
+            const emailContent = document.getElementById('email-content').value;
+            
+            // Simulate backend call
+            try {
+                const response = await fetch('http://localhost:3001/api/email-tracking/stop', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer mock_token'
+                    },
+                    body: JSON.stringify({
+                        sessionId: window.billableAIState.sessionId,
+                        draftId: window.billableAIState.draftId,
+                        totalTime: totalTime,
+                        emailData: {
+                            ...window.billableAIState.currentEmail,
+                            content: emailContent
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    return { success: true, billingSummary: result.billingSummary, timeSpent: totalTime };
+                } else {
+                    // Fallback to local summary
+                    const localSummary = generateLocalSummary({
+                        timeSpent: totalTime,
+                        emailData: window.billableAIState.currentEmail
+                    });
+                    return { success: true, billingSummary: localSummary, timeSpent: totalTime };
+                }
+            } catch (error) {
+                logResult('Backend unavailable, using local summary', 'info');
+                const localSummary = generateLocalSummary({
+                    timeSpent: totalTime,
+                    emailData: window.billableAIState.currentEmail
+                });
+                return { success: true, billingSummary: localSummary, timeSpent: totalTime };
+            }
+        }
+
+        // Mock the generateLocalSummary function
+        function generateLocalSummary(billingData) {
+            const timeSpentMinutes = Math.floor(billingData.timeSpent / 60000);
+            const timeSpentSeconds = Math.floor((billingData.timeSpent % 60000) / 1000);
+            const timeDisplay = `${timeSpentMinutes}:${timeSpentSeconds.toString().padStart(2, '0')}`;
+            const timeSpentHours = (billingData.timeSpent / 3600000).toFixed(2);
+            const emailSubject = billingData.emailData.subject || 'Email correspondence';
+            const emailTo = billingData.emailData.to || 'recipient';
+            
+            return `📧 **Email Correspondence Summary**
+
+**Recipient:** ${emailTo}
+**Subject:** ${emailSubject}
+**Time Spent:** ${timeDisplay} (${timeSpentHours} hours)
+
+**Description:** Professional legal communication and document review completed. Email correspondence involved client consultation, legal advice, and case management activities.
+
+**Billing Category:** Legal Correspondence & Client Communication
+**Activity Type:** Email drafting, review, and client communication
+
+This time entry represents professional legal services rendered through email correspondence.`;
+        }
+
+        // Mock the showBillingSummaryNotification function
+        function showBillingSummaryNotification(summary, timeSpent) {
+            logResult('Showing billing summary notification...', 'success');
+            logResult(`Time spent: ${Math.floor(timeSpent / 60000)}:${Math.floor((timeSpent % 60000) / 1000).toString().padStart(2, '0')}`, 'info');
+            logResult('Summary content:', 'info');
+            logResult(summary, 'success');
+            
+            // Create a simple notification for testing
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 15px;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+                z-index: 10001;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-size: 14px;
+                max-width: 400px;
+                backdrop-filter: blur(15px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                max-height: 300px;
+                overflow-y: auto;
+            `;
+
+            const timeDisplay = `${Math.floor(timeSpent / 60000)}:${Math.floor((timeSpent % 60000) / 1000).toString().padStart(2, '0')}`;
+
+            notification.innerHTML = `
+                <div style="display: flex; align-items: flex-start; gap: 15px;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                            <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                                🤖
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; font-size: 16px; margin-bottom: 2px;">Gemini AI Summary</div>
+                                <div style="font-size: 12px; opacity: 0.8;">Time spent: ${timeDisplay}</div>
+                            </div>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 15px; margin-bottom: 15px; font-size: 13px; line-height: 1.5;">
+                            ${summary.replace(/\n/g, '<br>')}
+                        </div>
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" style="
+                            background: rgba(255, 255, 255, 0.1);
+                            border: none;
+                            color: white;
+                            padding: 8px 15px;
+                            border-radius: 8px;
+                            font-size: 12px;
+                            cursor: pointer;
+                            transition: all 0.2s ease;
+                        ">✕ Close</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+        }
+
+        // Mock the showNotification function
+        function showNotification(message, type = 'info') {
+            logResult(`Notification (${type}): ${message}`, type === 'error' ? 'error' : 'info');
+        }
+
+        // Setup send button click handler
+        document.getElementById('send-button').addEventListener('click', async () => {
+            logResult('Send button clicked!', 'info');
+            
+            // Update email content
+            window.billableAIState.currentEmail.content = document.getElementById('email-content').value;
+            
+            // Show loading notification
+            showNotification('🤖 Generating billable summary...', 'info');
+            
+            try {
+                // Stop tracking and generate summary
+                const result = await stopEmailTracking();
+                logResult('Tracking stopped successfully', 'success');
+                
+                // Show Gemini-generated summary notification
+                if (result.billingSummary) {
+                    showBillingSummaryNotification(result.billingSummary, result.timeSpent);
+                    logResult('Billing summary notification displayed', 'success');
+                } else {
+                    showNotification('✅ Email sent! (No billing summary available)', 'success');
+                }
+                
+            } catch (error) {
+                logResult(`Error: ${error.message}`, 'error');
+                showNotification('❌ Error generating billing summary', 'error');
+            }
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            logResult('🚀 Send Button Test page loaded', 'info');
+            logResult('Click the "Send Email" button to test the billing summary notification', 'info');
+            logResult('This simulates the Gmail send button click functionality', 'info');
+        });
+    </script>
+</body>
+</html> 

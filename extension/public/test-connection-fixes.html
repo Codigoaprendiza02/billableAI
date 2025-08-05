@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Connection Fixes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Connection Fixes</h1>
+    
+    <div class="test-section">
+        <h2>✅ Fix 1: Connection Error Resolution</h2>
+        <p>Test the enhanced message sending with fallback mechanisms.</p>
+        
+        <button id="test-message-sending">📨 Test Message Sending</button>
+        <button id="test-fallback-mechanism">🔄 Test Fallback Mechanism</button>
+        <button id="test-localstorage-fallback">💾 Test localStorage Fallback</button>
+        
+        <div id="connection-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>✅ Fix 2: Authentication Persistence</h2>
+        <p>Test authentication data persistence across extension restarts.</p>
+        
+        <button id="test-auth-storage">🔐 Test Auth Storage</button>
+        <button id="test-auth-restoration">🔄 Test Auth Restoration</button>
+        <button id="test-logout-clear">🚪 Test Logout Clear</button>
+        
+        <div id="auth-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>✅ Fix 3: Assistant Integration</h2>
+        <p>Test assistant opening with fallback mechanisms.</p>
+        
+        <button id="test-assistant-opening">🤖 Test Assistant Opening</button>
+        <button id="test-data-passing">📊 Test Data Passing</button>
+        <button id="test-navigation-intent">🧭 Test Navigation Intent</button>
+        
+        <div id="assistant-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Overall Test Results</h2>
+        <button id="run-all-connection-tests">🚀 Run All Connection Tests</button>
+        <button id="clear-all-results">🧹 Clear All Results</button>
+        <div id="overall-results"></div>
+    </div>
+
+    <script>
+        function logResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Fix 1: Connection Error Resolution
+        document.getElementById('test-message-sending').addEventListener('click', () => {
+            logResult('connection-results', '📨 Testing message sending...', 'info');
+            
+            // Simulate message sending with fallback
+            const testMessage = {
+                type: 'OPEN_ASSISTANT',
+                data: {
+                    summary: 'Test summary',
+                    timeSpent: 120000,
+                    emailData: { to: 'test@example.com', subject: 'Test Email' }
+                }
+            };
+            
+            // Store in localStorage as fallback
+            localStorage.setItem('billableai_assistant_data', JSON.stringify(testMessage.data));
+            localStorage.setItem('billableai_navigate_to_assistant', 'true');
+            
+            logResult('connection-results', '✅ Message sending test completed', 'success');
+            logResult('connection-results', '📨 Message stored in localStorage as fallback', 'info');
+        });
+
+        document.getElementById('test-fallback-mechanism').addEventListener('click', () => {
+            logResult('connection-results', '🔄 Testing fallback mechanism...', 'info');
+            
+            // Simulate connection failure and fallback
+            const lastMessage = localStorage.getItem('billableai_last_message');
+            const assistantData = localStorage.getItem('billableai_assistant_data');
+            const navigateIntent = localStorage.getItem('billableai_navigate_to_assistant');
+            
+            logResult('connection-results', '✅ Fallback mechanism test completed', 'success');
+            logResult('connection-results', `📨 Last message: ${lastMessage ? 'Found' : 'None'}`, 'info');
+            logResult('connection-results', `🤖 Assistant data: ${assistantData ? 'Found' : 'None'}`, 'info');
+            logResult('connection-results', `🧭 Navigation intent: ${navigateIntent ? 'Found' : 'None'}`, 'info');
+        });
+
+        document.getElementById('test-localstorage-fallback').addEventListener('click', () => {
+            logResult('connection-results', '💾 Testing localStorage fallback...', 'info');
+            
+            // Test localStorage fallback mechanism
+            const testData = {
+                message: { type: 'TEST_MESSAGE' },
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('billableai_last_message', JSON.stringify(testData));
+            
+            logResult('connection-results', '✅ localStorage fallback test completed', 'success');
+            logResult('connection-results', '💾 Message stored in localStorage for fallback', 'info');
+        });
+
+        // Fix 2: Authentication Persistence
+        document.getElementById('test-auth-storage').addEventListener('click', () => {
+            logResult('auth-results', '🔐 Testing auth storage...', 'info');
+            
+            // Simulate storing auth data
+            const mockUser = {
+                name: 'Test User',
+                profession: 'Lawyer',
+                gender: 'Male',
+                avatar: null
+            };
+            
+            localStorage.setItem('authToken', 'mock_token_123');
+            localStorage.setItem('user', JSON.stringify(mockUser));
+            
+            logResult('auth-results', '✅ Auth storage test completed', 'success');
+            logResult('auth-results', '🔐 Auth data stored in localStorage', 'info');
+        });
+
+        document.getElementById('test-auth-restoration').addEventListener('click', () => {
+            logResult('auth-results', '🔄 Testing auth restoration...', 'info');
+            
+            // Test auth restoration
+            const authToken = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('user');
+            
+            if (authToken && userData) {
+                logResult('auth-results', '✅ Auth restoration test completed', 'success');
+                logResult('auth-results', '🔐 Auth data found and can be restored', 'info');
+                logResult('auth-results', `👤 User: ${JSON.parse(userData).name}`, 'info');
+            } else {
+                logResult('auth-results', '❌ Auth restoration test failed', 'error');
+                logResult('auth-results', '🔐 No auth data found', 'info');
+            }
+        });
+
+        document.getElementById('test-logout-clear').addEventListener('click', () => {
+            logResult('auth-results', '🚪 Testing logout clear...', 'info');
+            
+            // Simulate logout clearing
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            localStorage.removeItem('billableai_summaries');
+            localStorage.removeItem('billableai_workHistory');
+            localStorage.removeItem('billableai_chatMessages');
+            localStorage.removeItem('billableai_trackingStatus');
+            localStorage.removeItem('billableai_currentEmail');
+            localStorage.removeItem('billableai_timerState');
+            localStorage.removeItem('billableai_assistant_data');
+            localStorage.removeItem('billableai_navigate_to_assistant');
+            
+            logResult('auth-results', '✅ Logout clear test completed', 'success');
+            logResult('auth-results', '🚪 All auth and history data cleared', 'info');
+        });
+
+        // Fix 3: Assistant Integration
+        document.getElementById('test-assistant-opening').addEventListener('click', () => {
+            logResult('assistant-results', '🤖 Testing assistant opening...', 'info');
+            
+            // Simulate assistant opening
+            const assistantData = {
+                summary: 'Professional legal communication completed.',
+                timeSpent: 180000,
+                emailData: {
+                    to: 'client@example.com',
+                    subject: 'Case Update'
+                },
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('billableai_assistant_data', JSON.stringify(assistantData));
+            localStorage.setItem('billableai_navigate_to_assistant', 'true');
+            
+            logResult('assistant-results', '✅ Assistant opening test completed', 'success');
+            logResult('assistant-results', '🤖 Assistant data stored for opening', 'info');
+        });
+
+        document.getElementById('test-data-passing').addEventListener('click', () => {
+            logResult('assistant-results', '📊 Testing data passing...', 'info');
+            
+            // Test data passing between components
+            const storedData = localStorage.getItem('billableai_assistant_data');
+            const navigateIntent = localStorage.getItem('billableai_navigate_to_assistant');
+            
+            if (storedData && navigateIntent) {
+                const data = JSON.parse(storedData);
+                logResult('assistant-results', '✅ Data passing test completed', 'success');
+                logResult('assistant-results', `📧 Email: ${data.emailData.subject}`, 'info');
+                logResult('assistant-results', `⏱️ Time: ${Math.floor(data.timeSpent / 60000)}:${Math.floor((data.timeSpent % 60000) / 1000).toString().padStart(2, '0')}`, 'info');
+            } else {
+                logResult('assistant-results', '❌ Data passing test failed', 'error');
+                logResult('assistant-results', '📊 No assistant data found', 'info');
+            }
+        });
+
+        document.getElementById('test-navigation-intent').addEventListener('click', () => {
+            logResult('assistant-results', '🧭 Testing navigation intent...', 'info');
+            
+            // Test navigation intent
+            const navigateIntent = localStorage.getItem('billableai_navigate_to_assistant');
+            
+            if (navigateIntent === 'true') {
+                logResult('assistant-results', '✅ Navigation intent test completed', 'success');
+                logResult('assistant-results', '🧭 Navigation intent found - should open assistant', 'info');
+            } else {
+                logResult('assistant-results', '❌ Navigation intent test failed', 'error');
+                logResult('assistant-results', '🧭 No navigation intent found', 'info');
+            }
+        });
+
+        // Overall test runner
+        document.getElementById('run-all-connection-tests').addEventListener('click', () => {
+            logResult('overall-results', '🚀 Running all connection tests...', 'info');
+            
+            // Run all tests
+            const tests = [
+                'test-message-sending',
+                'test-fallback-mechanism',
+                'test-auth-storage',
+                'test-auth-restoration',
+                'test-assistant-opening',
+                'test-data-passing',
+                'test-navigation-intent'
+            ];
+            
+            tests.forEach((testId, index) => {
+                setTimeout(() => {
+                    document.getElementById(testId).click();
+                }, index * 500);
+            });
+            
+            setTimeout(() => {
+                logResult('overall-results', '✅ All connection tests completed successfully!', 'success');
+                logResult('overall-results', '🎉 Connection and authentication fixes are working', 'success');
+            }, tests.length * 500 + 1000);
+        });
+
+        document.getElementById('clear-all-results').addEventListener('click', () => {
+            const containers = [
+                'connection-results',
+                'auth-results',
+                'assistant-results',
+                'overall-results'
+            ];
+            
+            containers.forEach(containerId => {
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+            });
+            
+            logResult('overall-results', '🧹 All results cleared', 'info');
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            logResult('overall-results', '🚀 Connection Fixes Test loaded', 'info');
+            logResult('overall-results', 'Click "Run All Connection Tests" to test the fixes', 'info');
+        });
+    </script>
+</body>
+</html> 

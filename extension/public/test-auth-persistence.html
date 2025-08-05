@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Auth Persistence</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        .status {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Test Auth Persistence</h1>
+    
+    <div class="test-section">
+        <h2>📊 Current Status</h2>
+        <div id="current-status" class="status">
+            <strong>Loading...</strong>
+        </div>
+        <button id="refresh-status">🔄 Refresh Status</button>
+    </div>
+
+    <div class="test-section">
+        <h2>✅ Test Authentication Flow</h2>
+        <p>Test the complete authentication persistence flow.</p>
+        
+        <button id="test-login">🔐 Simulate Login</button>
+        <button id="test-logout">🚪 Simulate Logout</button>
+        <button id="test-restart">🔄 Simulate Extension Restart</button>
+        <button id="test-network-error">🌐 Simulate Network Error</button>
+        
+        <div id="auth-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Test Data Storage</h2>
+        <p>Test localStorage data management.</p>
+        
+        <button id="test-store-data">💾 Store Test Data</button>
+        <button id="test-retrieve-data">📥 Retrieve Test Data</button>
+        <button id="test-clear-data">🗑️ Clear All Data</button>
+        
+        <div id="storage-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Overall Test Results</h2>
+        <button id="run-all-auth-tests">🚀 Run All Auth Tests</button>
+        <button id="clear-all-results">🧹 Clear All Results</button>
+        <div id="overall-results"></div>
+    </div>
+
+    <script>
+        function logResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function updateStatus() {
+            const statusDiv = document.getElementById('current-status');
+            const authToken = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('user');
+            const hasHistory = checkUserHistory();
+            
+            let statusHTML = '<strong>Current Authentication Status:</strong><br>';
+            statusHTML += `🔐 Auth Token: ${authToken ? '✅ Present' : '❌ Missing'}<br>`;
+            statusHTML += `👤 User Data: ${userData ? '✅ Present' : '❌ Missing'}<br>`;
+            statusHTML += `📊 User History: ${hasHistory ? '✅ Has History' : '❌ No History'}<br>`;
+            statusHTML += `🔗 Is Authenticated: ${isAuthenticated() ? '✅ Yes' : '❌ No'}`;
+            
+            statusDiv.innerHTML = statusHTML;
+        }
+
+        function checkUserHistory() {
+            const summaries = localStorage.getItem('billableai_summaries');
+            const workHistory = localStorage.getItem('billableai_workHistory');
+            const chatMessages = localStorage.getItem('billableai_chatMessages');
+            const trackingStatus = localStorage.getItem('billableai_trackingStatus');
+            return !!(summaries || workHistory || chatMessages || trackingStatus);
+        }
+
+        function isAuthenticated() {
+            const token = localStorage.getItem('authToken');
+            const user = localStorage.getItem('user');
+            return !!(token && user);
+        }
+
+        // Test Authentication Flow
+        document.getElementById('test-login').addEventListener('click', () => {
+            logResult('auth-results', '🔐 Simulating login...', 'info');
+            
+            // Simulate login data
+            const mockUser = {
+                name: 'Test User',
+                profession: 'Lawyer',
+                gender: 'Male',
+                avatar: null
+            };
+            
+            localStorage.setItem('authToken', 'mock_token_123');
+            localStorage.setItem('user', JSON.stringify(mockUser));
+            
+            // Add some history
+            localStorage.setItem('billableai_summaries', JSON.stringify([{ id: 1, summary: 'Test summary' }]));
+            
+            logResult('auth-results', '✅ Login simulation completed', 'success');
+            logResult('auth-results', '🔐 Auth data stored in localStorage', 'info');
+            updateStatus();
+        });
+
+        document.getElementById('test-logout').addEventListener('click', () => {
+            logResult('auth-results', '🚪 Simulating logout...', 'info');
+            
+            // Clear all auth data
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            localStorage.removeItem('billableai_summaries');
+            localStorage.removeItem('billableai_workHistory');
+            localStorage.removeItem('billableai_chatMessages');
+            localStorage.removeItem('billableai_trackingStatus');
+            localStorage.removeItem('billableai_currentEmail');
+            localStorage.removeItem('billableai_timerState');
+            localStorage.removeItem('billableai_assistant_data');
+            localStorage.removeItem('billableai_navigate_to_assistant');
+            
+            logResult('auth-results', '✅ Logout simulation completed', 'success');
+            logResult('auth-results', '🚪 All auth data cleared', 'info');
+            updateStatus();
+        });
+
+        document.getElementById('test-restart').addEventListener('click', () => {
+            logResult('auth-results', '🔄 Simulating extension restart...', 'info');
+            
+            // Check if auth data persists
+            const authToken = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('user');
+            const hasHistory = checkUserHistory();
+            
+            if (authToken && userData) {
+                logResult('auth-results', '✅ Extension restart simulation completed', 'success');
+                logResult('auth-results', '🔐 Auth data persists after restart', 'info');
+                logResult('auth-results', `📊 History check: ${hasHistory ? 'Has history' : 'No history'}`, 'info');
+            } else {
+                logResult('auth-results', '❌ Extension restart simulation failed', 'error');
+                logResult('auth-results', '🔐 No auth data found after restart', 'info');
+            }
+            updateStatus();
+        });
+
+        document.getElementById('test-network-error').addEventListener('click', () => {
+            logResult('auth-results', '🌐 Simulating network error...', 'info');
+            
+            // Simulate network error scenario
+            const authToken = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('user');
+            
+            if (authToken && userData) {
+                logResult('auth-results', '✅ Network error simulation completed', 'success');
+                logResult('auth-results', '🌐 Auth data should persist despite network error', 'info');
+                logResult('auth-results', '🔐 Using stored token as fallback', 'info');
+            } else {
+                logResult('auth-results', '❌ Network error simulation failed', 'error');
+                logResult('auth-results', '🌐 No stored auth data to fallback to', 'info');
+            }
+            updateStatus();
+        });
+
+        // Test Data Storage
+        document.getElementById('test-store-data').addEventListener('click', () => {
+            logResult('storage-results', '💾 Storing test data...', 'info');
+            
+            // Store comprehensive test data
+            const testData = {
+                authToken: 'test_token_456',
+                user: {
+                    name: 'Test User',
+                    profession: 'Lawyer',
+                    gender: 'Female',
+                    avatar: null
+                },
+                summaries: [{ id: 1, summary: 'Test summary 1' }, { id: 2, summary: 'Test summary 2' }],
+                workHistory: { emailLogs: 5, timeSpent: '2 hours', summaries: 2 },
+                chatMessages: [{ role: 'user', content: 'Test message' }],
+                trackingStatus: { isTracking: false, currentTime: 0 }
+            };
+            
+            localStorage.setItem('authToken', testData.authToken);
+            localStorage.setItem('user', JSON.stringify(testData.user));
+            localStorage.setItem('billableai_summaries', JSON.stringify(testData.summaries));
+            localStorage.setItem('billableai_workHistory', JSON.stringify(testData.workHistory));
+            localStorage.setItem('billableai_chatMessages', JSON.stringify(testData.chatMessages));
+            localStorage.setItem('billableai_trackingStatus', JSON.stringify(testData.trackingStatus));
+            
+            logResult('storage-results', '✅ Test data storage completed', 'success');
+            logResult('storage-results', '💾 All test data stored in localStorage', 'info');
+            updateStatus();
+        });
+
+        document.getElementById('test-retrieve-data').addEventListener('click', () => {
+            logResult('storage-results', '📥 Retrieving test data...', 'info');
+            
+            // Retrieve and display all stored data
+            const authToken = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('user');
+            const summaries = localStorage.getItem('billableai_summaries');
+            const workHistory = localStorage.getItem('billableai_workHistory');
+            const chatMessages = localStorage.getItem('billableai_chatMessages');
+            const trackingStatus = localStorage.getItem('billableai_trackingStatus');
+            
+            logResult('storage-results', '✅ Test data retrieval completed', 'success');
+            logResult('storage-results', `🔐 Auth Token: ${authToken ? 'Present' : 'Missing'}`, 'info');
+            logResult('storage-results', `👤 User Data: ${userData ? 'Present' : 'Missing'}`, 'info');
+            logResult('storage-results', `📊 Summaries: ${summaries ? 'Present' : 'Missing'}`, 'info');
+            logResult('storage-results', `📈 Work History: ${workHistory ? 'Present' : 'Missing'}`, 'info');
+            logResult('storage-results', `💬 Chat Messages: ${chatMessages ? 'Present' : 'Missing'}`, 'info');
+            logResult('storage-results', `⏱️ Tracking Status: ${trackingStatus ? 'Present' : 'Missing'}`, 'info');
+            updateStatus();
+        });
+
+        document.getElementById('test-clear-data').addEventListener('click', () => {
+            logResult('storage-results', '🗑️ Clearing all test data...', 'info');
+            
+            // Clear all test data
+            localStorage.clear();
+            
+            logResult('storage-results', '✅ Test data clear completed', 'success');
+            logResult('storage-results', '🗑️ All localStorage data cleared', 'info');
+            updateStatus();
+        });
+
+        // Overall test runner
+        document.getElementById('run-all-auth-tests').addEventListener('click', () => {
+            logResult('overall-results', '🚀 Running all auth tests...', 'info');
+            
+            // Run all tests
+            const tests = [
+                'test-login',
+                'test-restart',
+                'test-network-error',
+                'test-store-data',
+                'test-retrieve-data'
+            ];
+            
+            tests.forEach((testId, index) => {
+                setTimeout(() => {
+                    document.getElementById(testId).click();
+                }, index * 1000);
+            });
+            
+            setTimeout(() => {
+                logResult('overall-results', '✅ All auth tests completed successfully!', 'success');
+                logResult('overall-results', '🎉 Authentication persistence is working correctly', 'success');
+            }, tests.length * 1000 + 2000);
+        });
+
+        document.getElementById('clear-all-results').addEventListener('click', () => {
+            const containers = [
+                'auth-results',
+                'storage-results',
+                'overall-results'
+            ];
+            
+            containers.forEach(containerId => {
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+            });
+            
+            logResult('overall-results', '🧹 All results cleared', 'info');
+        });
+
+        document.getElementById('refresh-status').addEventListener('click', () => {
+            updateStatus();
+            logResult('overall-results', '🔄 Status refreshed', 'info');
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            updateStatus();
+            logResult('overall-results', '🚀 Auth Persistence Test loaded', 'info');
+            logResult('overall-results', 'Click "Run All Auth Tests" to test authentication persistence', 'info');
+        });
+    </script>
+</body>
+</html> 

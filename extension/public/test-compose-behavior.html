@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compose Behavior Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .compose-window {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+        .compose-window.closed {
+            display: none;
+        }
+        .compose-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .send-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        input, textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            color: white;
+            padding: 8px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>📧 Compose Behavior Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Compose Window Behavior</h2>
+        <p>This page tests the new compose window behavior:</p>
+        <ul>
+            <li>✅ Timer starts when compose opens</li>
+            <li>✅ Timer stops when compose closes (no billing summary)</li>
+            <li>✅ Billing summary only generated when send button clicked</li>
+            <li>✅ Keep-alive spam reduced</li>
+        </ul>
+        
+        <button id="open-compose">📝 Open Compose Window</button>
+        <button id="close-compose">❌ Close Compose Window</button>
+        <button id="clear-console">🧹 Clear Console</button>
+        
+        <div id="test-results"></div>
+    </div>
+
+    <div id="compose-window" class="compose-window closed">
+        <div class="compose-header">
+            <h3>📧 Compose Email</h3>
+            <button class="close-btn" onclick="closeCompose()">✕</button>
+        </div>
+        
+        <input type="email" placeholder="To: recipient@example.com" value="client@example.com">
+        <input type="text" placeholder="Subject" value="Test Email Subject">
+        <textarea placeholder="Email content..." rows="6">Dear Client,
+
+This is a test email to verify the compose window behavior.
+
+Best regards,
+Attorney</textarea>
+        
+        <div style="text-align: right; margin-top: 15px;">
+            <button class="send-btn" onclick="sendEmail()">📤 Send</button>
+        </div>
+    </div>
+
+    <script>
+        function logResult(message, type = 'info') {
+            const container = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Mock the billableAIState
+        window.billableAIState = {
+            isTracking: false,
+            isPaused: false,
+            currentEmail: {
+                to: 'client@example.com',
+                subject: 'Test Email Subject',
+                content: 'Test email content',
+                from: 'attorney@lawfirm.com'
+            },
+            sessionId: 'test_session_123',
+            draftId: 'test_draft_456',
+            timerState: {
+                isActive: false,
+                startTime: null,
+                pausedTime: 0,
+                lastPauseTime: null
+            },
+            lastKeepAliveLog: null
+        };
+
+        // Mock the stopEmailTracking function
+        async function stopEmailTracking(generateSummary = true) {
+            const totalTime = 120000; // 2 minutes for testing
+            
+            logResult(`Stopping email tracking (generateSummary: ${generateSummary})`, 'info');
+            
+            // Stop tracking
+            window.billableAIState.isTracking = false;
+            
+            if (generateSummary) {
+                logResult('✅ Generating billing summary via Gemini...', 'success');
+                return { success: true, billingSummary: 'Mock Gemini summary', timeSpent: totalTime };
+            } else {
+                logResult('⏹️ Stopping tracking without billing summary', 'info');
+                return { success: true, billingSummary: null, timeSpent: totalTime };
+            }
+        }
+
+        // Mock the startEmailTracking function
+        async function startEmailTracking(emailData) {
+            logResult('🚀 Starting email tracking...', 'info');
+            window.billableAIState.isTracking = true;
+            window.billableAIState.currentEmail = emailData;
+            logResult('✅ Email tracking started', 'success');
+            return true;
+        }
+
+        // Mock the showNotification function
+        function showNotification(message, type = 'info') {
+            logResult(`Notification (${type}): ${message}`, type === 'error' ? 'error' : 'info');
+        }
+
+        // Mock the showBillingSummaryNotification function
+        function showBillingSummaryNotification(summary, timeSpent) {
+            logResult('🤖 Showing billing summary notification...', 'success');
+            logResult(`Summary: ${summary}`, 'success');
+            logResult(`Time spent: ${Math.floor(timeSpent / 60000)}:${Math.floor((timeSpent % 60000) / 1000).toString().padStart(2, '0')}`, 'info');
+        }
+
+        // Open compose window
+        function openCompose() {
+            logResult('📝 Opening compose window...', 'info');
+            document.getElementById('compose-window').classList.remove('closed');
+            
+            // Simulate starting email tracking
+            const emailData = {
+                to: 'client@example.com',
+                subject: 'Test Email Subject',
+                content: 'Test email content',
+                from: 'attorney@lawfirm.com'
+            };
+            
+            startEmailTracking(emailData);
+            showNotification('📧 Email tracking started', 'info');
+        }
+
+        // Close compose window
+        function closeCompose() {
+            logResult('❌ Closing compose window...', 'info');
+            document.getElementById('compose-window').classList.add('closed');
+            
+            // Simulate stopping tracking without generating summary
+            stopEmailTracking(false).then((result) => {
+                logResult('✅ Tracking stopped due to compose close (no billing summary)', 'success');
+                showNotification('⏹️ Email tracking stopped', 'info');
+            });
+        }
+
+        // Send email
+        function sendEmail() {
+            logResult('📤 Send button clicked!', 'info');
+            
+            // Simulate stopping tracking with billing summary
+            stopEmailTracking(true).then((result) => {
+                logResult('✅ Tracking stopped after send button click', 'success');
+                
+                if (result.billingSummary) {
+                    showBillingSummaryNotification(result.billingSummary, result.timeSpent);
+                    showNotification('✅ Email sent with billing summary!', 'success');
+                } else {
+                    showNotification('✅ Email sent! (No billing summary available)', 'success');
+                }
+                
+                // Close compose window after send
+                document.getElementById('compose-window').classList.add('closed');
+            });
+        }
+
+        // Mock keep-alive with reduced logging
+        function mockKeepAlive() {
+            const now = Date.now();
+            if (!window.billableAIState.lastKeepAliveLog || (now - window.billableAIState.lastKeepAliveLog) > 60000) {
+                logResult('🎯 Keep-alive ping sent (logged)', 'info');
+                window.billableAIState.lastKeepAliveLog = now;
+            } else {
+                // Don't log every keep-alive to reduce spam
+            }
+        }
+
+        // Setup event listeners
+        document.getElementById('open-compose').addEventListener('click', openCompose);
+        document.getElementById('close-compose').addEventListener('click', closeCompose);
+        document.getElementById('clear-console').addEventListener('click', () => {
+            console.clear();
+            logResult('Console cleared', 'info');
+        });
+
+        // Simulate keep-alive spam (should be reduced now)
+        setInterval(mockKeepAlive, 5000);
+
+        // Initialize
+        window.addEventListener('load', () => {
+            logResult('🚀 Compose Behavior Test loaded', 'info');
+            logResult('Click "Open Compose Window" to start testing', 'info');
+            logResult('Expected: Keep-alive spam should be reduced', 'info');
+            logResult('Expected: Billing summary only on send button click', 'info');
+        });
+    </script>
+</body>
+</html> 

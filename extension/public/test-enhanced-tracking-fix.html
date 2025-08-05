@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Tracking Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Enhanced Tracking Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>🔧 Extension Status</h2>
+        <button onclick="checkExtension()">Check Extension</button>
+        <div id="extension-status" class="status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>⏱️ Tracking Functions Test</h2>
+        <button onclick="testTrackingFunctions()">Test Tracking Functions</button>
+        <div id="tracking-status" class="status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📧 Email Data Capture Test</h2>
+        <button onclick="testEmailCapture()">Test Email Capture</button>
+        <div id="email-status" class="status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Gmail Integration Test</h2>
+        <div style="background: #e7f3ff; padding: 15px; border-radius: 6px;">
+            <p><strong>To test the complete system:</strong></p>
+            <ol>
+                <li>Open Gmail in a new tab</li>
+                <li>Click "Compose" to start a new email</li>
+                <li>You should see a tracking notification in the top-left corner</li>
+                <li>Type some content in the email</li>
+                <li>Fill in recipient and subject</li>
+                <li>Click "Send"</li>
+                <li>You should see a notification with "Open Assistant" button</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function checkExtension() {
+            const statusDiv = document.getElementById('extension-status');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) {
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = '✅ Extension is loaded and accessible';
+            } else {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = '❌ Extension not detected. Please reload the extension.';
+            }
+        }
+
+        function testTrackingFunctions() {
+            const statusDiv = document.getElementById('tracking-status');
+            statusDiv.innerHTML = '🔄 Testing tracking functions...';
+            
+            try {
+                // Check if BillableAI state exists
+                if (window.billableAIState) {
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = `
+                        ✅ Enhanced tracking script loaded successfully!<br>
+                        • BillableAI State: Available<br>
+                        • Is Tracking: ${window.billableAIState.isTracking || false}<br>
+                        • Session ID: ${window.billableAIState.sessionId || 'Not set'}<br>
+                        • Timer State: ${window.billableAIState.timerState ? 'Available' : 'Not available'}
+                    `;
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.innerHTML = '❌ BillableAI state not found. Script may not be loaded properly.';
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `❌ Test error: ${error.message}`;
+            }
+        }
+
+        function testEmailCapture() {
+            const statusDiv = document.getElementById('email-status');
+            statusDiv.innerHTML = '🔄 Testing email data capture...';
+            
+            try {
+                // Simulate email data
+                const testEmailData = {
+                    to: 'test@example.com',
+                    subject: 'Test Email',
+                    content: 'This is a test email content.',
+                    timestamp: Date.now()
+                };
+                
+                // Test formatTime function
+                const timeSpent = 120000; // 2 minutes
+                const formattedTime = formatTime(timeSpent);
+                
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = `
+                    ✅ Email capture functions working!<br>
+                    • Test Email: ${testEmailData.to}<br>
+                    • Subject: ${testEmailData.subject}<br>
+                    • Time Format: ${formattedTime}<br>
+                    • Raw Time: ${timeSpent}ms
+                `;
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `❌ Email capture test failed: ${error.message}`;
+            }
+        }
+
+        function formatTime(milliseconds) {
+            if (!milliseconds || milliseconds < 0) return '0:00';
+            
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Auto-check extension on page load
+        window.addEventListener('load', () => {
+            setTimeout(checkExtension, 1000);
+        });
+    </script>
+</body>
+</html> 

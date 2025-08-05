@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Timer Working</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        .timer-display {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>⏱️ Test Timer Working</h1>
+    
+    <div class="test-section">
+        <h2>Timer Test</h2>
+        <p>This page tests if the timer functionality is working correctly.</p>
+        
+        <button id="start-timer">🚀 Start Timer</button>
+        <button id="stop-timer">⏹️ Stop Timer</button>
+        <button id="pause-timer">⏸️ Pause Timer</button>
+        <button id="resume-timer">▶️ Resume Timer</button>
+        <button id="check-state">📊 Check State</button>
+        <button id="clear-console">🧹 Clear Console</button>
+        
+        <div class="timer-display" id="timer-display">00:00</div>
+        
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        function logResult(message, type = 'info') {
+            const container = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Mock billableAIState
+        window.billableAIState = {
+            isTracking: false,
+            isPaused: false,
+            currentEmail: null,
+            sessionId: null,
+            draftId: null,
+            timerState: {
+                isActive: false,
+                startTime: null,
+                pausedTime: 0,
+                lastPauseTime: null
+            }
+        };
+
+        // Mock timer functions
+        function getCurrentElapsedTime() {
+            const timerState = window.billableAIState.timerState;
+            if (!timerState.isActive || !timerState.startTime) {
+                return timerState.pausedTime;
+            }
+            
+            const now = Date.now();
+            const elapsed = now - timerState.startTime;
+            return timerState.pausedTime + elapsed;
+        }
+
+        function startTimer() {
+            logResult('🚀 Starting timer...', 'info');
+            
+            const timerState = window.billableAIState.timerState;
+            timerState.isActive = true;
+            timerState.startTime = Date.now();
+            timerState.pausedTime = 0;
+            timerState.lastPauseTime = null;
+            
+            window.billableAIState.isTracking = true;
+            window.billableAIState.isPaused = false;
+            
+            logResult('✅ Timer started', 'success');
+            updateTimerDisplay();
+        }
+
+        function stopTimer() {
+            logResult('⏹️ Stopping timer...', 'info');
+            
+            const totalTime = getCurrentElapsedTime();
+            const timerState = window.billableAIState.timerState;
+            
+            timerState.isActive = false;
+            timerState.startTime = null;
+            timerState.pausedTime = 0;
+            timerState.lastPauseTime = null;
+            
+            window.billableAIState.isTracking = false;
+            window.billableAIState.isPaused = false;
+            
+            logResult(`✅ Timer stopped. Total time: ${Math.floor(totalTime / 60000)}:${Math.floor((totalTime % 60000) / 1000).toString().padStart(2, '0')}`, 'success');
+            updateTimerDisplay();
+        }
+
+        function pauseTimer() {
+            logResult('⏸️ Pausing timer...', 'info');
+            
+            const timerState = window.billableAIState.timerState;
+            if (timerState.isActive && timerState.startTime) {
+                const now = Date.now();
+                const elapsed = now - timerState.startTime;
+                timerState.pausedTime += elapsed;
+                timerState.isActive = false;
+                timerState.startTime = null;
+                timerState.lastPauseTime = now;
+                
+                window.billableAIState.isPaused = true;
+                
+                logResult('✅ Timer paused', 'success');
+            } else {
+                logResult('❌ Timer not active, cannot pause', 'error');
+            }
+            updateTimerDisplay();
+        }
+
+        function resumeTimer() {
+            logResult('▶️ Resuming timer...', 'info');
+            
+            const timerState = window.billableAIState.timerState;
+            if (!timerState.isActive && timerState.pausedTime > 0) {
+                timerState.isActive = true;
+                timerState.startTime = Date.now();
+                timerState.lastPauseTime = null;
+                
+                window.billableAIState.isPaused = false;
+                
+                logResult('✅ Timer resumed', 'success');
+            } else {
+                logResult('❌ Timer not paused, cannot resume', 'error');
+            }
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const totalTime = getCurrentElapsedTime();
+            const minutes = Math.floor(totalTime / 60000);
+            const seconds = Math.floor((totalTime % 60000) / 1000);
+            const display = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            document.getElementById('timer-display').textContent = display;
+        }
+
+        function checkState() {
+            logResult('📊 Current State:', 'info');
+            logResult(`  - isTracking: ${window.billableAIState.isTracking}`, 'info');
+            logResult(`  - isPaused: ${window.billableAIState.isPaused}`, 'info');
+            logResult(`  - timerState.isActive: ${window.billableAIState.timerState.isActive}`, 'info');
+            logResult(`  - timerState.startTime: ${window.billableAIState.timerState.startTime}`, 'info');
+            logResult(`  - timerState.pausedTime: ${window.billableAIState.timerState.pausedTime}`, 'info');
+            logResult(`  - Current elapsed time: ${getCurrentElapsedTime()}ms`, 'info');
+        }
+
+        // Setup event listeners
+        document.getElementById('start-timer').addEventListener('click', startTimer);
+        document.getElementById('stop-timer').addEventListener('click', stopTimer);
+        document.getElementById('pause-timer').addEventListener('click', pauseTimer);
+        document.getElementById('resume-timer').addEventListener('click', resumeTimer);
+        document.getElementById('check-state').addEventListener('click', checkState);
+        document.getElementById('clear-console').addEventListener('click', () => {
+            console.clear();
+            logResult('Console cleared', 'info');
+        });
+
+        // Update timer display every second
+        setInterval(updateTimerDisplay, 1000);
+
+        // Initialize
+        window.addEventListener('load', () => {
+            logResult('🚀 Timer Test loaded', 'info');
+            logResult('Click "Start Timer" to begin testing', 'info');
+            logResult('Expected: Timer should increment every second', 'info');
+        });
+    </script>
+</body>
+</html> 

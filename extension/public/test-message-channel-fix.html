@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Channel Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Message Channel Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Message Channel Error Prevention</h2>
+        <p>This page tests the fixes for the "message channel closed" error.</p>
+        
+        <button id="test-sync-message">🔄 Test Sync Message</button>
+        <button id="test-async-message">⏳ Test Async Message</button>
+        <button id="test-timeout-message">⏰ Test Timeout Message</button>
+        <button id="clear-console">🧹 Clear Console</button>
+        
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        function logResult(message, type = 'info') {
+            const container = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Mock the billableAIState
+        window.billableAIState = {
+            isTracking: false,
+            isPaused: false,
+            currentEmail: {
+                to: 'test@example.com',
+                subject: 'Test Email',
+                content: 'Test content',
+                from: 'user@example.com'
+            },
+            sessionId: 'test_session_123',
+            draftId: 'test_draft_456',
+            timerState: {
+                isActive: false,
+                startTime: null,
+                pausedTime: 0,
+                lastPauseTime: null
+            }
+        };
+
+        // Mock the isExtensionContextValid function
+        function isExtensionContextValid() {
+            return typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage;
+        }
+
+        // Mock the safeSendResponse function
+        function safeSendResponse(response) {
+            try {
+                if (isExtensionContextValid()) {
+                    // Simulate sendResponse
+                    logResult('Response sent successfully', 'success');
+                } else {
+                    logResult('Extension context invalid, skipping response', 'info');
+                }
+            } catch (error) {
+                logResult(`Response error: ${error.message}`, 'error');
+            }
+        }
+
+        // Mock message listener with improved error handling
+        function setupMessageListener() {
+            if (isExtensionContextValid()) {
+                try {
+                    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+                        logResult(`Received message: ${message.type}`, 'info');
+                        
+                        // Helper function to safely send response
+                        const safeSendResponse = (response) => {
+                            try {
+                                if (isExtensionContextValid()) {
+                                    sendResponse(response);
+                                    logResult('Response sent successfully', 'success');
+                                } else {
+                                    logResult('Extension context invalid, skipping response', 'info');
+                                }
+                            } catch (error) {
+                                logResult(`Response error: ${error.message}`, 'error');
+                            }
+                        };
+                        
+                        // Handle sync responses immediately
+                        if (message.type === 'GET_STATE') {
+                            safeSendResponse(window.billableAIState);
+                            return false; // No async response needed
+                        }
+                        
+                        // Handle async responses with timeout
+                        if (message.type === 'ASYNC_TEST') {
+                            // Add timeout to prevent hanging
+                            const timeout = setTimeout(() => {
+                                safeSendResponse({ success: false, error: 'Operation timed out' });
+                            }, 5000); // 5 second timeout
+                            
+                            // Simulate async operation
+                            setTimeout(() => {
+                                clearTimeout(timeout);
+                                safeSendResponse({ success: true, data: 'Async operation completed' });
+                            }, 2000);
+                            
+                            return true; // Keep message channel open
+                        }
+                        
+                        if (message.type === 'TIMEOUT_TEST') {
+                            // This will timeout
+                            const timeout = setTimeout(() => {
+                                safeSendResponse({ success: false, error: 'Operation timed out' });
+                            }, 3000); // 3 second timeout
+                            
+                            // Simulate long operation that exceeds timeout
+                            setTimeout(() => {
+                                clearTimeout(timeout);
+                                safeSendResponse({ success: true, data: 'This should not be called' });
+                            }, 5000); // 5 seconds, longer than timeout
+                            
+                            return true; // Keep message channel open
+                        }
+                        
+                        // Default response for unknown message types
+                        safeSendResponse({ success: false, error: 'Unknown message type' });
+                        return false; // No async response needed
+                    });
+                    
+                    logResult('Message listener setup successfully', 'success');
+                } catch (error) {
+                    logResult(`Message listener setup error: ${error.message}`, 'error');
+                }
+            } else {
+                logResult('Extension context not available', 'error');
+            }
+        }
+
+        // Test functions
+        function testSyncMessage() {
+            logResult('Testing sync message...', 'info');
+            
+            if (isExtensionContextValid()) {
+                chrome.runtime.sendMessage({ type: 'GET_STATE' }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        logResult(`Sync message error: ${chrome.runtime.lastError.message}`, 'error');
+                    } else {
+                        logResult('Sync message successful', 'success');
+                    }
+                });
+            } else {
+                logResult('Extension context not available for sync test', 'error');
+            }
+        }
+
+        function testAsyncMessage() {
+            logResult('Testing async message...', 'info');
+            
+            if (isExtensionContextValid()) {
+                chrome.runtime.sendMessage({ type: 'ASYNC_TEST' }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        logResult(`Async message error: ${chrome.runtime.lastError.message}`, 'error');
+                    } else {
+                        logResult(`Async message successful: ${JSON.stringify(response)}`, 'success');
+                    }
+                });
+            } else {
+                logResult('Extension context not available for async test', 'error');
+            }
+        }
+
+        function testTimeoutMessage() {
+            logResult('Testing timeout message...', 'info');
+            
+            if (isExtensionContextValid()) {
+                chrome.runtime.sendMessage({ type: 'TIMEOUT_TEST' }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        logResult(`Timeout message error: ${chrome.runtime.lastError.message}`, 'error');
+                    } else {
+                        logResult(`Timeout message result: ${JSON.stringify(response)}`, 'success');
+                    }
+                });
+            } else {
+                logResult('Extension context not available for timeout test', 'error');
+            }
+        }
+
+        // Setup event listeners
+        document.getElementById('test-sync-message').addEventListener('click', testSyncMessage);
+        document.getElementById('test-async-message').addEventListener('click', testAsyncMessage);
+        document.getElementById('test-timeout-message').addEventListener('click', testTimeoutMessage);
+        document.getElementById('clear-console').addEventListener('click', () => {
+            console.clear();
+            logResult('Console cleared', 'info');
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            logResult('🚀 Message Channel Fix Test loaded', 'info');
+            logResult('This test simulates the message handling improvements', 'info');
+            logResult('Expected: No "message channel closed" errors', 'info');
+            
+            setupMessageListener();
+        });
+    </script>
+</body>
+</html> 

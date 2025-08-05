@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summary Notification Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Summary Notification Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Billing Summary Notification Fix</h2>
+        <p>This page tests the fix for the "summary.replace is not a function" error.</p>
+        
+        <button id="test-string-summary">📝 Test String Summary</button>
+        <button id="test-object-summary">📋 Test Object Summary</button>
+        <button id="test-null-summary">❌ Test Null Summary</button>
+        <button id="test-undefined-summary">❓ Test Undefined Summary</button>
+        <button id="clear-console">🧹 Clear Console</button>
+        
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        function logResult(message, type = 'info') {
+            const container = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Mock the showBillingSummaryNotification function with the fix
+        function showBillingSummaryNotification(summary, timeSpent) {
+            try {
+                // Debug logging to understand the data type
+                console.log('🎯 BillableAI: showBillingSummaryNotification called with:', {
+                    summary: summary,
+                    summaryType: typeof summary,
+                    timeSpent: timeSpent
+                });
+
+                // Remove existing notification
+                const existingNotification = document.getElementById('billableai-summary-notification');
+                if (existingNotification) {
+                    existingNotification.remove();
+                }
+
+                // Validate and sanitize summary
+                let displaySummary = 'No billing summary available';
+                if (summary && typeof summary === 'string') {
+                    displaySummary = summary;
+                } else if (summary && typeof summary === 'object') {
+                    // If summary is an object, try to extract text content
+                    displaySummary = summary.text || summary.content || summary.summary || JSON.stringify(summary);
+                } else if (summary) {
+                    // Convert to string if it's not null/undefined
+                    displaySummary = String(summary);
+                }
+
+                console.log('🎯 BillableAI: Sanitized displaySummary:', displaySummary);
+
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.id = 'billableai-summary-notification';
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 20px;
+                    border-radius: 15px;
+                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+                    z-index: 10001;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    font-size: 14px;
+                    max-width: 400px;
+                    backdrop-filter: blur(15px);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    transition: all 0.4s ease;
+                    opacity: 0;
+                    transform: translateX(100%) scale(0.9);
+                `;
+
+                // Format time spent
+                const minutes = Math.floor(timeSpent / 60000);
+                const seconds = Math.floor((timeSpent % 60000) / 1000);
+                const timeDisplay = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                // Create notification content
+                notification.innerHTML = `
+                    <div style="display: flex; align-items: flex-start; gap: 15px;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                                <div style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                                    🤖
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 16px; margin-bottom: 2px;">Gemini AI Summary</div>
+                                    <div style="font-size: 12px; opacity: 0.8;">Time spent: ${timeDisplay}</div>
+                                </div>
+                            </div>
+                            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 15px; margin-bottom: 15px; font-size: 13px; line-height: 1.5; max-height: 200px; overflow-y: auto;">
+                                ${displaySummary.replace(/\n/g, '<br>')}
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button id="billableai-copy-summary" style="
+                                    background: rgba(255, 255, 255, 0.2);
+                                    border: none;
+                                    color: white;
+                                    padding: 8px 15px;
+                                    border-radius: 8px;
+                                    font-size: 12px;
+                                    cursor: pointer;
+                                    transition: all 0.2s ease;
+                                    flex: 1;
+                                ">📋 Copy Summary</button>
+                                <button id="billableai-close-summary" style="
+                                    background: rgba(255, 255, 255, 0.1);
+                                    border: none;
+                                    color: white;
+                                    padding: 8px 15px;
+                                    border-radius: 8px;
+                                    font-size: 12px;
+                                    cursor: pointer;
+                                    transition: all 0.2s ease;
+                                ">✕ Close</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(notification);
+
+                // Animate in
+                setTimeout(() => {
+                    notification.style.opacity = '1';
+                    notification.style.transform = 'translateX(0) scale(1)';
+                }, 100);
+
+                // Add event listeners
+                const copyButton = notification.querySelector('#billableai-copy-summary');
+                const closeButton = notification.querySelector('#billableai-close-summary');
+
+                copyButton.addEventListener('click', () => {
+                    navigator.clipboard.writeText(displaySummary).then(() => {
+                        copyButton.textContent = '✅ Copied!';
+                        copyButton.style.background = 'rgba(76, 175, 80, 0.3)';
+                        setTimeout(() => {
+                            copyButton.textContent = '📋 Copy Summary';
+                            copyButton.style.background = 'rgba(255, 255, 255, 0.2)';
+                        }, 2000);
+                    }).catch(() => {
+                        copyButton.textContent = '❌ Failed';
+                        setTimeout(() => {
+                            copyButton.textContent = '📋 Copy Summary';
+                        }, 2000);
+                    });
+                });
+
+                closeButton.addEventListener('click', () => {
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateX(100%) scale(0.9)';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 400);
+                });
+
+                // Auto-close after 30 seconds
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.style.opacity = '0';
+                        notification.style.transform = 'translateX(100%) scale(0.9)';
+                        setTimeout(() => {
+                            if (notification.parentNode) {
+                                notification.remove();
+                            }
+                        }, 400);
+                    }
+                }, 30000);
+
+                logResult('✅ Billing summary notification displayed successfully', 'success');
+            } catch (error) {
+                console.error('🎯 BillableAI: Show billing summary notification error:', error);
+                logResult(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test functions
+        function testStringSummary() {
+            logResult('Testing string summary...', 'info');
+            const summary = `📧 **Email Correspondence Summary**
+
+**Recipient:** client@example.com
+**Subject:** Test Email Subject
+**Time Spent:** 2:30 (0.04 hours)
+
+**Description:** Professional legal communication and document review completed.
+
+**Billing Category:** Legal Correspondence & Client Communication
+**Activity Type:** Email drafting, review, and client communication`;
+
+            showBillingSummaryNotification(summary, 150000); // 2.5 minutes
+        }
+
+        function testObjectSummary() {
+            logResult('Testing object summary...', 'info');
+            const summary = {
+                text: "This is a billing summary from an object",
+                content: "Alternative content field",
+                summary: "Summary field content"
+            };
+
+            showBillingSummaryNotification(summary, 180000); // 3 minutes
+        }
+
+        function testNullSummary() {
+            logResult('Testing null summary...', 'info');
+            showBillingSummaryNotification(null, 90000); // 1.5 minutes
+        }
+
+        function testUndefinedSummary() {
+            logResult('Testing undefined summary...', 'info');
+            showBillingSummaryNotification(undefined, 120000); // 2 minutes
+        }
+
+        // Setup event listeners
+        document.getElementById('test-string-summary').addEventListener('click', testStringSummary);
+        document.getElementById('test-object-summary').addEventListener('click', testObjectSummary);
+        document.getElementById('test-null-summary').addEventListener('click', testNullSummary);
+        document.getElementById('test-undefined-summary').addEventListener('click', testUndefinedSummary);
+        document.getElementById('clear-console').addEventListener('click', () => {
+            console.clear();
+            logResult('Console cleared', 'info');
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            logResult('🚀 Summary Notification Fix Test loaded', 'info');
+            logResult('Click buttons to test different summary types', 'info');
+            logResult('Expected: No "summary.replace is not a function" errors', 'info');
+        });
+    </script>
+</body>
+</html> 

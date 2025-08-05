@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compose Trigger Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .compose-window {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+        .compose-window.closed {
+            display: none;
+        }
+        .compose-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .send-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        input, textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            color: white;
+            padding: 8px;
+            margin: 5px 0;
+        }
+        .field-highlight {
+            background: rgba(255, 255, 0, 0.2) !important;
+            border-color: yellow !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Compose Trigger Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Compose Trigger Fix</h2>
+        <p>This page tests the fix for multiple compose triggers when moving between fields.</p>
+        <ul>
+            <li>✅ Timer starts only once when compose opens</li>
+            <li>✅ Timer doesn't restart when moving between fields</li>
+            <li>✅ Throttled compose detection</li>
+            <li>✅ Prevents multiple tracking sessions</li>
+        </ul>
+        
+        <button id="open-compose">📝 Open Compose Window</button>
+        <button id="close-compose">❌ Close Compose Window</button>
+        <button id="simulate-field-change">🔄 Simulate Field Change</button>
+        <button id="clear-console">🧹 Clear Console</button>
+        
+        <div id="test-results"></div>
+    </div>
+
+    <div id="compose-window" class="compose-window closed">
+        <div class="compose-header">
+            <h3>📧 Compose Email</h3>
+            <button class="close-btn" onclick="closeCompose()">✕</button>
+        </div>
+        
+        <input type="email" id="to-field" placeholder="To: recipient@example.com" value="client@example.com">
+        <input type="text" id="subject-field" placeholder="Subject" value="Test Email Subject">
+        <textarea id="content-field" placeholder="Email content..." rows="6">Dear Client,
+
+This is a test email to verify the compose trigger fix.
+
+Best regards,
+Attorney</textarea>
+        
+        <div style="text-align: right; margin-top: 15px;">
+            <button class="send-btn" onclick="sendEmail()">📤 Send</button>
+        </div>
+    </div>
+
+    <script>
+        function logResult(message, type = 'info') {
+            const container = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Mock the billableAIState
+        window.billableAIState = {
+            isTracking: false,
+            isPaused: false,
+            currentEmail: null,
+            sessionId: null,
+            draftId: null,
+            timerState: {
+                isActive: false,
+                startTime: null,
+                pausedTime: 0,
+                lastPauseTime: null
+            }
+        };
+
+        // Mock compose detection with throttling
+        let composeTrackingStarted = false;
+        let lastComposeCheck = 0;
+        const COMPOSE_CHECK_THROTTLE = 2000; // 2 seconds between checks
+
+        // Mock the startComposeTracking function
+        function startComposeTracking() {
+            try {
+                // Prevent multiple starts for the same compose session
+                if (window.billableAIState.isTracking) {
+                    logResult('🎯 Already tracking, skipping compose start', 'info');
+                    return;
+                }
+                
+                logResult('🚀 Starting compose tracking...', 'info');
+                
+                const emailData = {
+                    to: document.getElementById('to-field')?.value || 'draft@example.com',
+                    subject: document.getElementById('subject-field')?.value || 'Draft Email',
+                    content: document.getElementById('content-field')?.textContent || '',
+                    from: 'user@gmail.com'
+                };
+                
+                logResult(`📧 Starting tracking with data: ${JSON.stringify(emailData)}`, 'success');
+                
+                // Start tracking
+                window.billableAIState.isTracking = true;
+                window.billableAIState.currentEmail = emailData;
+                window.billableAIState.sessionId = `session_${Date.now()}`;
+                window.billableAIState.draftId = `draft_${Date.now()}`;
+                
+                // Initialize timer
+                const timerState = window.billableAIState.timerState;
+                timerState.isActive = true;
+                timerState.startTime = Date.now();
+                timerState.pausedTime = 0;
+                timerState.lastPauseTime = null;
+                
+                logResult('✅ Compose tracking started successfully', 'success');
+            } catch (error) {
+                logResult(`❌ Start compose tracking error: ${error.message}`, 'error');
+            }
+        }
+
+        // Mock the stopEmailTracking function
+        function stopEmailTracking(generateSummary = false) {
+            logResult('⏹️ Stopping email tracking...', 'info');
+            
+            window.billableAIState.isTracking = false;
+            composeTrackingStarted = false;
+            
+            logResult('✅ Email tracking stopped', 'success');
+            return Promise.resolve({ success: true });
+        }
+
+        // Mock compose detection observer
+        function setupComposeDetection() {
+            logResult('🔍 Setting up compose detection...', 'info');
+            
+            // Simulate the throttled detection logic
+            const checkForCompose = () => {
+                const now = Date.now();
+                
+                // Throttle compose checks to prevent spam
+                if (now - lastComposeCheck < COMPOSE_CHECK_THROTTLE) {
+                    return;
+                }
+                lastComposeCheck = now;
+                
+                const composeWindow = document.getElementById('compose-window');
+                const isComposeOpen = !composeWindow.classList.contains('closed');
+                
+                if (isComposeOpen && !window.billableAIState.isTracking && !composeTrackingStarted) {
+                    logResult('🎯 New compose window detected', 'success');
+                    composeTrackingStarted = true;
+                    startComposeTracking();
+                } else if (!isComposeOpen && window.billableAIState.isTracking) {
+                    logResult('🎯 Compose window closed, stopping tracking', 'info');
+                    composeTrackingStarted = false;
+                    stopEmailTracking(false);
+                }
+            };
+            
+            // Check periodically
+            setInterval(checkForCompose, 1000);
+            
+            logResult('✅ Compose detection setup complete', 'success');
+        }
+
+        // Open compose window
+        function openCompose() {
+            logResult('📝 Opening compose window...', 'info');
+            document.getElementById('compose-window').classList.remove('closed');
+        }
+
+        // Close compose window
+        function closeCompose() {
+            logResult('❌ Closing compose window...', 'info');
+            document.getElementById('compose-window').classList.add('closed');
+        }
+
+        // Send email
+        function sendEmail() {
+            logResult('📤 Send button clicked!', 'info');
+            stopEmailTracking(true).then(() => {
+                logResult('✅ Email sent with billing summary', 'success');
+                closeCompose();
+            });
+        }
+
+        // Simulate field change (like moving from "to" to "subject")
+        function simulateFieldChange() {
+            logResult('🔄 Simulating field change...', 'info');
+            
+            // Highlight fields to show the change
+            const toField = document.getElementById('to-field');
+            const subjectField = document.getElementById('subject-field');
+            
+            toField.classList.add('field-highlight');
+            setTimeout(() => {
+                toField.classList.remove('field-highlight');
+                subjectField.classList.add('field-highlight');
+                setTimeout(() => {
+                    subjectField.classList.remove('field-highlight');
+                }, 500);
+            }, 500);
+            
+            logResult('✅ Field change simulated (should not trigger new tracking)', 'info');
+        }
+
+        // Setup event listeners
+        document.getElementById('open-compose').addEventListener('click', openCompose);
+        document.getElementById('close-compose').addEventListener('click', closeCompose);
+        document.getElementById('simulate-field-change').addEventListener('click', simulateFieldChange);
+        document.getElementById('clear-console').addEventListener('click', () => {
+            console.clear();
+            logResult('Console cleared', 'info');
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            logResult('🚀 Compose Trigger Fix Test loaded', 'info');
+            logResult('Click "Open Compose Window" to start testing', 'info');
+            logResult('Expected: Timer starts only once, not on field changes', 'info');
+            
+            setupComposeDetection();
+        });
+    </script>
+</body>
+</html> 

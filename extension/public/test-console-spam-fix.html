@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console Spam Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Console Spam Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Console Spam Prevention</h2>
+        <p>This page tests the fixes for console spam when tracking is stopped.</p>
+        
+        <button id="start-tracking">🚀 Start Tracking</button>
+        <button id="stop-tracking">⏹️ Stop Tracking</button>
+        <button id="clear-console">🧹 Clear Console</button>
+        
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        function logResult(message, type = 'info') {
+            const container = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Mock the billableAIState
+        window.billableAIState = {
+            isTracking: false,
+            isPaused: false,
+            currentEmail: {
+                to: 'test@example.com',
+                subject: 'Test Email',
+                content: 'Test content',
+                from: 'user@example.com'
+            },
+            sessionId: 'test_session_123',
+            draftId: 'test_draft_456',
+            timerState: {
+                isActive: false,
+                startTime: null,
+                pausedTime: 0,
+                lastPauseTime: null
+            },
+            lastActivityTime: null,
+            backendUrl: 'http://localhost:3001/api',
+            authToken: 'mock_token'
+        };
+
+        // Mock the getCurrentElapsedTime function
+        function getCurrentElapsedTime() {
+            const state = window.billableAIState.timerState;
+            if (!state.isActive || !state.startTime) {
+                return state.pausedTime;
+            }
+            const currentTime = Date.now();
+            const activeTime = currentTime - state.startTime;
+            return state.pausedTime + activeTime;
+        }
+
+        // Mock the updateTrackingStatus function with throttling
+        let lastStatusUpdate = 0;
+        const STATUS_UPDATE_THROTTLE = 5000;
+
+        function updateTrackingStatus(force = false) {
+            try {
+                const now = Date.now();
+                
+                // Throttle updates unless forced
+                if (!force && (now - lastStatusUpdate) < STATUS_UPDATE_THROTTLE) {
+                    return;
+                }
+                
+                lastStatusUpdate = now;
+                
+                const currentTime = getCurrentElapsedTime();
+                
+                const status = {
+                    isTracking: window.billableAIState.isTracking,
+                    currentTime: currentTime,
+                    isPaused: window.billableAIState.isPaused,
+                    lastUpdated: now,
+                    lastActivityTime: window.billableAIState.lastActivityTime,
+                    sessionId: window.billableAIState.sessionId,
+                    draftId: window.billableAIState.draftId
+                };
+                
+                // Only log if forced or if tracking is active
+                if (force || window.billableAIState.isTracking) {
+                    console.log('🎯 BillableAI: Tracking status updated:', status);
+                    logResult('Tracking status updated (logged)', 'success');
+                } else {
+                    logResult('Tracking status updated (throttled - not logged)', 'info');
+                }
+            } catch (error) {
+                console.error('🎯 BillableAI: Error updating tracking status:', error);
+                logResult(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Mock the updateEmailActivity function
+        function updateEmailActivity() {
+            try {
+                // Only update if tracking is active
+                if (!window.billableAIState.isTracking) {
+                    logResult('Activity update skipped (tracking stopped)', 'info');
+                    return;
+                }
+                
+                window.billableAIState.lastActivityTime = Date.now();
+                logResult('Activity updated', 'success');
+                
+                // Update tracking status (throttled)
+                updateTrackingStatus();
+            } catch (error) {
+                console.error('🎯 BillableAI: Update email activity error:', error);
+                logResult(`Activity error: ${error.message}`, 'error');
+            }
+        }
+
+        // Start tracking
+        function startTracking() {
+            logResult('Starting tracking...', 'info');
+            
+            window.billableAIState.isTracking = true;
+            window.billableAIState.isPaused = false;
+            
+            const state = window.billableAIState.timerState;
+            state.isActive = true;
+            state.startTime = Date.now();
+            state.pausedTime = 0;
+            state.lastPauseTime = null;
+            
+            updateTrackingStatus(true); // Force update
+            logResult('Tracking started successfully', 'success');
+        }
+
+        // Stop tracking
+        function stopTracking() {
+            logResult('Stopping tracking...', 'info');
+            
+            window.billableAIState.isTracking = false;
+            
+            updateTrackingStatus(true); // Force update
+            logResult('Tracking stopped successfully', 'success');
+        }
+
+        // Setup event listeners
+        document.getElementById('start-tracking').addEventListener('click', () => {
+            startTracking();
+        });
+
+        document.getElementById('stop-tracking').addEventListener('click', () => {
+            stopTracking();
+        });
+
+        document.getElementById('clear-console').addEventListener('click', () => {
+            console.clear();
+            logResult('Console cleared', 'info');
+        });
+
+        // Test function to simulate frequent calls
+        function testFrequentCalls() {
+            logResult('Testing frequent updateTrackingStatus calls...', 'info');
+            
+            // Simulate multiple rapid calls
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    updateTrackingStatus();
+                }, i * 100);
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            logResult('🚀 Console Spam Fix Test loaded', 'info');
+            logResult('Click "Start Tracking" then "Stop Tracking" to test', 'info');
+            logResult('Watch the console for spam prevention', 'info');
+            logResult('Expected: Only forced updates should log when tracking is stopped', 'info');
+            
+            // Auto-test after 2 seconds
+            setTimeout(() => {
+                logResult('Auto-testing frequent calls...', 'info');
+                testFrequentCalls();
+            }, 2000);
+        });
+    </script>
+</body>
+</html> 

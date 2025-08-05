@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Compose Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .debug-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Compose Detection</h1>
+    
+    <div class="debug-section">
+        <h2>Debug Compose Detection Issues</h2>
+        <p>This page helps debug why the timer isn't showing up.</p>
+        
+        <button id="check-compose-elements">🔍 Check Compose Elements</button>
+        <button id="manual-start-tracking">🚀 Manual Start Tracking</button>
+        <button id="check-tracking-state">📊 Check Tracking State</button>
+        <button id="clear-console">🧹 Clear Console</button>
+        
+        <div id="debug-results"></div>
+    </div>
+
+    <script>
+        function logResult(message, type = 'info') {
+            const container = document.getElementById('debug-results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Check for compose elements on the page
+        function checkComposeElements() {
+            logResult('🔍 Checking for compose elements...', 'info');
+            
+            const selectors = [
+                '[role="dialog"][aria-label*="Compose"]',
+                '[data-tooltip="Compose"]',
+                '[aria-label*="Compose"][role="dialog"]',
+                '[role="dialog"]',
+                '[aria-label*="Compose"]',
+                '[data-tooltip*="Compose"]',
+                '[name="to"]',
+                '[name="subjectbox"]',
+                '[role="textbox"]',
+                '[contenteditable="true"]',
+                'textarea'
+            ];
+            
+            selectors.forEach(selector => {
+                const elements = document.querySelectorAll(selector);
+                if (elements.length > 0) {
+                    logResult(`✅ Found ${elements.length} elements with selector: ${selector}`, 'success');
+                    elements.forEach((el, index) => {
+                        logResult(`  ${index + 1}. ${el.tagName} - aria-label: "${el.getAttribute('aria-label')}" - data-tooltip: "${el.getAttribute('data-tooltip')}"`, 'info');
+                    });
+                } else {
+                    logResult(`❌ No elements found with selector: ${selector}`, 'error');
+                }
+            });
+        }
+
+        // Manual start tracking
+        function manualStartTracking() {
+            logResult('🚀 Manually starting tracking...', 'info');
+            
+            if (window.billableAI && window.billableAI.startComposeTracking) {
+                window.billableAI.startComposeTracking();
+                logResult('✅ Manual tracking started', 'success');
+            } else {
+                logResult('❌ BillableAI not available', 'error');
+            }
+        }
+
+        // Check tracking state
+        function checkTrackingState() {
+            logResult('📊 Checking tracking state...', 'info');
+            
+            if (window.billableAIState) {
+                logResult(`✅ BillableAI State:`, 'success');
+                logResult(`  - isTracking: ${window.billableAIState.isTracking}`, 'info');
+                logResult(`  - isPaused: ${window.billableAIState.isPaused}`, 'info');
+                logResult(`  - sessionId: ${window.billableAIState.sessionId}`, 'info');
+                logResult(`  - draftId: ${window.billableAIState.draftId}`, 'info');
+                logResult(`  - currentEmail: ${JSON.stringify(window.billableAIState.currentEmail)}`, 'info');
+                
+                if (window.billableAIState.timerState) {
+                    logResult(`  - timerState:`, 'info');
+                    logResult(`    - isActive: ${window.billableAIState.timerState.isActive}`, 'info');
+                    logResult(`    - startTime: ${window.billableAIState.timerState.startTime}`, 'info');
+                    logResult(`    - pausedTime: ${window.billableAIState.timerState.pausedTime}`, 'info');
+                }
+            } else {
+                logResult('❌ BillableAI State not available', 'error');
+            }
+        }
+
+        // Setup event listeners
+        document.getElementById('check-compose-elements').addEventListener('click', checkComposeElements);
+        document.getElementById('manual-start-tracking').addEventListener('click', manualStartTracking);
+        document.getElementById('check-tracking-state').addEventListener('click', checkTrackingState);
+        document.getElementById('clear-console').addEventListener('click', () => {
+            console.clear();
+            logResult('Console cleared', 'info');
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            logResult('🚀 Debug Compose Detection loaded', 'info');
+            logResult('Click "Check Compose Elements" to see what elements are found', 'info');
+            logResult('Click "Manual Start Tracking" to force start tracking', 'info');
+            logResult('Click "Check Tracking State" to see current state', 'info');
+        });
+    </script>
+</body>
+</html> 
