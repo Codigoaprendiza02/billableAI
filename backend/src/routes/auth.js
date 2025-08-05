@@ -1,7 +1,16 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import { body, validationResult } from 'express-validator';
-import { registerUser, loginUser, getUserById } from '../services/authService.js';
+import { 
+  registerUser, 
+  loginUser, 
+  getUserById, 
+  updateUserProfile,
+  refreshAccessToken,
+  verifyToken,
+  logoutUser,
+  logoutAllDevices
+} from '../services/authService.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, CLIO_CLIENT_ID, CLIO_CLIENT_SECRET } from '../config.js';
 import { googleOAuth } from '../controllers/authController.js';
@@ -98,9 +107,32 @@ router.post('/login', authLimiter, validateLogin, async (req, res) => {
     }
 
     const result = await loginUser(req.body);
-    res.json(result);
+    res.status(200).json(result);
   } catch (error) {
     console.error('Login error:', error);
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Token refresh endpoint
+router.post('/refresh', async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    
+    if (!refreshToken) {
+      return res.status(400).json({
+        success: false,
+        error: 'Refresh token is required'
+      });
+    }
+    
+    const result = await refreshAccessToken(refreshToken);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Token refresh error:', error);
     res.status(401).json({
       success: false,
       error: error.message
@@ -108,38 +140,73 @@ router.post('/login', authLimiter, validateLogin, async (req, res) => {
   }
 });
 
-// Get user profile (protected route)
+// Enhanced token verification endpoint
+router.get('/verify', authenticateToken, async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    const result = await verifyToken(token);
+    
+    if (result.success) {
+      res.status(200).json({
+        success: true,
+        user: result.user,
+        valid: true
+      });
+    } else {
+      res.status(401).json({
+        success: false,
+        error: result.error,
+        valid: false
+      });
+    }
+  } catch (error) {
+    console.error('Token verification error:', error);
+    res.status(401).json({
+      success: false,
+      error: 'Token verification failed',
+      valid: false
+    });
+  }
+});
+
+// Enhanced logout endpoint
+router.post('/logout', authenticateToken, async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    const userId = req.user.userId;
+    
+    const result = await logoutUser(refreshToken, userId);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Logout from all devices
+router.post('/logout-all', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const result = await logoutAllDevices(userId);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Logout all devices error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get current user profile with enhanced data
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
-    const user = await getUserById(req.user.userId);
-    
-    // Check if user has Clio access
-    const hasClioAccess = !!(user.clioTokens && user.clioTokens.access_token);
-    const isConnectedToClio = hasClioAccess || user.isConnectedToClio;
-    
-    res.json({
-      success: true,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        name: user.name,
-        profession: user.profession,
-        gender: user.gender,
-        avatar: user.avatar,
-        aiPreferences: user.aiPreferences,
-        billableLogging: user.billableLogging,
-        isConnectedToClio: isConnectedToClio,
-        hasClioAccess: hasClioAccess,
-        clioTokens: user.clioTokens ? {
-          hasAccessToken: !!user.clioTokens.access_token,
-          hasRefreshToken: !!user.clioTokens.refresh_token,
-          expiryDate: user.clioTokens.expiry_date
-        } : null,
-        workHistory: user.workHistory,
-        hasCompletedOnboarding: user.hasCompletedOnboarding
-      }
-    });
+    const userId = req.user.userId;
+    const result = await getUserById(userId);
+    res.status(200).json(result);
   } catch (error) {
     console.error('Get profile error:', error);
     res.status(404).json({
@@ -149,13 +216,84 @@ router.get('/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// Verify token
-router.get('/verify', authenticateToken, (req, res) => {
-  res.json({
-    success: true,
-    message: 'Token is valid',
-    userId: req.user.userId
-  });
+// Update user profile with enhanced data
+router.put('/profile', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const result = await updateUserProfile(userId, req.body);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Update assistant context
+router.put('/assistant-context', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { assistantContext } = req.body;
+    
+    const result = await updateUserProfile(userId, { assistantContext });
+    res.status(200).json({
+      success: true,
+      message: 'Assistant context updated successfully',
+      assistantContext: result.user.assistantContext
+    });
+  } catch (error) {
+    console.error('Update assistant context error:', error);
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get assistant context
+router.get('/assistant-context', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const result = await getUserById(userId);
+    
+    res.status(200).json({
+      success: true,
+      assistantContext: result.user.assistantContext || {
+        conversationHistory: [],
+        preferences: {},
+        lastUsedEmail: null
+      }
+    });
+  } catch (error) {
+    console.error('Get assistant context error:', error);
+    res.status(404).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Update notification settings
+router.put('/notification-settings', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { notificationSettings } = req.body;
+    
+    const result = await updateUserProfile(userId, { notificationSettings });
+    res.status(200).json({
+      success: true,
+      message: 'Notification settings updated successfully',
+      notificationSettings: result.user.notificationSettings
+    });
+  } catch (error) {
+    console.error('Update notification settings error:', error);
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
 });
 
 // Test OAuth configuration endpoint

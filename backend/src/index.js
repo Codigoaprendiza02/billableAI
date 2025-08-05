@@ -15,6 +15,7 @@ import emailTrackingRouter from './routes/emailTracking.js';
 import emailAnalysisRouter from './routes/emailAnalysis.js';
 import testRouter from './routes/test.js';
 import configRouter from './routes/config.js';
+import notificationRouter from './routes/notifications.js';
 import { startEmailTracking } from './services/emailTrackingService.js';
 
 const app = express();
@@ -110,6 +111,7 @@ app.use('/api/email-tracking', emailTrackingRouter);
 app.use('/api/email-analysis', emailAnalysisRouter);
 app.use('/api/test', testRouter);
 app.use('/api/config', configRouter);
+app.use('/api/notifications', notificationRouter);
 
 // Simple test route for email tracking
 app.post('/api/simple-test/email-tracking/start', async (req, res) => {
