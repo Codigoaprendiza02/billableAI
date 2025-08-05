@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
   // Basic user information
-  username: { type: String, required: true, unique: true, trim: true },
-  email: { type: String, required: true, unique: true, lowercase: true },
+  username: { type: String, required: true, trim: true },
+  email: { type: String, required: true, lowercase: true },
   name: { type: String, required: true, trim: true },
   profession: { type: String, default: 'Lawyer' },
   gender: { type: String, enum: ['Male', 'Female', 'Others'], default: '' },
@@ -111,6 +111,10 @@ const userSchema = new mongoose.Schema({
   hasCompletedOnboarding: { type: Boolean, default: false }
   
 }, { timestamps: true });
+
+// Define unique indexes separately to avoid conflicts
+userSchema.index({ username: 1 }, { unique: true });
+userSchema.index({ email: 1 }, { unique: true });
 
 // Indexes for performance
 userSchema.index({ 'refreshTokens.token': 1 });

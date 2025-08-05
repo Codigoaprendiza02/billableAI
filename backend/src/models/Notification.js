@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const notificationSchema = new mongoose.Schema({
   // Notification identification
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  notificationId: { type: String, required: true, unique: true },
+  notificationId: { type: String, required: true },
   
   // Notification content
   type: { 
@@ -79,6 +79,9 @@ const notificationSchema = new mongoose.Schema({
   expiresAt: Date
   
 }, { timestamps: true });
+
+// Define unique index separately to avoid conflicts
+notificationSchema.index({ notificationId: 1 }, { unique: true });
 
 // Indexes for performance
 notificationSchema.index({ userId: 1, createdAt: -1 });

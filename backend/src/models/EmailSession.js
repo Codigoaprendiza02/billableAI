@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const emailSessionSchema = new mongoose.Schema({
   // Session identification
-  sessionId: { type: String, required: true, unique: true },
+  sessionId: { type: String, required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   
   // Email details
@@ -83,6 +83,9 @@ const emailSessionSchema = new mongoose.Schema({
   }]
   
 }, { timestamps: true });
+
+// Define unique index separately to avoid conflicts
+emailSessionSchema.index({ sessionId: 1 }, { unique: true });
 
 // Indexes for performance
 emailSessionSchema.index({ userId: 1, startTime: -1 });
