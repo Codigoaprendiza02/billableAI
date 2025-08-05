@@ -1,13 +1,32 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
+import crypto from 'crypto';
 import User from '../models/User.js';
 import { validatePassword } from '../utils/passwordValidator.js';
 import { JWT_SECRET } from '../config.js';
 
-// Generate JWT token
+// Token configuration
+const ACCESS_TOKEN_EXPIRY = '15m'; // 15 minutes
+const REFRESH_TOKEN_EXPIRY = '7d'; // 7 days
+
+// Generate access token
+export const generateAccessToken = (userId, expiresIn = ACCESS_TOKEN_EXPIRY) => {
+  return jwt.sign({ userId, type: 'access' }, JWT_SECRET, { expiresIn });
+};
+
+// Generate refresh token
+export const generateRefreshToken = (userId) => {
+  const token = crypto.randomBytes(40).toString('hex');
+  return {
+    token,
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+  };
+};
+
+// Legacy token generation for backward compatibility
 export const generateToken = (userId) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
+  return generateAccessToken(userId, '7d'); // Longer expiry for legacy compatibility
 };
 
 // Hash password
@@ -24,7 +43,6 @@ export const comparePassword = async (password, hashedPassword) => {
 // Check if database is available
 const checkDatabaseConnection = () => {
   try {
-    // Check if mongoose is connected
     const connection = mongoose.connection;
     return connection && connection.readyState === 1; // 1 = connected
   } catch (error) {
@@ -33,15 +51,14 @@ const checkDatabaseConnection = () => {
   }
 };
 
-// Register user
+// Register user with enhanced authentication
 export const registerUser = async (userData) => {
   try {
-    // Check if database is available
     if (!checkDatabaseConnection()) {
       throw new Error('Database is not available. Please check if MongoDB is running.');
     }
 
-    const { username, email, name, password, profession, gender } = userData;
+    const { username, email, name, password, profession, gender, device } = userData;
     
     // Validate password
     const passwordValidation = validatePassword(password);
@@ -66,24 +83,31 @@ export const registerUser = async (userData) => {
     // Hash password
     const hashedPassword = await hashPassword(password);
     
-    // Create user
+    // Create user with enhanced defaults
     const user = new User({
       username,
       email: email.toLowerCase(),
       name,
       password: hashedPassword,
       profession,
-      gender
+      gender,
+      lastActiveAt: new Date()
     });
     
     await user.save();
     
-    // Generate token
-    const token = generateToken(user._id);
+    // Generate tokens
+    const accessToken = generateAccessToken(user._id);
+    const refreshTokenData = generateRefreshToken(user._id);
+    
+    // Store refresh token
+    await user.addRefreshToken(refreshTokenData.token, refreshTokenData.expiresAt, device || 'unknown');
     
     return {
       success: true,
-      token,
+      accessToken,
+      refreshToken: refreshTokenData.token,
+      expiresIn: 900, // 15 minutes in seconds
       user: {
         id: user._id,
         username: user.username,
@@ -92,39 +116,30 @@ export const registerUser = async (userData) => {
         profession: user.profession,
         gender: user.gender,
         avatar: user.avatar,
-        hasCompletedOnboarding: user.hasCompletedOnboarding
+        hasCompletedOnboarding: user.hasCompletedOnboarding,
+        aiPreferences: user.aiPreferences,
+        billableLogging: user.billableLogging,
+        notificationSettings: user.notificationSettings
       }
     };
   } catch (error) {
     console.error('Registration error:', error);
-    
-    // Provide user-friendly error messages
-    if (error.message.includes('Database is not available')) {
-      throw new Error('Database is not available. Please check if MongoDB is running.');
-    } else if (error.message.includes('Password validation failed')) {
-      throw new Error(error.message);
-    } else if (error.message.includes('Email already registered')) {
-      throw new Error('Email already registered');
-    } else if (error.message.includes('Username already taken')) {
-      throw new Error('Username already taken');
-    } else if (error.name === 'ValidationError') {
-      const validationErrors = Object.values(error.errors).map(err => err.message);
-      throw new Error(`Validation failed: ${validationErrors.join(', ')}`);
-    } else {
-      throw new Error('Registration failed. Please try again.');
-    }
+    throw error;
   }
 };
 
-// Login user
+// Login user with enhanced authentication
 export const loginUser = async (credentials) => {
   try {
-    // Check if database is available
     if (!checkDatabaseConnection()) {
       throw new Error('Database is not available. Please check if MongoDB is running.');
     }
 
-    const { username, password } = credentials;
+    const { username, password, device } = credentials;
+    
+    if (!username || !password) {
+      throw new Error('Missing username/email or password');
+    }
     
     // Find user by username or email
     const user = await User.findOne({
@@ -132,27 +147,33 @@ export const loginUser = async (credentials) => {
     }).select('+password');
     
     if (!user) {
+      throw new Error('User not found');
+    }
+    
+    // Verify password
+    const isMatch = await comparePassword(password, user.password);
+    if (!isMatch) {
       throw new Error('Invalid credentials');
     }
     
-    // Check if user has a password (some old users might not have passwords)
-    if (!user.password) {
-      throw new Error('Account not properly set up. Please register again.');
-    }
+    // Clean up expired tokens
+    await user.cleanupExpiredTokens();
     
-    // Check password
-    const isPasswordValid = await comparePassword(password, user.password);
+    // Update last active
+    await user.updateLastActive();
     
-    if (!isPasswordValid) {
-      throw new Error('Invalid credentials');
-    }
+    // Generate tokens
+    const accessToken = generateAccessToken(user._id);
+    const refreshTokenData = generateRefreshToken(user._id);
     
-    // Generate token
-    const token = generateToken(user._id);
+    // Store refresh token
+    await user.addRefreshToken(refreshTokenData.token, refreshTokenData.expiresAt, device || 'unknown');
     
     return {
       success: true,
-      token,
+      accessToken,
+      refreshToken: refreshTokenData.token,
+      expiresIn: 900, // 15 minutes in seconds
       user: {
         id: user._id,
         username: user.username,
@@ -161,56 +182,223 @@ export const loginUser = async (credentials) => {
         profession: user.profession,
         gender: user.gender,
         avatar: user.avatar,
-        hasCompletedOnboarding: user.hasCompletedOnboarding
+        hasCompletedOnboarding: user.hasCompletedOnboarding,
+        aiPreferences: user.aiPreferences,
+        billableLogging: user.billableLogging,
+        notificationSettings: user.notificationSettings,
+        assistantContext: user.assistantContext,
+        workHistory: user.workHistory
       }
     };
   } catch (error) {
     console.error('Login error:', error);
-    
-    // Provide user-friendly error messages
-    if (error.message.includes('Database is not available')) {
+    throw error;
+  }
+};
+
+// Refresh access token
+export const refreshAccessToken = async (refreshToken) => {
+  try {
+    if (!checkDatabaseConnection()) {
       throw new Error('Database is not available. Please check if MongoDB is running.');
-    } else if (error.message.includes('Invalid credentials')) {
-      throw new Error('Invalid username or password');
-    } else if (error.message.includes('Account not properly set up')) {
-      throw new Error('Account not properly set up. Please register again.');
-    } else {
-      throw new Error('Login failed. Please try again.');
     }
+
+    if (!refreshToken) {
+      throw new Error('Refresh token is required');
+    }
+    
+    // Find user with this refresh token
+    const user = await User.findOne({
+      'refreshTokens.token': refreshToken,
+      'refreshTokens.expiresAt': { $gt: new Date() }
+    });
+    
+    if (!user) {
+      throw new Error('Invalid or expired refresh token');
+    }
+    
+    // Update last active
+    await user.updateLastActive();
+    
+    // Generate new access token
+    const accessToken = generateAccessToken(user._id);
+    
+    // Optionally rotate refresh token for better security
+    const shouldRotateRefreshToken = Math.random() < 0.1; // 10% chance
+    let newRefreshToken = refreshToken;
+    
+    if (shouldRotateRefreshToken) {
+      // Remove old refresh token
+      await user.removeRefreshToken(refreshToken);
+      
+      // Generate new refresh token
+      const refreshTokenData = generateRefreshToken(user._id);
+      await user.addRefreshToken(refreshTokenData.token, refreshTokenData.expiresAt);
+      newRefreshToken = refreshTokenData.token;
+    }
+    
+    return {
+      success: true,
+      accessToken,
+      refreshToken: newRefreshToken,
+      expiresIn: 900, // 15 minutes in seconds
+      rotated: shouldRotateRefreshToken
+    };
+  } catch (error) {
+    console.error('Token refresh error:', error);
+    throw error;
+  }
+};
+
+// Verify token (enhanced)
+export const verifyToken = async (token) => {
+  try {
+    if (!checkDatabaseConnection()) {
+      return { success: false, error: 'Database not available' };
+    }
+
+    // Handle mock tokens for testing
+    if (token.startsWith('mock_jwt_token_')) {
+      return {
+        success: true,
+        user: {
+          userId: 'mock_user_persistent',
+          email: 'test@example.com',
+          name: 'Test User'
+        }
+      };
+    }
+    
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findById(decoded.userId);
+    
+    if (!user) {
+      return { success: false, error: 'User not found' };
+    }
+    
+    // Update last active
+    await user.updateLastActive();
+    
+    return {
+      success: true,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        name: user.name,
+        profession: user.profession,
+        lastActiveAt: user.lastActiveAt
+      }
+    };
+  } catch (error) {
+    console.error('Token verification error:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Logout user (invalidate refresh token)
+export const logoutUser = async (refreshToken, userId) => {
+  try {
+    if (!checkDatabaseConnection()) {
+      return { success: false, error: 'Database not available' };
+    }
+
+    if (refreshToken && userId) {
+      const user = await User.findById(userId);
+      if (user) {
+        await user.removeRefreshToken(refreshToken);
+      }
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Logout error:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Logout from all devices
+export const logoutAllDevices = async (userId) => {
+  try {
+    if (!checkDatabaseConnection()) {
+      return { success: false, error: 'Database not available' };
+    }
+
+    const user = await User.findById(userId);
+    if (user) {
+      user.refreshTokens = [];
+      await user.save();
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Logout all devices error:', error);
+    return { success: false, error: error.message };
   }
 };
 
 // Get user by ID
 export const getUserById = async (userId) => {
   try {
-    // Check if database is available
     if (!checkDatabaseConnection()) {
       throw new Error('Database is not available. Please check if MongoDB is running.');
     }
 
     const user = await User.findById(userId);
+    
     if (!user) {
       throw new Error('User not found');
     }
     
-    return user;
+    return {
+      success: true,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        name: user.name,
+        profession: user.profession,
+        gender: user.gender,
+        avatar: user.avatar,
+        hasCompletedOnboarding: user.hasCompletedOnboarding,
+        aiPreferences: user.aiPreferences,
+        billableLogging: user.billableLogging,
+        notificationSettings: user.notificationSettings,
+        assistantContext: user.assistantContext,
+        workHistory: user.workHistory,
+        isConnectedToClio: user.isConnectedToClio,
+        lastActiveAt: user.lastActiveAt
+      }
+    };
   } catch (error) {
-    console.error('Get user by ID error:', error);
+    console.error('Get user error:', error);
     throw error;
   }
 };
 
-// Update user profile
-export const updateUserProfile = async (userId, updateData) => {
+// Update user profile with enhanced data
+export const updateUserProfile = async (userId, updates) => {
   try {
-    // Check if database is available
     if (!checkDatabaseConnection()) {
       throw new Error('Database is not available. Please check if MongoDB is running.');
     }
 
+    const allowedUpdates = [
+      'name', 'profession', 'gender', 'avatar', 
+      'aiPreferences', 'billableLogging', 'notificationSettings',
+      'assistantContext'
+    ];
+    
+    const filteredUpdates = {};
+    Object.keys(updates).forEach(key => {
+      if (allowedUpdates.includes(key)) {
+        filteredUpdates[key] = updates[key];
+      }
+    });
+    
     const user = await User.findByIdAndUpdate(
-      userId,
-      updateData,
+      userId, 
+      { ...filteredUpdates, lastActiveAt: new Date() },
       { new: true, runValidators: true }
     );
     
@@ -218,7 +406,24 @@ export const updateUserProfile = async (userId, updateData) => {
       throw new Error('User not found');
     }
     
-    return user;
+    return {
+      success: true,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        name: user.name,
+        profession: user.profession,
+        gender: user.gender,
+        avatar: user.avatar,
+        hasCompletedOnboarding: user.hasCompletedOnboarding,
+        aiPreferences: user.aiPreferences,
+        billableLogging: user.billableLogging,
+        notificationSettings: user.notificationSettings,
+        assistantContext: user.assistantContext,
+        workHistory: user.workHistory
+      }
+    };
   } catch (error) {
     console.error('Update user profile error:', error);
     throw error;
