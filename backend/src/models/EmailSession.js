@@ -86,7 +86,6 @@ const emailSessionSchema = new mongoose.Schema({
 
 // Indexes for performance
 emailSessionSchema.index({ userId: 1, startTime: -1 });
-emailSessionSchema.index({ sessionId: 1 });
 emailSessionSchema.index({ status: 1 });
 emailSessionSchema.index({ 'emailData.gmailDraftId': 1 });
 

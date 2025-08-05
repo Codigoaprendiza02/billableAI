@@ -82,7 +82,6 @@ const notificationSchema = new mongoose.Schema({
 
 // Indexes for performance
 notificationSchema.index({ userId: 1, createdAt: -1 });
-notificationSchema.index({ notificationId: 1 });
 notificationSchema.index({ status: 1 });
 notificationSchema.index({ type: 1 });
 notificationSchema.index({ expiresAt: 1 });

@@ -113,7 +113,6 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Indexes for performance
-userSchema.index({ email: 1 });
 userSchema.index({ 'refreshTokens.token': 1 });
 userSchema.index({ 'refreshTokens.expiresAt': 1 });
 
