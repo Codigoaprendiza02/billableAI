@@ -4,9 +4,6 @@ import SendIcon from '../icons/SendIcon';
 import GenerateIcon from '../icons/GenerateIcon';
 
 const Assistant = () => {
-<<<<<<< HEAD
-  const { geminiService, isConnectedToClio } = useAppContext();
-=======
   const { 
     geminiService, 
     isConnectedToClio, 
@@ -15,7 +12,6 @@ const Assistant = () => {
     updateLastUsedEmail,
     clearAssistantHistory
   } = useAppContext();
->>>>>>> 5189f8f (updations)
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -23,10 +19,6 @@ const Assistant = () => {
   const messagesEndRef = useRef(null);
   const [currentEmailData, setCurrentEmailData] = useState(null);
   const [currentTimeSpent, setCurrentTimeSpent] = useState(0);
-<<<<<<< HEAD
-  const [emailDataVisible, setEmailDataVisible] = useState(true);
-=======
->>>>>>> 5189f8f (updations)
   const [isProcessingEmail, setIsProcessingEmail] = useState(false); // Prevent duplicate processing
 
   const scrollToBottom = () => {
@@ -37,8 +29,6 @@ const Assistant = () => {
     scrollToBottom();
   }, [messages]);
 
-<<<<<<< HEAD
-=======
   // Load conversation history from assistant context
   useEffect(() => {
     if (assistantContext && assistantContext.conversationHistory) {
@@ -62,7 +52,6 @@ const Assistant = () => {
     }
   }, [assistantContext]);
 
->>>>>>> 5189f8f (updations)
   // Handle email data available messages
   const handleEmailDataAvailable = (message) => {
     console.log('🎯 BillableAI: Assistant received message:', message);
@@ -70,31 +59,6 @@ const Assistant = () => {
     if (message.type === 'EMAIL_DATA_AVAILABLE') {
       console.log('🎯 BillableAI: Received EMAIL_DATA_AVAILABLE message:', message.data);
       
-<<<<<<< HEAD
-      // Auto-process the email data
-      if (message.data && message.data.emailData) {
-        console.log('🎯 BillableAI: Email data found in message:', {
-          subject: message.data.emailData.subject,
-          to: message.data.emailData.to,
-          bodyLength: message.data.emailData.body?.length || 0,
-          timeSpent: message.data.timeSpent || 0
-        });
-        
-        // Prevent duplicate processing
-        if (isProcessingEmail) {
-          console.log('🎯 BillableAI: Skipping email processing - already processing');
-          return;
-        }
-        
-        setCurrentEmailData(message.data.emailData);
-        setCurrentTimeSpent(message.data.timeSpent || 0);
-        
-        // Generate summary
-        generateBillableSummary(message.data.emailData, message.data.timeSpent);
-      } else {
-        console.log('🎯 BillableAI: No email data found in EMAIL_DATA_AVAILABLE message');
-      }
-=======
               // Auto-process the email data
         if (message.data && message.data.emailData) {
           console.log('🎯 BillableAI: Email data found in message:', {
@@ -121,7 +85,6 @@ const Assistant = () => {
         } else {
           console.log('🎯 BillableAI: No email data found in EMAIL_DATA_AVAILABLE message');
         }
->>>>>>> 5189f8f (updations)
     } else {
       console.log('🎯 BillableAI: Received message with type:', message.type);
     }
@@ -329,27 +292,6 @@ const Assistant = () => {
     }
   };
 
-<<<<<<< HEAD
-  // Function to clear email data completely (including UI state)
-  const clearEmailData = async () => {
-    try {
-      console.log('🎯 BillableAI: Clearing email data completely...');
-      
-      // Clear from storage
-      await clearEmailDataFromStorage();
-      
-      // Clear UI state
-      setCurrentEmailData(null);
-      setCurrentTimeSpent(0);
-      
-      console.log('🎯 BillableAI: Email data cleared completely (UI and storage)');
-    } catch (error) {
-      console.log('🎯 BillableAI: Error clearing email data completely:', error);
-    }
-  };
-=======
-
->>>>>>> 5189f8f (updations)
 
   const generateBillableSummary = async (emailData, timeSpent) => {
     if (!emailData) {
@@ -549,11 +491,7 @@ Note: This is a fallback response. For enhanced analysis, please configure your 
         
         // Check Clio connection status directly from backend
         try {
-<<<<<<< HEAD
-          const { checkClioConnection } = await import('../services/oauthService.js');
-=======
           const { completeOneClickBilling, checkClioConnection } = await import('../services/oauthService.js');
->>>>>>> 5189f8f (updations)
           const connectionStatus = await checkClioConnection();
           console.log('🎯 BillableAI: Clio connection status:', connectionStatus);
           
@@ -567,12 +505,6 @@ To use automatic client and matter detection, please:
 1. Connect to Clio first (click "Connect to Clio" in the popup)
 2. Make sure you have email data available
 
-<<<<<<< HEAD
-Current Status: ${connectionStatus.isConnected ? '✅ Clio Connected' : '❌ Clio Not Connected'}
-${connectionStatus.error ? `Error: ${connectionStatus.error}` : ''}
-
-=======
->>>>>>> 5189f8f (updations)
 Would you like me to help you connect to Clio or process this manually?`;
           }
         } catch (error) {
@@ -583,11 +515,6 @@ To use automatic client and matter detection, please:
 1. Connect to Clio first (click "Connect to Clio" in the popup)
 2. Make sure you have email data available
 
-<<<<<<< HEAD
-Current Status: ❌ Clio Connection Check Failed
-
-=======
->>>>>>> 5189f8f (updations)
 Would you like me to help you connect to Clio or process this manually?`;
         }
       } else {
@@ -668,8 +595,6 @@ To get started, compose an email in Gmail and I'll help you create professional 
       const assistantMessage = { id: Date.now() + 1, type: 'assistant', content: response, timestamp: new Date() };
       setMessages(prev => [...prev, assistantMessage]);
       
-<<<<<<< HEAD
-=======
       // Save conversation to assistant context
       await addAssistantMessage(message, response);
       
@@ -678,7 +603,6 @@ To get started, compose an email in Gmail and I'll help you create professional 
         await updateLastUsedEmail(currentEmailData);
       }
       
->>>>>>> 5189f8f (updations)
     } catch (error) {
       console.log('🎯 BillableAI: Error generating response:', error);
       
@@ -828,151 +752,6 @@ Your time has been automatically logged to Clio with the detected client and mat
     }
   };
 
-<<<<<<< HEAD
-  const clearChat = () => {
-    setMessages([]);
-    setCurrentEmailData(null);
-  };
-
-  // Debug function to manually test email data processing
-  const testEmailDataProcessing = () => {
-    console.log('🎯 BillableAI: Testing email data processing...');
-    
-    // Test with mock email data
-    const testEmailData = {
-      subject: 'Test Email Subject',
-      to: 'test@example.com',
-      body: 'This is a test email body for debugging email data processing.',
-      timestamp: new Date().toISOString()
-    };
-    const testTimeSpent = 300000; // 5 minutes
-    
-    console.log('🎯 BillableAI: Test email data:', testEmailData);
-    console.log('🎯 BillableAI: Test time spent:', testTimeSpent);
-    
-    setCurrentEmailData(testEmailData);
-    setCurrentTimeSpent(testTimeSpent);
-    
-    // Generate a test summary
-    generateBillableSummary(testEmailData, testTimeSpent);
-  };
-
-  // Debug function to test email data retrieval
-  const testEmailDataRetrieval = async () => {
-    console.log('🎯 BillableAI: Testing email data retrieval...');
-    
-    try {
-      // Test background script communication
-      const response = await new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({
-          type: 'GET_EMAIL_DATA'
-        }, (response) => {
-          if (chrome.runtime.lastError) {
-            reject(new Error(chrome.runtime.lastError.message));
-          } else {
-            resolve(response);
-          }
-        });
-      });
-      
-      console.log('🎯 BillableAI: Background script response:', response);
-      
-      if (response && response.success && response.data) {
-        console.log('🎯 BillableAI: Found email data:', response.data);
-        setCurrentEmailData(response.data.emailData);
-        setCurrentTimeSpent(response.data.timeSpent || 0);
-      } else {
-        console.log('🎯 BillableAI: No email data found');
-      }
-      
-      // Also check chrome.storage directly
-      const result = await chrome.storage.local.get(['billableAI_emailSummary']);
-      console.log('🎯 BillableAI: Chrome storage check:', result);
-      
-    } catch (error) {
-      console.log('🎯 BillableAI: Error testing email data retrieval:', error);
-    }
-  };
-
-  // Function to manually set test email data
-  const setTestEmailData = () => {
-    const testEmailData = {
-      subject: 'Test Email Subject',
-      to: 'test@example.com',
-      cc: 'cc@example.com',
-      bcc: 'bcc@example.com',
-      body: 'This is a test email body for testing the display functionality.',
-      content: 'This is the content field for testing.',
-      timestamp: new Date().toISOString()
-    };
-    const testTimeSpent = 180000; // 3 minutes
-    
-    console.log('🎯 BillableAI: Setting test email data:', testEmailData);
-    setCurrentEmailData(testEmailData);
-    setCurrentTimeSpent(testTimeSpent);
-  };
-
-  // Test email data capture
-  const testEmailDataCapture = async () => {
-    try {
-      console.log('🧪 Testing email data capture...');
-      
-      // Try to get email data from content script
-      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (tabs.length === 0) {
-        console.log('🧪 No active tab found');
-        return;
-      }
-      
-      const activeTab = tabs[0];
-      if (!activeTab.url || !activeTab.url.includes('mail.google.com')) {
-        console.log('🧪 Not on Gmail page');
-        return;
-      }
-      
-      // Send message to content script
-      const response = await chrome.tabs.sendMessage(activeTab.id, {
-        type: 'CAPTURE_EMAIL_DATA'
-      });
-      
-      if (response && response.success) {
-        console.log('🧪 Email data captured successfully:', response.data);
-        
-        // Add test message to chat
-        const testMessage = {
-          id: Date.now(),
-          type: 'assistant',
-          content: `🧪 **Email Data Test Results:**\n\n**Subject:** ${response.data.subject || 'Not found'}\n**To:** ${response.data.to || 'Not found'}\n**CC:** ${response.data.cc || 'Not found'}\n**BCC:** ${response.data.bcc || 'Not found'}\n**Body Length:** ${response.data.body?.length || 0} characters\n\nThis is a test to verify email data capture.`,
-          timestamp: new Date().toISOString()
-        };
-        
-        setMessages(prev => [...prev, testMessage]);
-      } else {
-        console.log('🧪 Email data capture failed:', response?.error);
-        
-        const errorMessage = {
-          id: Date.now(),
-          type: 'assistant',
-          content: `❌ **Email Data Capture Failed:**\n\nError: ${response?.error || 'Unknown error'}\n\nPlease make sure you have a Gmail compose window open.`,
-          timestamp: new Date().toISOString()
-        };
-        
-        setMessages(prev => [...prev, errorMessage]);
-      }
-    } catch (error) {
-      console.error('🧪 Test error:', error);
-      
-      const errorMessage = {
-        id: Date.now(),
-        type: 'assistant',
-        content: `❌ **Test Error:**\n\n${error.message}\n\nPlease check the console for more details.`,
-        timestamp: new Date().toISOString()
-      };
-      
-      setMessages(prev => [...prev, errorMessage]);
-    }
-  };
-=======
   const clearChat = async () => {
     setMessages([]);
     setCurrentEmailData(null);
@@ -987,7 +766,6 @@ Your time has been automatically logged to Clio with the detected client and mat
   };
 
 
->>>>>>> 5189f8f (updations)
 
   const getModelStatusBadge = () => {
     switch (modelStatus) {
@@ -1035,47 +813,6 @@ Your time has been automatically logged to Clio with the detected client and mat
             <p className="text-xs text-gray-500">Powered by Gemini 2.5 Pro</p>
           </div>
         </div>
-<<<<<<< HEAD
-        {getModelStatusBadge()}
-      </div>
-
-      {/* Email Data Status - Always visible when data is available */}
-      {currentEmailData && (
-        <div className="p-3 bg-blue-50 border-b border-blue-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <h4 className="text-sm font-medium text-blue-900">📧 Email Data Available</h4>
-              <button
-                onClick={() => setEmailDataVisible(!emailDataVisible)}
-                className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
-              >
-                {emailDataVisible ? 'Hide' : 'Show'}
-              </button>
-              <button
-                onClick={() => clearEmailData()}
-                className="text-xs text-red-600 hover:text-red-800 transition-colors"
-                title="Clear email data"
-              >
-                Clear
-              </button>
-            </div>
-            <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
-              {Math.round(currentTimeSpent / 60000)} min
-            </span>
-          </div>
-          {emailDataVisible && (
-            <div className="text-sm text-blue-800 space-y-1">
-              <p><strong>Subject:</strong> {currentEmailData.subject || 'No subject'}</p>
-              <p><strong>To:</strong> {currentEmailData.to || 'No recipient'}</p>
-              {currentEmailData.cc && <p><strong>CC:</strong> {currentEmailData.cc}</p>}
-              {currentEmailData.bcc && <p><strong>BCC:</strong> {currentEmailData.bcc}</p>}
-              <p><strong>Content:</strong> {(currentEmailData.body || currentEmailData.content || '').substring(0, 100)}...</p>
-              {currentTimeSpent > 0 && <p><strong>Time Spent:</strong> {Math.round(currentTimeSpent / 60000)} minutes</p>}
-            </div>
-          )}
-        </div>
-      )}
-=======
         <div className="flex items-center gap-2">
           {getModelStatusBadge()}
           <button
@@ -1089,7 +826,6 @@ Your time has been automatically logged to Clio with the detected client and mat
           </button>
         </div>
       </div>
->>>>>>> 5189f8f (updations)
 
       {/* Messages - Full height chat area */}
       <div className="flex-1 overflow-y-auto">
@@ -1106,8 +842,6 @@ Your time has been automatically logged to Clio with the detected client and mat
                 I can help you generate billable summaries for your emails using Gemini 2.5 Pro. 
                 Compose an email first to get started.
               </p>
-<<<<<<< HEAD
-=======
               {assistantContext?.conversationHistory?.length > 0 && (
                 <div className="mt-4 text-center">
                   <p className="text-sm text-gray-500">
@@ -1115,7 +849,6 @@ Your time has been automatically logged to Clio with the detected client and mat
                   </p>
                 </div>
               )}
->>>>>>> 5189f8f (updations)
             </div>
 
             {/* Model Status Info */}
@@ -1152,53 +885,6 @@ Your time has been automatically logged to Clio with the detected client and mat
                 </svg>
                 Analyze Email
               </button>
-<<<<<<< HEAD
-
-              {/* Debug Test Button */}
-              <button
-                onClick={testEmailDataProcessing}
-                className="w-full px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Test Email Processing
-              </button>
-
-              {/* Debug Test Button for Data Retrieval */}
-              <button
-                onClick={testEmailDataRetrieval}
-                className="w-full px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Test Data Retrieval
-              </button>
-
-              {/* Debug Test Button for Setting Test Email Data */}
-              <button
-                onClick={setTestEmailData}
-                className="w-full px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Set Test Email Data
-              </button>
-
-              {/* Debug Test Button for Email Data Capture */}
-              <button
-                onClick={testEmailDataCapture}
-                className="w-full px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                Test Email Capture
-              </button>
-=======
->>>>>>> 5189f8f (updations)
             </div>
           </div>
         )}

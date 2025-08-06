@@ -4,11 +4,7 @@ import WorkHistoryComponent from '../components/WorkHistoryComponent';
 import GreetingComponent from '../components/GreetingComponent';
 
 const Popup = () => {
-<<<<<<< HEAD
-  const { navigateTo, user, isConnectedToClio, updateClioConnection, refreshClioConnectionStatus } = useAppContext();
-=======
   const { navigateTo, user, isConnectedToClio } = useAppContext();
->>>>>>> 5189f8f (updations)
   const [workHistory, setWorkHistory] = useState({
     emailLogs: 0,
     timeSpent: '0 mins',
@@ -62,23 +58,6 @@ const Popup = () => {
     return () => clearInterval(interval);
   }, []);
 
-<<<<<<< HEAD
-  // Auto-refresh Clio connection status when popup opens
-  useEffect(() => {
-    const refreshConnectionStatus = async () => {
-      try {
-        console.log('🔄 Auto-refreshing Clio connection status on popup open...');
-        await refreshClioConnectionStatus();
-      } catch (error) {
-        console.error('❌ Error auto-refreshing Clio status:', error);
-      }
-    };
-
-    refreshConnectionStatus();
-  }, [refreshClioConnectionStatus]);
-=======
-
->>>>>>> 5189f8f (updations)
 
   // Timer effect to update tracking status
   useEffect(() => {
@@ -131,70 +110,6 @@ const Popup = () => {
     return 'Good evening';
   };
 
-<<<<<<< HEAD
-  const handleConnectClio = async () => {
-    try {
-      if (!isConnectedToClio) {
-        // Show loading state
-        showNotification('Connecting to Clio...', 'info');
-        
-        await updateClioConnection(true);
-        
-        // The OAuth flow will be handled by the context
-        // Connection status will be updated when OAuth completes
-      } else {
-        // Disconnect from Clio
-        await updateClioConnection(false);
-        showNotification('Disconnected from Clio', 'success');
-      }
-    } catch (error) {
-      console.error('Clio connection error:', error);
-      showNotification(error.message || 'Failed to connect to Clio', 'error');
-    }
-  };
-
-  // Refresh Clio connection status
-  const refreshClioStatus = async () => {
-    try {
-      console.log('🔄 Refreshing Clio connection status...');
-      
-      const connectionStatus = await refreshClioConnectionStatus();
-      console.log('🔄 Updated Clio connection status:', connectionStatus);
-      
-      if (connectionStatus.isConnected) {
-        showNotification('Clio connection confirmed!', 'success');
-      } else {
-        showNotification('Not connected to Clio', 'warning');
-      }
-    } catch (error) {
-      console.error('❌ Error refreshing Clio status:', error);
-      showNotification('Failed to refresh Clio status', 'error');
-    }
-  };
-
-  // Clear Clio connection for testing
-  const clearClioConnection = async () => {
-    try {
-      console.log('🧹 Clearing Clio connection...');
-      
-      const { clearTestConnections } = await import('../services/oauthService.js');
-      const result = await clearTestConnections();
-      
-      if (result.success) {
-        showNotification('Connection cleared!', 'success');
-        // Refresh the connection status
-        await refreshClioStatus();
-      } else {
-        showNotification('Failed to clear connection', 'error');
-      }
-    } catch (error) {
-      console.error('❌ Error clearing Clio connection:', error);
-      showNotification('Clear failed', 'error');
-    }
-  };
-=======
-
->>>>>>> 5189f8f (updations)
 
   // Handle one-click billing
   const handleOneClickBilling = async () => {
@@ -249,36 +164,6 @@ const Popup = () => {
           </div>
         </div>
         <div className="flex items-center space-x-2">
-<<<<<<< HEAD
-          {/* Refresh Clio Status Button */}
-          <button
-            onClick={refreshClioStatus}
-            className="w-8 h-8 rounded-full bg-transparent border border-white/30 flex items-center justify-center hover:bg-white/10 hover:scale-105 transition-all duration-200"
-            title="Refresh Clio Status"
-          >
-            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
-          
-          {/* Connect to Clio Button */}
-          <button
-            onClick={handleConnectClio}
-            className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all duration-200 hover:scale-105 flex items-center space-x-1 ${
-              isConnectedToClio
-                ? 'bg-green-500 text-white hover:bg-green-600 shadow-lg'
-                : 'bg-white text-black hover:bg-gray-100 shadow-lg'
-            }`}
-          >
-            {/* Connection Status Indicator */}
-            <div className={`w-2 h-2 rounded-full ${
-              isConnectedToClio ? 'bg-white' : 'bg-gray-400'
-            }`}></div>
-            <span>{isConnectedToClio ? 'Clio ✓' : 'Connect to Clio'}</span>
-          </button>
-=======
-
->>>>>>> 5189f8f (updations)
           
           {/* Settings Button */}
           <button
@@ -333,52 +218,6 @@ const Popup = () => {
           </div>
         )}
 
-<<<<<<< HEAD
-        {/* Clio Connection Section */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-white font-semibold text-sm">Clio Integration</h3>
-            <div className="flex items-center space-x-2">
-              {/* Refresh Clio Status Button */}
-              <button
-                onClick={refreshClioStatus}
-                className="w-8 h-8 rounded-full bg-transparent border border-white/30 flex items-center justify-center hover:bg-white/10 hover:scale-105 transition-all duration-200"
-                title="Refresh Clio Status"
-              >
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              </button>
-              
-              {/* Clear Clio Connection Button */}
-              <button
-                onClick={clearClioConnection}
-                className="px-3 py-1.5 rounded-lg bg-red-500 text-white font-semibold text-xs hover:bg-red-400 transition-all duration-200"
-                title="Clear Clio Connection"
-              >
-                Clear
-              </button>
-            </div>
-          </div>
-          
-          <button
-            onClick={handleConnectClio}
-            className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all duration-200 hover:scale-105 flex items-center space-x-1 ${
-              isConnectedToClio
-                ? 'bg-green-500 text-white hover:bg-green-600 shadow-lg'
-                : 'bg-white text-black hover:bg-gray-100 shadow-lg'
-            }`}
-          >
-            {/* Connection Status Indicator */}
-            <div className={`w-2 h-2 rounded-full ${
-              isConnectedToClio ? 'bg-white' : 'bg-gray-400'
-            }`}></div>
-            <span>{isConnectedToClio ? 'Clio ✓' : 'Connect to Clio'}</span>
-          </button>
-        </div>
-=======
-
->>>>>>> 5189f8f (updations)
 
         {/* Work History Stats with Spacing */}
         <div className="mt-auto px-6 pb-6">

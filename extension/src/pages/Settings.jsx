@@ -26,10 +26,7 @@ const Settings = () => {
   } = useAppContext();
 
   const [showAvatarUpload, setShowAvatarUpload] = useState(false);
-<<<<<<< HEAD
-=======
   const [avatarPreview, setAvatarPreview] = useState(null);
->>>>>>> 5189f8f (updations)
 
   const handleConnectClio = async () => {
     await updateClioConnection(!isConnectedToClio);
@@ -52,11 +49,6 @@ const Settings = () => {
   const handleAvatarUpdate = async (event) => {
     const file = event.target.files[0];
     if (file) {
-<<<<<<< HEAD
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        await updateUserProfile({ avatar: e.target.result });
-=======
       // Validate file type
       if (!file.type.startsWith('image/')) {
         alert('Please select an image file');
@@ -81,19 +73,15 @@ const Settings = () => {
           console.error('❌ Error updating avatar:', error);
           alert('Failed to update avatar. Please try again.');
         }
->>>>>>> 5189f8f (updations)
       };
       reader.readAsDataURL(file);
     }
   };
 
-<<<<<<< HEAD
-=======
   const handleAvatarClick = () => {
     setShowAvatarUpload(!showAvatarUpload);
   };
 
->>>>>>> 5189f8f (updations)
   const handleLogout = () => {
     // Clear localStorage
     localStorage.removeItem('authToken');
@@ -113,21 +101,13 @@ const Settings = () => {
   };
 
   // Avatar logic
-<<<<<<< HEAD
-  const avatar = user.avatar ? (
-    <img src={user.avatar} alt="User Avatar" className="w-14 h-14 rounded-full object-cover" />
-=======
   const avatar = (avatarPreview || user.avatar) ? (
     <img src={avatarPreview || user.avatar} alt="User Avatar" className="w-14 h-14 rounded-full object-cover" />
->>>>>>> 5189f8f (updations)
   ) : USER_PROFILE_SVG;
 
   return (
     <div className="w-96 h-[600px] bg-gradient-to-br from-black via-blue-900 to-purple-600 flex flex-col">
       {/* Header */}
-<<<<<<< HEAD
-      
-=======
       <div className="p-4 border-b border-white/20">
         <div className="flex items-center justify-between">
           <h1 className="text-white text-xl font-bold">Settings</h1>
@@ -141,7 +121,6 @@ const Settings = () => {
           </button>
         </div>
       </div>
->>>>>>> 5189f8f (updations)
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -153,11 +132,7 @@ const Settings = () => {
               {avatar}
             </div>
             <button 
-<<<<<<< HEAD
-              onClick={() => setShowAvatarUpload(!showAvatarUpload)}
-=======
               onClick={handleAvatarClick}
->>>>>>> 5189f8f (updations)
               className="absolute bottom-0 right-0 bg-white rounded-full p-1 border border-gray-300 hover:bg-blue-500 hover:text-white transition-colors"
             >
               <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -214,69 +189,6 @@ const Settings = () => {
           </div>
         </div>
 
-<<<<<<< HEAD
-        {/* Horizontal Line */}
-        <div className="border-t border-white/20"></div>
-
-        {/* AI Assistant Preferences Section */}
-        <div className="text-sm">
-          <h2 className="text-white text-base font-semibold mb-3">AI Assistant Preferences</h2>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-white font-medium text-xs mb-1">Email Auto-suggestions</h3>
-                {/* <p className="text-white/60 text-xs">Get AI-powered email suggestions</p> */}
-              </div>
-              <div className="flex items-center space-x-2">
-                <label className="flex items-center space-x-1 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="emailAutoSuggestions"
-                    checked={aiPreferences.emailAutoSuggestions === true}
-                    onChange={() => handleAiPreferenceChange('emailAutoSuggestions', true)}
-                    className="form-radio text-blue-500 focus:ring-blue-500"
-                  />
-                  <span className="text-white text-xs">On</span>
-                </label>
-                <label className="flex items-center space-x-1 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="emailAutoSuggestions"
-                    checked={aiPreferences.emailAutoSuggestions === false}
-                    onChange={() => handleAiPreferenceChange('emailAutoSuggestions', false)}
-                    className="form-radio text-blue-500 focus:ring-blue-500"
-                  />
-                  <span className="text-white text-xs">Off</span>
-                </label>
-              </div>
-            </div>
-            <div>
-              <label className="block text-white text-xs font-medium mb-1">Default Tone</label>
-              <div className="flex space-x-4">
-                <label className="flex items-center space-x-1 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="defaultTone"
-                    value="Formal"
-                    checked={aiPreferences.defaultTone === 'Formal'}
-                    onChange={() => handleAiPreferenceChange('defaultTone', 'Formal')}
-                    className="form-radio text-blue-500 focus:ring-blue-500"
-                  />
-                  <span className="text-white text-xs">Formal</span>
-                </label>
-                <label className="flex items-center space-x-1 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="defaultTone"
-                    value="Casual"
-                    checked={aiPreferences.defaultTone === 'Casual'}
-                    onChange={() => handleAiPreferenceChange('defaultTone', 'Casual')}
-                    className="form-radio text-blue-500 focus:ring-blue-500"
-                  />
-                  <span className="text-white text-xs">Casual</span>
-                </label>
-              </div>
-=======
         {/* AI Preferences Section */}
         <div className="text-sm">
           <h2 className="text-white text-base font-semibold mb-3">AI Preferences</h2>
@@ -310,77 +222,10 @@ const Settings = () => {
                 <option value="Formal">Formal</option>
                 <option value="Casual">Casual</option>
               </select>
->>>>>>> 5189f8f (updations)
             </div>
           </div>
         </div>
 
-<<<<<<< HEAD
-        {/* Horizontal Line */}
-        <div className="border-t border-white/20"></div>
-
-        {/* Billable Logging Section */}
-        <div className="text-sm">
-          <h2 className="text-white text-base font-semibold mb-3">Billable Logging</h2>
-          <div className="space-y-3">
-            <div>
-              <label className="block text-white text-xs font-medium mb-1">Default Time Unit</label>
-              <div className="flex space-x-4">
-                <label className="flex items-center space-x-1 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="defaultTimeUnit"
-                    value="Hours"
-                    checked={billableLogging.defaultTimeUnit === 'Hours'}
-                    onChange={() => handleBillableLoggingChange('defaultTimeUnit', 'Hours')}
-                    className="form-radio text-blue-500 focus:ring-blue-500"
-                  />
-                  <span className="text-white text-xs">Hours</span>
-                </label>
-                <label className="flex items-center space-x-1 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="defaultTimeUnit"
-                    value="Minutes"
-                    checked={billableLogging.defaultTimeUnit === 'Minutes'}
-                    onChange={() => handleBillableLoggingChange('defaultTimeUnit', 'Minutes')}
-                    className="form-radio text-blue-500 focus:ring-blue-500"
-                  />
-                  <span className="text-white text-xs">Minutes</span>
-                </label>
-                <label className="flex items-center space-x-1 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="defaultTimeUnit"
-                    value="Seconds"
-                    checked={billableLogging.defaultTimeUnit === 'Seconds'}
-                    onChange={() => handleBillableLoggingChange('defaultTimeUnit', 'Seconds')}
-                    className="form-radio text-blue-500 focus:ring-blue-500"
-                  />
-                  <span className="text-white text-xs">Seconds</span>
-                </label>
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-white font-medium text-xs">Confirmation Before Logging</h3>
-                {/* <p className="text-white/60 text-xs">Ask for confirmation before logging time</p> */}
-              </div>
-              <ToggleSwitch
-                checked={billableLogging.confirmationBeforeLogging}
-                onChange={(value) => handleBillableLoggingChange('confirmationBeforeLogging', value)}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-white font-medium text-xs">Confirmation Before Attaching to Clio</h3>
-                {/* <p className="text-white/60 text-xs">Ask for confirmation before attaching to Clio</p> */}
-              </div>
-              <ToggleSwitch
-                checked={billableLogging.confirmationBeforeAttaching}
-                onChange={(value) => handleBillableLoggingChange('confirmationBeforeAttaching', value)}
-              />
-=======
         {/* Billable Logging Section */}
         <div className="text-sm">
           <h2 className="text-white text-base font-semibold mb-3">Billable Logging</h2>
@@ -415,28 +260,10 @@ const Settings = () => {
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
->>>>>>> 5189f8f (updations)
             </div>
           </div>
         </div>
 
-<<<<<<< HEAD
-        {/* Horizontal Line */}
-        
-
-        {/* Horizontal Line */}
-        <div className="border-t border-white/20"></div>
-
-        {/* Logout & Delete Account Buttons */}
-        <div className="flex flex-col space-y-2">
-          <button 
-            onClick={handleLogout}
-            className="w-full py-2 rounded-lg bg-white text-black font-semibold hover:bg-gray-200 transition-colors"
-          >
-            Logout
-          </button>
-          <button className="w-full py-2 rounded-lg border border-red-600 text-red-600 font-semibold hover:bg-red-500 hover:text-white transition-colors">Delete Account</button>
-=======
         {/* Account Management Section */}
         <div className="text-sm">
           <h2 className="text-white text-base font-semibold mb-3">Account Management</h2>
@@ -459,7 +286,6 @@ const Settings = () => {
               Delete Account
             </button>
           </div>
->>>>>>> 5189f8f (updations)
         </div>
       </div>
     </div>

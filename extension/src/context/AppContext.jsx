@@ -1,9 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-<<<<<<< HEAD
-import { authAPI, userAPI, preferencesAPI, clioAPI, workHistoryAPI } from '../utils/api.js';
-=======
 import { authAPI, userAPI, preferencesAPI, clioAPI, workHistoryAPI, assistantAPI } from '../utils/api.js';
->>>>>>> 5189f8f (updations)
 import { initiateClioOAuth, handleClioOAuthCallback, checkClioConnection } from '../services/oauthService.js';
 import { initAuth, loginUser, logoutUser, getCurrentUser, isAuthenticated, verifyToken, debugStorage } from '../utils/simpleAuth.js';
 import simpleAuth from '../utils/simpleAuth.js';
@@ -82,9 +78,6 @@ export const AppProvider = ({ children }) => {
   const [workHistory, setWorkHistory] = useState({
     emailLogs: 10,
     timeSpent: '3 hrs',
-<<<<<<< HEAD
-    summaries: 10
-=======
     summaries: 10,
     totalBillableTime: 0,
     weeklyTimeSpent: 0,
@@ -108,7 +101,6 @@ export const AppProvider = ({ children }) => {
       billingRates: new Map()
     },
     lastUsedEmail: null
->>>>>>> 5189f8f (updations)
   });
   const [aiPreferences, setAiPreferences] = useState({
     emailAutoSuggestions: true,
@@ -238,8 +230,6 @@ export const AppProvider = ({ children }) => {
           // Check if user has completed onboarding
           const onboardingCompleted = localStorage.getItem('billableai_onboarding_completed') === 'true';
           
-<<<<<<< HEAD
-=======
           // Load assistant context if user is authenticated
           try {
             await loadAssistantContext();
@@ -247,7 +237,6 @@ export const AppProvider = ({ children }) => {
             console.log('⚠️ Failed to load assistant context during auth check:', error);
           }
           
->>>>>>> 5189f8f (updations)
           // Navigate to appropriate page
           if (onboardingCompleted) {
             setCurrentPage('popup');
@@ -369,26 +358,15 @@ export const AppProvider = ({ children }) => {
       
       setAiPreferences(userData.aiPreferences || {
         emailAutoSuggestions: true,
-<<<<<<< HEAD
-        defaultTone: 'Formal'
-=======
         defaultTone: 'Formal',
         autoSummaryGeneration: true,
         preferredResponseLength: 'Medium',
         customPrompts: []
->>>>>>> 5189f8f (updations)
       });
       
       setBillableLogging(userData.billableLogging || {
         defaultTimeUnit: 'Hours',
         confirmationBeforeLogging: true,
-<<<<<<< HEAD
-        confirmationBeforeAttaching: true
-      });
-      
-      setTwoFactorAuth(userData.twoFactorAuth || {
-        enabled: true,
-=======
         confirmationBeforeAttaching: true,
         autoTrackingEnabled: true,
         minimumTrackingTime: 30
@@ -396,7 +374,6 @@ export const AppProvider = ({ children }) => {
       
       setTwoFactorAuth(userData.twoFactorAuth || {
         enabled: false,
->>>>>>> 5189f8f (updations)
         method: 'Email',
         email: '',
         phone: ''
@@ -406,12 +383,6 @@ export const AppProvider = ({ children }) => {
       setWorkHistory(userData.workHistory || {
         emailLogs: 0,
         timeSpent: '0 hrs',
-<<<<<<< HEAD
-        summaries: 0
-      });
-      
-      setHasCompletedOnboarding(userData.hasCompletedOnboarding || false);
-=======
         summaries: 0,
         totalBillableTime: 0,
         weeklyTimeSpent: 0,
@@ -442,7 +413,6 @@ export const AppProvider = ({ children }) => {
       });
       
       console.log('✅ User profile loaded from backend:', userData);
->>>>>>> 5189f8f (updations)
     } catch (error) {
       console.error('Failed to load user profile from API, trying localStorage:', error);
       
@@ -1050,8 +1020,6 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-<<<<<<< HEAD
-=======
   // Load assistant context and conversation history
   const loadAssistantContext = async () => {
     try {
@@ -1164,7 +1132,6 @@ export const AppProvider = ({ children }) => {
     console.log('✅ Assistant conversation history cleared');
   };
 
->>>>>>> 5189f8f (updations)
   const value = {
     currentPage,
     setCurrentPage,
@@ -1180,8 +1147,6 @@ export const AppProvider = ({ children }) => {
     workHistory,
     setWorkHistory,
     updateWorkHistory,
-<<<<<<< HEAD
-=======
     notificationSettings,
     setNotificationSettings,
     assistantContext,
@@ -1192,7 +1157,6 @@ export const AppProvider = ({ children }) => {
     updateAssistantPreferences,
     updateLastUsedEmail,
     clearAssistantHistory,
->>>>>>> 5189f8f (updations)
     aiPreferences,
     setAiPreferences,
     updateAiPreferences,

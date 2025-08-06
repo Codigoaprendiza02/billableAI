@@ -150,16 +150,6 @@ const WorkHistoryComponent = () => {
       const newWeeklyTime = localWorkHistory.weeklyTimeSpent + additionalMinutes;
       const newMonthlyTime = localWorkHistory.monthlyTimeSpent + additionalMinutes;
       
-<<<<<<< HEAD
-      // Format total time display
-      let timeDisplay;
-      if (newTotalBillableTime >= 60) {
-        const hours = Math.floor(newTotalBillableTime / 60);
-        const minutes = newTotalBillableTime % 60;
-        timeDisplay = minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-      } else {
-        timeDisplay = `${newTotalBillableTime}m`;
-=======
       // Format total time display based on user's preferred time unit
       let timeDisplay;
       const userTimeUnit = localStorage.getItem('billableai_time_unit') || 'Hours';
@@ -174,7 +164,6 @@ const WorkHistoryComponent = () => {
         // Seconds
         const totalSeconds = newTotalBillableTime * 60;
         timeDisplay = `${totalSeconds}s`;
->>>>>>> 5189f8f (updations)
       }
       
       const updates = {
@@ -207,12 +196,6 @@ const WorkHistoryComponent = () => {
         summaries.push({
           ...summaryData,
           confirmedAt: new Date().toISOString(),
-<<<<<<< HEAD
-          id: `summary_${Date.now()}`
-        });
-        localStorage.setItem('billableai_summaries', JSON.stringify(summaries));
-        
-=======
           id: `summary_${Date.now()}`,
           status: 'confirmed'
         });
@@ -227,7 +210,6 @@ const WorkHistoryComponent = () => {
           }
         }));
         
->>>>>>> 5189f8f (updations)
         return true;
       } else {
         console.error('🎯 WorkHistory: Failed to update backend, reverting local changes');
@@ -387,9 +369,6 @@ const WorkHistoryComponent = () => {
 
         {/* Time Spent */}
         <div className="glass-card dotted-border p-4 text-center">
-<<<<<<< HEAD
-          <div className="text-white text-2xl font-bold mb-1">{localWorkHistory.timeSpent}</div>
-=======
           <div className="text-white text-2xl font-bold mb-1">
             {(() => {
               const userTimeUnit = localStorage.getItem('billableai_time_unit') || 'Hours';
@@ -408,7 +387,6 @@ const WorkHistoryComponent = () => {
               }
             })()}
           </div>
->>>>>>> 5189f8f (updations)
           <div className="text-white text-sm">Time spent</div>
         </div>
 

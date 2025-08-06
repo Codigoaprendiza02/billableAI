@@ -7,10 +7,7 @@ class AuthService {
     this.authToken = null;
     this.user = null;
     this.isAuthenticated = false;
-<<<<<<< HEAD
-=======
     this.refreshTimer = null;
->>>>>>> 5189f8f (updations)
   }
 
   // Initialize authentication service
@@ -27,12 +24,9 @@ class AuthService {
         if (!isValid) {
           console.log('🎯 BillableAI: Stored token is invalid, clearing authentication');
           await this.logout();
-<<<<<<< HEAD
-=======
         } else {
           // Start automatic token refresh
           this.startTokenRefreshTimer();
->>>>>>> 5189f8f (updations)
         }
       }
       
@@ -51,20 +45,13 @@ class AuthService {
       const result = await chrome.storage.local.get([
         'billableai_auth_token',
         'billableai_user_data',
-<<<<<<< HEAD
-        'billableai_auth_expiry'
-=======
         'billableai_auth_expiry',
         'billableai_refresh_token'
->>>>>>> 5189f8f (updations)
       ]);
 
       this.authToken = result.billableai_auth_token || null;
       this.user = result.billableai_user_data ? JSON.parse(result.billableai_user_data) : null;
-<<<<<<< HEAD
-=======
       this.refreshToken = result.billableai_refresh_token || null;
->>>>>>> 5189f8f (updations)
       
       // Check if token is expired
       if (result.billableai_auth_expiry) {
@@ -75,10 +62,7 @@ class AuthService {
           console.log('🎯 BillableAI: Stored token has expired');
           this.authToken = null;
           this.user = null;
-<<<<<<< HEAD
-=======
           this.refreshToken = null;
->>>>>>> 5189f8f (updations)
         }
       }
 
@@ -86,10 +70,7 @@ class AuthService {
       console.log('🎯 BillableAI: Auth data loaded from Chrome storage:', {
         hasToken: !!this.authToken,
         hasUser: !!this.user,
-<<<<<<< HEAD
-=======
         hasRefreshToken: !!this.refreshToken,
->>>>>>> 5189f8f (updations)
         isAuthenticated: this.isAuthenticated
       });
     } catch (error) {
@@ -104,18 +85,12 @@ class AuthService {
     try {
       const token = localStorage.getItem('authToken');
       const userData = localStorage.getItem('user');
-<<<<<<< HEAD
-=======
       const refreshToken = localStorage.getItem('refreshToken');
->>>>>>> 5189f8f (updations)
       
       if (token && userData) {
         this.authToken = token;
         this.user = JSON.parse(userData);
-<<<<<<< HEAD
-=======
         this.refreshToken = refreshToken;
->>>>>>> 5189f8f (updations)
         this.isAuthenticated = true;
         
         // Migrate to Chrome storage
@@ -133,12 +108,8 @@ class AuthService {
       const authData = {
         billableai_auth_token: this.authToken,
         billableai_user_data: this.user ? JSON.stringify(this.user) : null,
-<<<<<<< HEAD
-        billableai_auth_expiry: this.user?.tokenExpiry || null
-=======
         billableai_auth_expiry: this.user?.tokenExpiry || null,
         billableai_refresh_token: this.refreshToken || null
->>>>>>> 5189f8f (updations)
       };
 
       await chrome.storage.local.set(authData);
@@ -159,20 +130,15 @@ class AuthService {
       if (this.user) {
         localStorage.setItem('user', JSON.stringify(this.user));
       }
-<<<<<<< HEAD
-=======
       if (this.refreshToken) {
         localStorage.setItem('refreshToken', this.refreshToken);
       }
->>>>>>> 5189f8f (updations)
       console.log('🎯 BillableAI: Auth data saved to localStorage as fallback');
     } catch (error) {
       console.error('🎯 BillableAI: Error saving auth data to localStorage:', error);
     }
   }
 
-<<<<<<< HEAD
-=======
   // Start automatic token refresh timer
   startTokenRefreshTimer() {
     this.stopTokenRefreshTimer();
@@ -203,7 +169,6 @@ class AuthService {
     }
   }
 
->>>>>>> 5189f8f (updations)
   // Login user
   async login(credentials) {
     try {
@@ -224,14 +189,9 @@ class AuthService {
 
       const data = await response.json();
       
-<<<<<<< HEAD
-      // Set authentication data
-      this.authToken = data.token;
-=======
       // Set authentication data - handle both 'token' and 'accessToken' fields
       this.authToken = data.token || data.accessToken;
       this.refreshToken = data.refreshToken || null;
->>>>>>> 5189f8f (updations)
       this.user = {
         ...data.user,
         tokenExpiry: data.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours default
@@ -241,12 +201,9 @@ class AuthService {
       // Save to persistent storage
       await this.saveAuthData();
       
-<<<<<<< HEAD
-=======
       // Start automatic token refresh
       this.startTokenRefreshTimer();
       
->>>>>>> 5189f8f (updations)
       console.log('🎯 BillableAI: Login successful');
       return { success: true, user: this.user };
     } catch (error) {
@@ -275,14 +232,9 @@ class AuthService {
 
       const data = await response.json();
       
-<<<<<<< HEAD
-      // Set authentication data
-      this.authToken = data.token;
-=======
       // Set authentication data - handle both 'token' and 'accessToken' fields
       this.authToken = data.token || data.accessToken;
       this.refreshToken = data.refreshToken || null;
->>>>>>> 5189f8f (updations)
       this.user = {
         ...data.user,
         tokenExpiry: data.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
@@ -292,12 +244,9 @@ class AuthService {
       // Save to persistent storage
       await this.saveAuthData();
       
-<<<<<<< HEAD
-=======
       // Start automatic token refresh
       this.startTokenRefreshTimer();
       
->>>>>>> 5189f8f (updations)
       console.log('🎯 BillableAI: Registration successful');
       return { success: true, user: this.user };
     } catch (error) {
@@ -341,29 +290,18 @@ class AuthService {
   // Refresh token
   async refreshToken() {
     try {
-<<<<<<< HEAD
-      if (!this.authToken) {
-        throw new Error('No token to refresh');
-=======
       if (!this.refreshToken) {
         throw new Error('No refresh token to refresh');
->>>>>>> 5189f8f (updations)
       }
 
       const response = await fetch('http://localhost:3001/api/auth/refresh', {
         method: 'POST',
         headers: {
-<<<<<<< HEAD
-          'Authorization': `Bearer ${this.authToken}`,
-          'Content-Type': 'application/json'
-        }
-=======
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           refreshToken: this.refreshToken
         })
->>>>>>> 5189f8f (updations)
       });
 
       if (!response.ok) {
@@ -373,14 +311,10 @@ class AuthService {
       const data = await response.json();
       
       // Update authentication data
-<<<<<<< HEAD
-      this.authToken = data.token;
-=======
       this.authToken = data.accessToken || data.token;
       if (data.refreshToken) {
         this.refreshToken = data.refreshToken;
       }
->>>>>>> 5189f8f (updations)
       this.user = {
         ...this.user,
         tokenExpiry: data.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
@@ -402,11 +336,6 @@ class AuthService {
     try {
       console.log('🎯 BillableAI: Logging out...');
       
-<<<<<<< HEAD
-      // Clear authentication data
-      this.authToken = null;
-      this.user = null;
-=======
       // Stop token refresh timer
       this.stopTokenRefreshTimer();
       
@@ -414,28 +343,20 @@ class AuthService {
       this.authToken = null;
       this.user = null;
       this.refreshToken = null;
->>>>>>> 5189f8f (updations)
       this.isAuthenticated = false;
 
       // Clear from Chrome storage
       await chrome.storage.local.remove([
         'billableai_auth_token',
         'billableai_user_data',
-<<<<<<< HEAD
-        'billableai_auth_expiry'
-=======
         'billableai_auth_expiry',
         'billableai_refresh_token'
->>>>>>> 5189f8f (updations)
       ]);
 
       // Also clear localStorage for compatibility
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
-<<<<<<< HEAD
-=======
       localStorage.removeItem('refreshToken');
->>>>>>> 5189f8f (updations)
       
       console.log('🎯 BillableAI: Logout successful');
     } catch (error) {

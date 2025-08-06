@@ -204,8 +204,6 @@ export const extensionAPI = {
   }
 };
 
-<<<<<<< HEAD
-=======
 // Assistant context API functions
 export const assistantAPI = {
   // Get assistant context
@@ -247,7 +245,6 @@ export const assistantAPI = {
   }
 };
 
->>>>>>> 5189f8f (updations)
 import { isAuthenticated as simpleAuthIsAuthenticated, getCurrentUser } from './simpleAuth.js';
 
 // Check if user is authenticated

@@ -2,15 +2,9 @@
 export const validatePassword = (password) => {
   const errors = [];
   
-<<<<<<< HEAD
-  // Check length
-  if (password.length < 15) {
-    errors.push('Password must be at least 15 characters long');
-=======
   // Check length - reduced from 15 to 8 characters
   if (password.length < 8) {
     errors.push('Password must be at least 8 characters long');
->>>>>>> 5189f8f (updations)
   }
   
   // Check for uppercase letter
@@ -28,11 +22,7 @@ export const validatePassword = (password) => {
     errors.push('Password must contain at least one number (0-9)');
   }
   
-<<<<<<< HEAD
-  // Check for special character
-=======
   // Check for special character - made optional for better UX
->>>>>>> 5189f8f (updations)
   const specialChars = '!@#$%^&*()_\-+={}\[\]|\\:;"\'<>?,./';
   const hasSpecialChar = specialChars.split('').some(char => password.includes(char));
   if (!hasSpecialChar) {
@@ -49,16 +39,10 @@ export const validatePassword = (password) => {
 export const getPasswordStrength = (password) => {
   let score = 0;
   
-<<<<<<< HEAD
-  // Length bonus
-  if (password.length >= 15) score += 2;
-  if (password.length >= 20) score += 1;
-=======
   // Length bonus - adjusted for new minimum
   if (password.length >= 8) score += 2;
   if (password.length >= 12) score += 1;
   if (password.length >= 16) score += 1;
->>>>>>> 5189f8f (updations)
   
   // Character variety bonus
   if (/[A-Z]/.test(password)) score += 1;
